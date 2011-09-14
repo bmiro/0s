@@ -1,0 +1,42 @@
+Intalar bochs bochs-x bin86 i build-essential a la debian, el dev86 no el troba crec que es el bin86 
+La bios VGABIOS-elpin-2.40 es privativa, al seu lloc pot emprar-se la VGABIOS-lgpl-latest,
+per aixo canviar la linia 110 del .bochsrc de 
+
+vgaromimage: $BXSHARE/VGABIOS-elpin-2.40
+
+a
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+
+Crec que la versio 2.4 requereix el file= sino no funciona
+
+Linia 259
+es
+
+ips: 600000
+
+i toca ser
+
+cpu: count=1, ips=600000
+
+font: http://bochs.sourceforge.net/doc/docbook/user/bochsrc.html
+
+No fa falta la linia 489 amb la directiva (canvi versio 2.4)
+
+font: http://bochs.sourceforge.net/cgi-bin/lxr/source/CHANGES
+
+En la linia 610 usb1 ha de ser usb_uhci
+
+ >>PANIC<< .bochsrc:610: 'usb1' directive is now deprecated, use 'usb_uhci' instead
+
+
+---
+romimage: file=$BXSHARE/BIOS-bochs-latest, address=0xf0000
+
+Ha de suprimir l'adreca, ja que la nova versio ho fa be sol i a mes te bios de diferents
+tamanys
+
+romimage: file=$BXSHARE/BIOS-bochs-latest #, address=0xf0000
+
+Perque se reinicia constantment?
+
+
