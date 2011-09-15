@@ -12,7 +12,7 @@ void breakpoint_handler();
 void overflow_handler();
 void bounds_check_handler();
 void invalid_opcode_handler();
-void device_not_available_handler();
+void devive_not_available_handler();
 void double_fault_handler();
 void coprocessor_segment_overrun_handler();
 void invalid_tss_handler();

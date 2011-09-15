@@ -111,7 +111,7 @@ ENTRY(invalid_opcode_handler)
 	RESTORE_ALL
 	iret
 
-ENTRY(device_not_available_handler)
+ENTRY(devive_not_available_handler)
 	SAVE_ALL
 	call device_not_available_routine
 	RESTORE_ALL
@@ -173,7 +173,7 @@ ENTRY(intel_reserved_handler)
 
 ENTRY(floatin_point_error_handler)
 	SAVE_ALL
-	call floatin_point_routine
+	call floatin_point_error_routine
 	RESTORE_ALL
 	iret
 
