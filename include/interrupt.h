@@ -9,6 +9,9 @@
 
 #define IDT_ENTRIES 256
 
+#define KERNEL_LVL 0
+#define USER_LVL 3
+
 extern Gate idt[IDT_ENTRIES];
 extern Register idtR;
 

@@ -75,9 +75,29 @@ void setIdt()
   /* Program interrups/exception service routines */
   idtR.base  = (DWord)idt;
   idtR.limit = IDT_ENTRIES * sizeof(Gate) - 1;
+  
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
-  setInterruptHandler(0, ) <= TODO HERE : posar punter a funcio i nivell de privilegi
-
+  
+  /** TODO Revisar nivells de privilegi TODO! */
+  setInterruptHandler(0, divide_error_handler, KERNEL_LVL);
+  setInterruptHandler(1, debug_handler, KERNEL_LVL);
+  setInterruptHandler(2, nm1_handler, KERNEL_LVL);
+  setInterruptHandler(3, breakpoint_handler, KERNEL_LVL);
+  setInterruptHandler(4, overflow_handler, KERNEL_LVL);
+  setInterruptHandler(5, bounds_check_handler, KERNEL_LVL);
+  setInterruptHandler(6, invalid_opcode_handler, KERNEL_LVL);
+  setInterruptHandler(7, devive_not_available_handler, KERNEL_LVL);
+  setInterruptHandler(8, double_fault_handler, KERNEL_LVL);
+  setInterruptHandler(9, coprocessor_segment_overrun_handler, KERNEL_LVL);
+  setInterruptHandler(10, invalid_tss_handler, KERNEL_LVL);
+  setInterruptHandler(11, segment_not_present_handler, KERNEL_LVL);
+  setInterruptHandler(12, stack_exception_handler, KERNEL_LVL);
+  setInterruptHandler(13, general_protection_handler, KERNEL_LVL);
+  setInterruptHandler(14, page_fault_handler, KERNEL_LVL);
+  setInterruptHandler(15, intel_reserved_handler, KERNEL_LVL);
+  setInterruptHandler(16, floatin_point_error_handler, KERNEL_LVL);
+  setInterruptHandler(17, alignment_check_handler, KERNEL_LVL);
+  
   set_idt_reg(&idtR);
 }
 
@@ -87,89 +107,88 @@ void divide_error_routine() {
 }
 
 void debug_routine() {
-	printk("Exception found\n");
-
+	printk("Debug exception found\n");
+	while(1);
 }
 
 void nm1_routine() {
-	printk("Exception found\n");
-
+	printk("NM1 exception found\n");
+	while(1);
 }
 	
 void breakpoint_routine() {
-	printk("Exception found\n");
-
+	printk("Breakpoint exception found\n");
+	while(1);
 }
 
 void overflow_routine() {
-	printk("Exception found");
-
+	printk("Overflow exception found");
+	while(1);
 }
 
 void bounds_check_routine() {
-	printk("Exception found");
-
+	printk("Bounds Check exception found");
+	while(1);
 }
 
-
 void invalid_opcode_routine() {
-	printk("Exception found");
-
+	printk("Invalid Opcode exception found");
+	while(1);
 }
 
 void device_not_available_routine() {
-	printk("Exception found");
-
+	printk("Device not avaliable exception found");
+	while(1);
 }
 
 void double_fault_routine() {
 	printk("Exception found");
-
+	while(1);
 }
 
 void coprocessor_segment_overrun_routine() {
-	printk("Exception found");
-
+	printk("Coprocessor segment overrun exception found");
+	while(1);
 }
 
 void invalid_tss_routine() {
-	printk("Exception found");
-
+	printk("Invalid tss exception found");
+	while(1);
 }
 
 void segment_not_present_routine() {
-	printk("Exception found");
-
+	printk("Segment not present exception found");
+	while(1);
 }
 
 void stack_exception_routine() {
-	printk("Exception found");
-
+	printk("Stack exception found");
+	while(1);
 }
 
 void general_protection_routine() {
-	printk("Exception found");
-
+	printk("General protection Exception found");
+	while(1);
 }
 
 void page_fault_routine() {
-	printk("Exception found");
-
+	printk("Page fault exception found");
+	while(1);
 }
 
 void intel_reserved_routine() {
-	printk("Exception found");
-
+	printk("Intel reserved exception found");
+	while(1);
 }
 
 void floatin_point_error_routine() {
-	printk("Exception found");
-
+	printk("Floatin point exception found");
+	while(1);
 }
 
 void alignment_check_routine() {
-	printk("Exception found");
-
+	printk("Alignment check exception found");
+	while(1);
 }
 
 

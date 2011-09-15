@@ -52,123 +52,135 @@
       movl %edx, %es
 
 #define RESTORE_ALL \
-	movl %edx, %edx
-
-	TODO HERE implementar restauracio de registres
-
+/*      movl $TODO, %edx; TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO\
+ *     movl %edx, %ds; \
+ *     movl %edx, %es; \ */
+      popl %ebx; \
+      popl %ecx; \
+      popl %edx; \
+      popl %esi; \
+      popl %edi; \
+      popl %ebp; \
+      popl %eax; \
+      popl %ds; \
+      popl %es; \
+      popl %fs; \
+      popl %gs
 
 /* Interrupt & Exception handlers */
 ENTRY(divide_error_handler)
 	SAVE_ALL
 	call divide_error_routine
 	RESTORE_ALL
-	/* Delete param if needed */
 	iret
 
-
-
-
-/*
-debug_handler:
+ENTRY(debug_handler)
 	SAVE_ALL
 	call debug_routine
 	RESTORE_ALL
 	iret
 
-nm1_handler:
+ENTRY(nm1_handler)
 	SAVE_ALL
 	call nm1_routine
 	RESTORE_ALL
 	iret
 
-breakpoint_handler:
+ENTRY(breakpoint_handler)
 	SAVE_ALL
 	call breakpoint_routine
 	RESTORE_ALL
 	iret
 
-overflow_handler:
+ENTRY(overflow_handler)
 	SAVE_ALL
-	call overflow_handler
+	call overflow_routine
 	RESTORE_ALL
 	iret
 
-bounds_check_handler:
+ENTRY(bounds_check_handler)
 	SAVE_ALL
-	call 
+	call bounds_check_routine
 	RESTORE_ALL
 	iret
 
 
-invalid_opcode_handler:
+ENTRY(invalid_opcode_handler)
 	SAVE_ALL
-	call 
+	call invalid_opcode_routine
 	RESTORE_ALL
 	iret
 
-device_not_available_handler:
+ENTRY(device_not_available_handler)
 	SAVE_ALL
-	call 
+	call device_not_available_routine
 	RESTORE_ALL
 	iret
 
-double_fault_handler:
+ENTRY(double_fault_handler)
 	SAVE_ALL
-	call 
+	call double_fault_routine
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+ENTRY(coprocessor_segment_overrun_handler)
+	SAVE_ALL
+	call coprocessor_segment_overrun_routine
 	RESTORE_ALL
 	iret
 
-coprocessor_segment_overrun_handler:
+ENTRY(invalid_tss_handler)
 	SAVE_ALL
-	call 
+	call invalid_tss_routine
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+ENTRY(segment_not_present_handler)
+	SAVE_ALL
+	call segment_not_present_routine
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+ENTRY(stack_exception_handler)
+	SAVE_ALL
+	call stack_exception_routine
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+ENTRY(general_protection_handler)
+	SAVE_ALL
+	call general_protection_routine
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+ENTRY(page_fault_handler)
+	SAVE_ALL
+	call page_fault_routine
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+ENTRY(intel_reserved_handler)
+	SAVE_ALL
+	call intel_reserved_routine
 	RESTORE_ALL
 	iret
 
-invalid_tss_handler:
+ENTRY(floatin_point_error_handler)
 	SAVE_ALL
-	call 
+	call floatin_point_routine
 	RESTORE_ALL
 	iret
 
-segment_not_present_handler:
+ENTRY(alignment_check_handler)
 	SAVE_ALL
-	call 
+	call alignment_check_routine
 	RESTORE_ALL
+	addl $4, %esp
 	iret
 
-stack_exception_handler:
-	SAVE_ALL
-	call 
-	RESTORE_ALL
-	iret
-
-general_protection_handler:
-	SAVE_ALL
-	call 
-	RESTORE_ALL
-	iret
-
-page_fault_handler:
-	SAVE_ALL
-	call 
-	RESTORE_ALL
-	iret
-
-intel_reserved_handler:
-	SAVE_ALL
-	call 
-	RESTORE_ALL
-	iret
-
-floatin_point_error_handler:
-	SAVE_ALL
-	call 
-	RESTORE_ALL
-	iret
-
-alignment_check_handler:
-	SAVE_ALL
-	call 
-	RESTORE_ALL
-	iret
-*/
