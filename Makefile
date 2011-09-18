@@ -9,10 +9,10 @@ AS86	= as86 -0 -a
 LD86	= ld86 -0
 
 HOSTCFLAGS = -Wall -Wstrict-prototypes
-HOSTCC 	= gcc
-CC      = gcc 
-AS      = as
-LD      = ld
+HOSTCC 	= gcc -m32
+CC      = gcc -m32
+AS      = as --32
+LD      = ld -m elf_i386
 OBJCOPY = objcopy -O binary -R .note -R .comment -S
 
 INCLUDEDIR = include

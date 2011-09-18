@@ -18,7 +18,7 @@ int __attribute__ ((__section__(".text.main")))
 // 	i = i - j;
 // 	k = k / i;
 
-  __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) );
+  __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); /* Generates a General protection Exception */
 
-  //while(1);
+  while(1);
 }
