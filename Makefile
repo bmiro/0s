@@ -26,7 +26,7 @@ SYSLDFLAGS = -T system.lds
 USRLDFLAGS = -T user.lds
 LINKFLAGS = -g 
 
-SYSOBJ = interrupt.o entry.o io.o sys.o sched.o mm.o devices.o utils.o hardware.o
+SYSOBJ = interrupt.o entry.o io.o kernutil.o sys.o sched.o mm.o devices.o utils.o hardware.o
 
 #add to USROBJ the object files required to complete the user program
 USROBJ = libc.o # libjp.a
@@ -53,21 +53,23 @@ bootsect.s: bootsect.S Makefile
 entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
-user.o:user.c $(INCLUDEDIR)/libc.h
+user.o: user.c $(INCLUDEDIR)/libc.h
 
-interrupt.o:interrupt.c $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h
+interrupt.o: interrupt.c $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h
 
-io.o:io.c $(INCLUDEDIR)/io.h
+io.o: io.c $(INCLUDEDIR)/io.h
 
-libc.o:libc.c $(INCLUDEDIR)/libc.h
+kernutil.o: kernutil.c $(INCLUDEDIR)/kernutil.h
 
-mm.o:mm.c $(INCLUDEDIR)/types.h $(INCLUDEDIR)/mm.h
+libc.o: libc.c $(INCLUDEDIR)/libc.h
 
-sched.o:sched.c $(INCLUDEDIR)/sched.h
+mm.o: mm.c $(INCLUDEDIR)/types.h $(INCLUDEDIR)/mm.h
 
-sys.o:sys.c $(INCLUDEDIR)/devices.h
+sched.o: sched.c $(INCLUDEDIR)/sched.h
 
-utils.o:utils.c $(INCLUDEDIR)/utils.h
+sys.o: sys.c $(INCLUDEDIR)/devices.h
+
+utils.o: utils.c $(INCLUDEDIR)/utils.h
 
 
 system.o:system.c $(INCLUDEDIR)/hardware.h system.lds $(SYSOBJ) $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/system.h $(INCLUDEDIR)/sched.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/io.h $(INCLUDEDIR)/mm_address.h 

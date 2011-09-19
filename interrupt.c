@@ -8,19 +8,21 @@
 #include <io.h>
 #include <entry.h>
 
+#include "kernutil.h"
+
 extern unsigned long tics = 0;
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
-char char_map[] =
+char char_map[] = 
 {
   '\0','\0','1','2','3','4','5','6',
-  '7','8','9','0','\'','¡','\0','\0',
+  '7','8','9','0','\'','ï¿½','\0','\0',
   'q','w','e','r','t','y','u','i',
   'o','p','`','+','\0','\0','a','s',
-  'd','f','g','h','j','k','l','ñ',
-  '\0','º','\0','ç','z','x','c','v',
+  'd','f','g','h','j','k','l','ï¿½',
+  '\0','ï¿½','\0','ï¿½','z','x','c','v',
   'b','n','m',',','.','-','\0','*',
   '\0','\0','\0','\0','\0','\0','\0','\0',
   '\0','\0','\0','\0','\0','\0','\0','7',
@@ -30,8 +32,7 @@ char char_map[] =
   '\0','\0'
 };
 
-void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
-{
+void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL) {
   /***********************************************************************/
   /* THE INTERRUPTION GATE FLAGS:                          R1: pg. 5-11  */
   /* ***************************                                         */
@@ -50,8 +51,7 @@ void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
   idt[vector].highOffset      = highWord((DWord)handler);
 }
 
-void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
-{
+void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL) {
   /***********************************************************************/
   /* THE TRAP GATE FLAGS:                                  R1: pg. 5-11  */
   /* ********************                                                */
@@ -73,8 +73,8 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
   idt[vector].flags           = flags;
   idt[vector].highOffset      = highWord((DWord)handler);
 }
-void setIdt()
-{
+
+void setIdt() {
   /* Program interrups/exception service routines */
   idtR.base  = (DWord)idt;
   idtR.limit = IDT_ENTRIES * sizeof(Gate) - 1;
@@ -108,134 +108,134 @@ void setIdt()
 }
 
 void divide_error_routine() {
-	printk("Exception found\n");
-	while(1);
+  printk("Exception found\n");
+  while(1);
 }
 
 void debug_routine() {
-	printk("Debug exception found\n");
-	while(1);
+  printk("Debug exception found\n");
+  while(1);
 }
 
 void nm1_routine() {
-	printk("NM1 exception found\n");
-	while(1);
+  printk("NM1 exception found\n");
+  while(1);
 }
 	
 void breakpoint_routine() {
-	printk("Breakpoint exception found\n");
-	while(1);
+  printk("Breakpoint exception found\n");
+  while(1);
 }
 
 void overflow_routine() {
-	printk("Overflow exception found");
-	while(1);
+  printk("Overflow exception found");
+  while(1);
 }
 
 void bounds_check_routine() {
-	printk("Bounds Check exception found");
-	while(1);
+  printk("Bounds Check exception found");
+  while(1);
 }
 
 void invalid_opcode_routine() {
-	printk("Invalid Opcode exception found");
-	while(1);
+  printk("Invalid Opcode exception found");
+  while(1);
 }
 
 void device_not_available_routine() {
-	printk("Device not avaliable exception found");
-	while(1);
+  printk("Device not avaliable exception found");
+  while(1);
 }
 
 void double_fault_routine() {
-	printk("Exception found");
-	while(1);
+  printk("Exception found");
+  while(1);
 }
 
 void coprocessor_segment_overrun_routine() {
-	printk("Coprocessor segment overrun exception found");
-	while(1);
+  printk("Coprocessor segment overrun exception found");
+  while(1);
 }
 
 void invalid_tss_routine() {
-	printk("Invalid tss exception found");
-	while(1);
+  printk("Invalid tss exception found");
+  while(1);
 }
 
 void segment_not_present_routine() {
-	printk("Segment not present exception found");
-	while(1);
+  printk("Segment not present exception found");
+  while(1);
 }
 
 void stack_exception_routine() {
-	printk("Stack exception found");
-	while(1);
+  printk("Stack exception found");
+  while(1);
 }
 
 void general_protection_routine() {
-	printk("General protection Exception found");
-	while(1);
+  printk("General protection Exception found");
+  while(1);
 }
 
 void page_fault_routine() {
-	printk("Page fault exception found");
-	while(1);
+  printk("Page fault exception found");
+  while(1);
 }
 
 void intel_reserved_routine() {
-	printk("Intel reserved exception found");
-	while(1);
+  printk("Intel reserved exception found");
+  while(1);
 }
 
 void floatin_point_error_routine() {
-	printk("Floatin point endefxception found");
-	while(1);
+  printk("Floatin point endefxception found");
+  while(1);
 }
 
 void alignment_check_routine() {
-	printk("Alignment check exception found");
-	while(1);
+  printk("Alignment check exception found");
+  while(1);
 }
 
-char* itoa(int value, char *str, int base) { //TODO CANVIAR DE LLOC
-	int n;
-	int i;
+/*char* itoa(int value, char *str, int base) { //TODO CANVIAR DE LLOC
+  int n;
+  int i;
 
-	i = 0;
-	n = value;
-	while (n != 0) {
-		str[i] = '0' + (n % base);
-		n = n / base;
-		i++;
- 	}
-	str[i] = 0;
+  i = 0;
+  n = value;
+  while (n != 0) {
+    str[i] = '0' + (n % base);
+    n = n / base;
+    i++;
+  }
+  str[i] = 0;
 
-	return str;
-}
+  return str;
+}*/
 
 void clock_routine() {
-	printk("Clock Interrupt  "); /*TODO*/
-	int secs;
-	char sec, min;
-	sec = 0;
-	min = 0;
+  printk("Clock Interrupt  "); /*TODO*/
+  int secs;
+  char sec, min;
+  sec = 0;
+  min = 0;
 
-	char ada [32];
+  char ada [32];
 
-	tics++;
+  tics++;
 
-	secs = tics / 18;
-	sec = secs % 60;
-	min = sec / 60;
- 
-	itoa(sec, ada, 10);
-	printk(ada);
+  secs = tics / 18;
+  sec = secs % 60;
+  min = sec / 60;
+
+  itoa(sec, ada, 10);
+  printk(ada);
 
 }
 
 void keyboard_routine() {
-	printk("Keyboard Interrupt"); /*TODO*/
-	while(1);
+  printk("Keyboard Interrupt"); /*TODO*/
+  while(1);
 }
 
 
