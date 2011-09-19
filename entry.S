@@ -52,9 +52,9 @@
       movl %edx, %es
 
 #define RESTORE_ALL \
-/*      movl $TODO, %edx; TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO\
- *     movl %edx, %ds; \
- *     movl %edx, %es; \ */
+      movl $__USER_DS, %edx; \
+      movl %edx, %ds; \
+      movl %edx, %es; \ 
       popl %ebx; \
       popl %ecx; \
       popl %edx; \
@@ -67,7 +67,11 @@
       popl %fs; \
       popl %gs
 
-/* Interrupt & Exception handlers */
+#define EOI \
+      movb $0x20, %al; \
+      outb %al, $0x20
+
+/* Exception handlers */
 ENTRY(divide_error_handler)
 	SAVE_ALL
 	call divide_error_routine
@@ -183,4 +187,21 @@ ENTRY(alignment_check_handler)
 	RESTORE_ALL
 	addl $4, %esp
 	iret
+
+
+/* Interrupt Handlers */
+ENTRY(clock_handler)
+	SAVE_ALL
+	call clock_routine
+        EOI
+	RESTORE_ALL
+	iret
+
+ENTRY(keyboard_handler)
+	SAVE_ALL
+	call keyboard_routine
+	RESTORE_ALL
+	iret
+
+
 

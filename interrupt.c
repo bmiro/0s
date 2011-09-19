@@ -8,6 +8,8 @@
 #include <io.h>
 #include <entry.h>
 
+extern unsigned long tics = 0;
+
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
@@ -40,7 +42,7 @@ void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
   /*          \ P = Segment Present bit                                  */
   /***********************************************************************/
   Word flags = (Word)(maxAccessibleFromPL << 13);
-  flags |= 0x8E00;    /* P = 1, D = 1, Type = 1110 (Interrupt Gate) */
+  flags |= 0x8E00;    /* P = 1, ndefD = 1, Type = 1110 (Interrupt Gate) */
 
   idt[vector].lowOffset       = lowWord((DWord)handler);
   idt[vector].segmentSelector = __KERNEL_CS;
@@ -98,6 +100,9 @@ void setIdt()
   setInterruptHandler(15, intel_reserved_handler, KERNEL_LVL);
   setInterruptHandler(16, floatin_point_error_handler, KERNEL_LVL);
   setInterruptHandler(17, alignment_check_handler, KERNEL_LVL);
+
+  /* Interrupts */
+  setInterruptHandler(32, clock_handler, KERNEL_LVL);
   
   set_idt_reg(&idtR);
 }
@@ -183,12 +188,53 @@ void intel_reserved_routine() {
 }
 
 void floatin_point_error_routine() {
-	printk("Floatin point exception found");
+	printk("Floatin point endefxception found");
 	while(1);
 }
 
 void alignment_check_routine() {
 	printk("Alignment check exception found");
+	while(1);
+}
+
+char* itoa(int value, char *str, int base) { //TODO CANVIAR DE LLOC
+	int n;
+	int i;
+
+	i = 0;
+	n = value;
+	while (n != 0) {
+		str[i] = '0' + (n % base);
+		n = n / base;
+		i++;
+ 	}
+	str[i] = 0;
+
+	return str;
+}
+
+void clock_routine() {
+	printk("Clock Interrupt  "); /*TODO*/
+	int secs;
+	char sec, min;
+	sec = 0;
+	min = 0;
+
+	char ada [32];
+
+	tics++;
+
+	secs = tics / 18;
+	sec = secs % 60;
+	min = sec / 60;
+ 
+	itoa(sec, ada, 10);
+	printk(ada);
+
+}
+
+void keyboard_routine() {
+	printk("Keyboard Interrupt"); /*TODO*/
 	while(1);
 }
 

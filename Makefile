@@ -89,5 +89,8 @@ disk: zeos.bin
 emul: zeos.bin
 	bochs -q -f bochsrc-2.4
 
+emul23: zeos.bin
+	bochs -q -f bochsrc-2.3
+
 emuldbg: zeos.bin
 	bochs_nogdb -q -f .bochsrc-2.4

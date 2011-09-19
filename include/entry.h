@@ -24,4 +24,7 @@ void intel_reserved_handler();
 void floatin_point_error_handler();
 void alignment_check_handler();
 
+void clock_handler();
+void keyboard_handler();
+
 #endif  /* __ENTRY_H__ */

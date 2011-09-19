@@ -20,6 +20,7 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 
 void setIdt();
 
+/* Exceptions */
 void divide_error_routine();
 void debug_routine();
 void nm1_routine();
@@ -38,5 +39,9 @@ void page_fault_routine();
 void intel_reserved_routine();
 void floatin_point_error_routine();
 void alignment_check_routine();
+
+/* Interrupts */
+void clock_routine();
+void keyboard_routine();
 
 #endif  /* __INTERRUPT_H__ */
