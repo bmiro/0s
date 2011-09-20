@@ -204,5 +204,6 @@ ENTRY(keyboard_handler)
 	RESTORE_ALL
 	iret
 
+/* Syscall handler */
 
 
