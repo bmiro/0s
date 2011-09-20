@@ -197,39 +197,31 @@ void alignment_check_routine() {
   while(1);
 }
 
-/*char* itoa(int value, char *str, int base) { //TODO CANVIAR DE LLOC
-  int n;
-  int i;
-
-  i = 0;
-  n = value;
-  while (n != 0) {
-    str[i] = '0' + (n % base);
-    n = n / base;
-    i++;
-  }
-  str[i] = 0;
-
-  return str;
-}*/
-
 void clock_routine() {
-  printk("Clock Interrupt  "); /*TODO*/
+  //printk("Clock Interrupt  "); /*TODO*/
+  
   int secs;
   char sec, min;
+  char m_str[8];
+  char s_str[8];
+  char str[8];
+  
   sec = 0;
   min = 0;
-
-  char ada [32];
 
   tics++;
 
   secs = tics / 18;
   sec = secs % 60;
-  min = sec / 60;
+  min = secs / 60;
 
-  itoa(sec, ada, 10);
-  printk(ada);
+  itoa(sec, s_str, 10);
+  itoa(min, m_str, 10);
+
+  strcat(str, m_str, ":");
+  strcat(str, str, s_str);
+  
+  printk_xyr(79, 0, str);
 
 }
 

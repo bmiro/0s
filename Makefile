@@ -96,3 +96,11 @@ emul23: zeos.bin
 
 emuldbg: zeos.bin
 	bochs_nogdb -q -f .bochsrc-2.4
+
+sim:
+	make clean
+	make
+	make emul
+
+kill:
+	killall -9 bochs-bin
