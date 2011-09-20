@@ -57,12 +57,13 @@ void printk_xy(int xx, int yy, char *str) {
   }
 }
 
+/* xx unsused, always form the last column */
 void printk_xyr(int xx, int yy, char *str) {
   int i, l;
   
   for (l=0; str[l]; l++); /* l contains str lengh */
   for (i=0; i <= l; i++) {
-    printc_xy(NUM_COLUMNS-i, 0, str[l-i]);
+    printc_xy(NUM_COLUMNS-i, yy, str[l-i]);
   }
 }
 

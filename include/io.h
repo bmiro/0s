@@ -5,6 +5,10 @@
 #ifndef __IO_H__
 #define __IO_H__
 
+#define KEYBOARD_PORT 0x60
+#define KEY_MAKE 0
+#define KEY_BREAK 1
+
 #include <types.h>
 
 /** Screen functions **/

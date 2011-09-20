@@ -15,6 +15,7 @@ extern unsigned long tics = 0;
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
+#define CHAR_MAP_SIZE 98
 char char_map[] = 
 {
   '\0','\0','1','2','3','4','5','6',
@@ -31,6 +32,25 @@ char char_map[] =
   '\0','\0','\0','\0','\0','\0','\0','\0',
   '\0','\0'
 };
+
+/* Returns -1 if out of bounds or is a control
+ * character (\0) */
+char translate_key(char k) {
+  char c;
+  
+  char p[8];
+  
+  itoa(k, p, 10);
+  printk_xyr(0, 13, p);
+  
+  if (k > 0 && k < CHAR_MAP_SIZE) {
+    c = char_map[k];
+    if (c != '\0'){
+	return c;
+    }
+  }
+  return -1; 
+}
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL) {
   /***********************************************************************/
@@ -103,7 +123,8 @@ void setIdt() {
 
   /* Interrupts */
   setInterruptHandler(32, clock_handler, KERNEL_LVL);
-  
+  setInterruptHandler(33, keyboard_handler, KERNEL_LVL);
+
   set_idt_reg(&idtR);
 }
 
@@ -226,8 +247,28 @@ void clock_routine() {
 }
 
 void keyboard_routine() {
-  printk("Keyboard Interrupt"); /*TODO*/
-  while(1);
+  char k, c;
+  char make; 
+  char event;
+  
+  int s;
+  
+  k = inb(KEYBOARD_PORT);
+    
+  /* Make/Break */
+  event = (0x80 & k) == 0x80;
+  /* Warning in break state first bit must be removed */
+  
+  if (event == KEY_MAKE) {
+    c = translate_key(k);
+    if (c != -1) {
+      /* Removes Control string from screen if is there */
+       printk_xyr(79, 24, "       ");
+       printc_xy(79, 24, c);
+    } else {
+      printk_xyr(79, 24, "Control");
+    }
+  }
 }
 
 
