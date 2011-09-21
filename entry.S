@@ -5,6 +5,8 @@
 #include <asm.h>
 #include <segment.h>
 
+#include "sys.h"
+
 
 /**************************************************/
 /**** Save & Restore ******************************/
@@ -72,8 +74,11 @@
       outb %al, $0x20
 
 ENTRY(sys_call_table)
-	.long sys_ni_syscall /* adreça ni syscall*/
-	.long sys_write /* adreça write */
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall 
+	.long sys_write
 
 
 /* Exception handlers */
@@ -213,6 +218,8 @@ ENTRY(keyboard_handler)
 ENTRY(system_call)
 	SAVE_ALL
 	/*TODO Comprova rang*/
+      
+
 	call *sys_call_table(, %eax, 0x04)
 	/*Processar sortida*/
 	RESTORE_ALL

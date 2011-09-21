@@ -10,7 +10,13 @@
 # 6 "entry.S" 2
 # 1 "include/segment.h" 1
 # 7 "entry.S" 2
-# 75 "entry.S"
+# 74 "entry.S"
+.globl sys_call_table; .type sys_call_table, @function; .align 0; sys_call_table:
+ .long sys_ni_syscall
+ .long sys_write
+
+
+
 .globl divide_error_handler; .type divide_error_handler, @function; .align 0; divide_error_handler:
  pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
  call divide_error_routine
@@ -140,5 +146,14 @@
  pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
  call keyboard_routine
  movb $0x20, %al; outb %al, $0x20
+ movl $0x2B, %edx; movl %edx, %ds; movl %edx, %es; popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs
+ iret
+
+
+.globl system_call; .type system_call, @function; .align 0; system_call:
+ pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
+
+ call *sys_call_table(, %eax, 0x04)
+
  movl $0x2B, %edx; movl %edx, %ds; movl %edx, %es; popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs
  iret

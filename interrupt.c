@@ -125,6 +125,9 @@ void setIdt() {
   setInterruptHandler(32, clock_handler, KERNEL_LVL);
   setInterruptHandler(33, keyboard_handler, KERNEL_LVL);
 
+  /* System Calls */
+  setTrapHandler(0x80, system_call, KERNEL_LVL);
+  
   set_idt_reg(&idtR);
 }
 

@@ -7,5 +7,11 @@
 #define __LIBC_H__
 
 #include <stats.h>
+#include "errno.h"
+
+#define CONSOLE 1
+
+int perror();
+int write(int fd, char *buffer, int size);
 
 #endif  /* __LIBC_H__ */

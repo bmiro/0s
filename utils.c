@@ -1,7 +1,6 @@
 #include <utils.h>
 #include <types.h>
-void copy_data(void *start, void *dest, int size)
-{
+void copy_data(void *start, void *dest, int size) {
   DWord *p = start, *q = dest;
   Byte *p1, *q1;
   while(size > 4) {
@@ -15,9 +14,9 @@ void copy_data(void *start, void *dest, int size)
     size --;
   }
 }
+
 /* Copia de espacio de usuario a espacio de kernel, devuelve 0 si ok y -1 si error*/
-int copy_from_user(void *start, void *dest, int size)
-{
+int copy_from_user(void *start, void *dest, int size) {
   DWord *p = start, *q = dest;
   Byte *p1, *q1;
   while(size > 4) {
