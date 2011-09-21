@@ -88,10 +88,10 @@ clean:
 disk: zeos.bin
 	dd if=zeos.bin of=/dev/fd0
 
-emul: zeos.bin
+emul24: zeos.bin
 	bochs -q -f bochsrc-2.4
 
-emul23: zeos.bin
+emul: zeos.bin
 	bochs -q -f bochsrc-2.3
 
 emuldbg: zeos.bin

@@ -31,17 +31,17 @@ char* itoap(int value, char *str, int base, int minlengh) {
     return itoa(value, str, base);
   }
   
-  /* Padding with left-0s */
-  for (q=0; q < p; q++) {
-    str[q] = '0';
-  }
-  
   /* Real number */
   n = value;
   for (i=l-1+p; i > -1; i--) {
     str[i] = '0' + (n % base);
     n = n / base;
   }  
+
+  /* Padding with left-0s */
+  for (q=0; q < p; q++) {
+    str[q] = '0';
+  }
 
   str[l] = 0;
 

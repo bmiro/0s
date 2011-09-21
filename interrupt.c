@@ -238,7 +238,7 @@ void clock_routine() {
   sec = secs % 60;
   min = secs / 60;
 
-  itoa(sec, s_str, 10);
+  itoap(sec, s_str, 10, 2);
   itoa(min, m_str, 10);
 
   strcat(str, m_str, ":");

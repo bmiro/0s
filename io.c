@@ -26,13 +26,14 @@ void printc(char c) {
   Word ch = (Word) (c & 0x00FF) | 0x0200;
   DWord screen = 0xb8000 + (y * NUM_COLUMNS + x) * 2;
   
+  __asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c));
+
   if (c == '\n') {
     x = 0;
     if (++y >= NUM_ROWS) {
       y = 0;
     }
   } else {
-    __asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c));
     if (++x >= NUM_COLUMNS)
     {
       x = 0;

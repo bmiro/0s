@@ -36,13 +36,11 @@ int write(int fd, char *buffer, int size) {
       : "b" (fd), "c" (buffer), "d" (size) 
     );
     
-    if (error > 0) {
-      /* Successful syscall */
-      return error;
-    } else {      
+    if (error < 0) {
       errno = -error;
       return -1;
-    }
-    
-    
+    } else {
+      /* Successful syscall */
+      return error;
+    } 
 }
