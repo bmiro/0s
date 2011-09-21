@@ -53,7 +53,7 @@
 #define RESTORE_ALL \
       movl $__USER_DS, %edx; \
       movl %edx, %ds; \
-      movl %edx, %es; \ 
+      movl %edx, %es; \
       popl %ebx; \
       popl %ecx; \
       popl %edx; \
@@ -72,7 +72,7 @@
 
 
 ENTRY(syscall_table_size)
-	.long 4
+	.long 5
 
 /* Linux syscall table:
  * http://lxr.linux.no/#linux+v3.0.4/arch/x86/kernel/syscall_table_32.S */
@@ -82,6 +82,7 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_ni_syscall 
 	.long sys_write
+	.long sys_ni_syscall
 
 
 /* Exception handlers */
@@ -222,23 +223,20 @@ ENTRY(system_call)
 	SAVE_ALL
 
 	/* Bounds check */
-	movl $0, %ebx
-	cmp %eax, %ebx
-	jb err /* Jump if index is < 0 (out of bounds) */
-	movl syscall_table_size, %ebx
-	cmp %ebx, %eax
-	jb err /* Jumg if index is > 4 (out of bounds)*/
+	cmpl $0, %eax
+	jl err /* Jump if index is < 0 (out of bounds) */
+	cmpl $4, %eax
+	jg err /* Jumg if index is > 4 (out of bounds)*/
 
 	call *sys_call_table(, %eax, 0x04)
-	pushl %eax
-	jmp end
+	movl %eax, 24(%esp) /* Overwrites the old eax value */
+	
 
 end:	RESTORE_ALL
 	/* Gets return value or error */
-	popl %eax
 	iret
 
-err:	pushl $-1
+err:	movl $-38, 24(%esp) /* Returns ENOSYS error */
 	jmp end
 
 

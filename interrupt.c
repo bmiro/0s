@@ -38,11 +38,6 @@ char char_map[] =
 char translate_key(char k) {
   char c;
   
-  char p[8];
-  
-  itoa(k, p, 10);
-  printk_xyr(0, 13, p);
-  
   if (k > 0 && k < CHAR_MAP_SIZE) {
     c = char_map[k];
     if (c != '\0'){
@@ -128,7 +123,7 @@ void setIdt() {
   setInterruptHandler(33, keyboard_handler, KERNEL_LVL);
 
   /* System Calls */
-  setTrapHandler(0x80, system_call, USER_LVL);
+  setTrapHandler(0x80, (void *) system_call, USER_LVL);
   
   set_idt_reg(&idtR);
 }
@@ -223,9 +218,7 @@ void alignment_check_routine() {
   while(1);
 }
 
-void clock_routine() {
-  //printk("Clock Interrupt  "); /*TODO*/
-  
+void clock_routine() {  
   int secs;
   char sec, min;
   char m_str[8];
@@ -253,11 +246,8 @@ void clock_routine() {
 
 void keyboard_routine() {
   char k, c;
-  char make; 
   char event;
-  
-  int s;
-  
+    
   k = inb(KEYBOARD_PORT);
     
   /* Make/Break */

@@ -26,22 +26,28 @@ int check_buffer(void *buffer) {
 int sys_write(int fd, char *buffer, int size) {
   int error;
   char sysbuff[SYSBUFF_SIZE];
-  int chuck, copied;
-  int written;  
+  int chuck, remain, copied;
+  int written;    
   
   if (check_fd(fd, WRITE_MODE) == -1) return -EBADF;
   if (check_buffer((void*) buffer) == -1) return -EFAULT;
   if (size < 0) return -EINVAL;
     
   copied = 0;
-  while (copied < size) {
-    chuck = (size - copied) % SYSBUFF_SIZE;
-    
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
     copy_from_user(buffer + copied, sysbuff, chuck);
     switch (fd) {
       case(1):
 	      written = sys_write_console(sysbuff, chuck);
 	      /* By construction sys_write can NOT fail */
+	      remain -= written;
 	      copied += written;
       default:
 	      break;
@@ -52,6 +58,7 @@ int sys_write(int fd, char *buffer, int size) {
 }
 
 int sys_ni_syscall() {
+  printk_xyr(79, 20, "Not implemented!");
   return -ENOSYS;
 }
 

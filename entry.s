@@ -12,7 +12,7 @@
 # 7 "entry.S" 2
 # 74 "entry.S"
 .globl syscall_table_size; .type syscall_table_size, @function; .align 0; syscall_table_size:
- .long 4
+ .long 5
 
 
 
@@ -22,6 +22,7 @@
  .long sys_ni_syscall
  .long sys_ni_syscall
  .long sys_write
+ .long sys_ni_syscall
 
 
 
@@ -162,21 +163,18 @@
  pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
 
 
- movl $0, %ebx
- cmp %eax, %ebx
- jb err
- movl syscall_table_size, %ebx
- cmp %ebx, %eax
- jb err
+ cmpl $0, %eax
+ jl err
+ cmpl $4, %eax
+ jg err
 
  call *sys_call_table(, %eax, 0x04)
- pushl %eax
- jmp end
+ movl %eax, 24(%esp)
+
 
 end: movl $0x2B, %edx; movl %edx, %ds; movl %edx, %es; popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs
 
- popl %eax
  iret
 
-err: pushl $-1
+err: movl $-38, 24(%esp)
  jmp end

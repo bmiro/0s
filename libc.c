@@ -26,23 +26,20 @@ int perror() {
 /* Wrapper of write system call*/
 int write(int fd, char *buffer, int size) {
   int error;
-  int id = SYS_WRITE_ID;
-  
-  __asm__ __volatile__(
-    "popl %%edx\n"
-    "popl %%ecx\n"
-    "popl %%ebx\n"
-    "movl %1, %%eax\n" 
-    "int $0x80\n"
-    "movl %%eax, %0\n"
-    : "=g" (error)
-    : "g" (id)
-    : "memory");
+  int id = SYS_WRITE_ID; /* TODO IMPLEMENT, an pass in the inline */
+
+    __asm__ __volatile__(
+      "movl $4, %%eax\n" 
+      "int $0x80\n"
+      "movl %%eax, %0\n"
+      : "=a" (error)
+      : "b" (fd), "c" (buffer), "d" (size) 
+    );
     
     if (error > 0) {
       /* Successful syscall */
       return error;
-    } else {
+    } else {      
       errno = -error;
       return -1;
     }
