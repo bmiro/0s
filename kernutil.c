@@ -1,16 +1,17 @@
 #include "kernutil.h"
 
 char* itoa(int value, char *str, int base) {
-  int i, n, l;
+  int i, l;
+  int v;
   
   /* Digit count */
-  n = value;
-  for (l=1; n /= base; l++);
+  v = value;
+  for (l=1; v /= base; l++);
   
-  n = value;
+  v = value;
   for (i=l-1; i > -1; i--) {
-    str[i] = '0' + (n % base);
-    n = n / base;
+    str[i] = '0' + (v % base);
+    v /= base;
   }
   str[l] = 0;
 
@@ -20,33 +21,28 @@ char* itoa(int value, char *str, int base) {
 /* Same as itoa but padding with 0 in left to achif a minlengh */
 char* itoap(int value, char *str, int base, int minlengh) {
   int i, n, l;
-  int p, q;
+  int v;
   
   /* Digit count */
-  n = value;
-  for (l=1; n /= base; l++);
+  v = value;
+  for (l=1; v /= base; l++);
   
-  p = minlengh - l;
-  if (p < 0) {
+  n = minlengh - l;
+  if (n <= 0) {
     return itoa(value, str, base);
   }
   
-  /* Real number */
-  n = value;
-  for (i=l-1+p; i > -1; i--) {
-    str[i] = '0' + (n % base);
-    n = n / base;
-  }  
-
-  /* Padding with left-0s */
-  for (q=0; q < p; q++) {
-    str[q] = '0';
+  v = value;
+  for (i=l-1+n; i > -1; i--) {
+    str[i] = '0';
+    if (i >= n) {
+      str[i] += (v % base);
+      v /= base;
+    }
   }
-
-  str[l] = 0;
+  str[l+n] = 0;
 
   return str;
-  
 }
 
 char* strcat(char* dst, char* first, char* second) {
