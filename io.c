@@ -47,7 +47,7 @@ void printc(char c) {
 void printc_xy(int xx, int yy, char c) {
   Word ch = (Word) (c & 0x00FF) | 0x0200;
   DWord screen = 0xb8000 + (yy * NUM_COLUMNS + xx) * 2;
-   __asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c));
+  //__asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c));
   asm("movw %0, (%1)" : : "r"(ch), "r"(screen));
 }
 

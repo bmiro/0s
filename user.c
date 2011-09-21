@@ -6,7 +6,7 @@ int __attribute__ ((__section__(".text.main"))) main(void) {
   /* Uncomment next line to call the initial routine for the test cases */
   /* runjp(); */
     
-  //runjp();
+  runjp();
   
   while(1);
 }

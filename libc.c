@@ -11,7 +11,6 @@
 int errno;
 
 int perror() {
-  /* TODO llista d'errors */
   switch (errno) {
     case (0) :
       break;
@@ -26,14 +25,14 @@ int perror() {
 /* Wrapper of write system call*/
 int write(int fd, char *buffer, int size) {
   int error;
-  //int id = SYS_WRITE_ID; /* TODO IMPLEMENT, an pass in the inline */
+  int id = SYS_WRITE_ID; /* TODO IMPLEMENT, an pass in the inline */
 
     __asm__ __volatile__(
-      "movl $4, %%eax\n" 
+      "movl %4, %%eax\n" 
       "int $0x80\n"
       "movl %%eax, %0\n"
       : "=a" (error)
-      : "b" (fd), "c" (buffer), "d" (size) 
+      : "b" (fd), "c" (buffer), "d" (size), "g" (id)
     );
     
     if (error < 0) {
