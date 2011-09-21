@@ -58,7 +58,7 @@ int sys_write(int fd, char *buffer, int size) {
 }
 
 int sys_ni_syscall() {
-  printk_xyr(79, 20, "Not implemented!");
+  printk_xyr(79, 20, "Not implemented yet!");
   return -ENOSYS;
 }
 

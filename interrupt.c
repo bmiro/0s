@@ -10,7 +10,7 @@
 
 #include "kernutil.h"
 
-extern unsigned long tics = 0;
+unsigned long tics = 0;
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
@@ -97,10 +97,7 @@ void setIdt() {
   /* Program interrups/exception service routines */
   idtR.base  = (DWord)idt;
   idtR.limit = IDT_ENTRIES * sizeof(Gate) - 1;
-  
-  /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
-  
-  
+    
   /* Privilege level extract from: 
    * http://www.rlz.cl/papers/buffer_overflow/p59-0x04.txt */
   setInterruptHandler(0, divide_error_handler, KERNEL_LVL);

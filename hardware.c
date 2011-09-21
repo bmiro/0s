@@ -6,38 +6,34 @@
 #include <types.h>
 
 extern unsigned int *p_rdtr ;
-DWord get_eflags(void)
-{
+DWord get_eflags(void) {
   register DWord flags;
-__asm__ __volatile__(
-  "pushfl\n\t"
-  "popl %0"
-  : "=q" (flags) );
+  __asm__ __volatile__(
+    "pushfl\n\t"
+    "popl %0"
+    : "=q" (flags) );
 
   return flags;
 }
 
-void set_eflags(void)
-{
-__asm__ __volatile__(
-  "pushl $0\n\t"
-  "popfl" );
+void set_eflags(void) {
+  __asm__ __volatile__(
+    "pushl $0\n\t"
+    "popfl" );
 }
 
-void set_idt_reg(Register * idt)
-{
-__asm__ __volatile__(
-  "lidtl (%0)"
-  : /*no output*/
-  : "r" (idt) );
+void set_idt_reg(Register * idt) {
+  __asm__ __volatile__(
+    "lidtl (%0)"
+    : /*no output*/
+    : "r" (idt) );
 }
 
-void set_gdt_reg(Register * gdt)
-{
-__asm__ __volatile__(
-  "lgdtl (%0)"
-  : /*no output*/
-  : "r" (gdt) );
+void set_gdt_reg(Register * gdt) {
+  __asm__ __volatile__(
+    "lgdtl (%0)"
+    : /*no output*/
+    : "r" (gdt) );
 }
 
 void set_ldt_reg(Selector ldt)
