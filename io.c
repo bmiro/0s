@@ -84,3 +84,16 @@ void printk(char *string) {
     printc(string[i]);
   }
 }
+
+/************************** Other **************************/
+void clean_screen() {
+  int rw, cl;
+  
+  for(rw = 0; rw < NUM_ROWS; rw++) {
+    for(cl = 0; cl < NUM_COLUMNS; cl++) {
+      printc_xy(cl, rw, ' ');
+    }
+  }
+  
+}
+

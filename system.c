@@ -66,6 +66,7 @@ int __attribute__((__section__(".text.main")))
   set_seg_regs(__KERNEL_DS, __KERNEL_DS, KERNEL_ESP);
 
 
+  clean_screen();
   printk("Kernel Loaded!\n");
 
   /* Initialize hardware data */
