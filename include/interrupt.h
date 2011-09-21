@@ -19,6 +19,7 @@ void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
 void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 
 void setIdt();
+void init_tics();
 
 /* Exceptions */
 void divide_error_routine();

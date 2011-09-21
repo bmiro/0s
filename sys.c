@@ -5,6 +5,7 @@
 #define SYSBUFF_SIZE 1024
 
 #include <devices.h>
+#include <utils.h>
 #include <errno.h>
 
 int check_fd(int fd, int mode) {
@@ -24,7 +25,6 @@ int check_buffer(void *buffer) {
 }
 
 int sys_write(int fd, char *buffer, int size) {
-  int error;
   char sysbuff[SYSBUFF_SIZE];
   int chuck, remain, copied;
   int written;    

@@ -26,7 +26,7 @@ int perror() {
 /* Wrapper of write system call*/
 int write(int fd, char *buffer, int size) {
   int error;
-  int id = SYS_WRITE_ID; /* TODO IMPLEMENT, an pass in the inline */
+  //int id = SYS_WRITE_ID; /* TODO IMPLEMENT, an pass in the inline */
 
     __asm__ __volatile__(
       "movl $4, %%eax\n" 

@@ -19,11 +19,11 @@ Register    idtR;
 char char_map[] = 
 {
   '\0','\0','1','2','3','4','5','6',
-  '7','8','9','0','\'','�','\0','\0',
+  '7','8','9','0','\'','¡','\0','\0',
   'q','w','e','r','t','y','u','i',
   'o','p','`','+','\0','\0','a','s',
-  'd','f','g','h','j','k','l','�',
-  '\0','�','\0','�','z','x','c','v',
+  'd','f','g','h','j','k','l','ñ',
+  '\0','º','\0','ç','z','x','c','v',
   'b','n','m',',','.','-','\0','*',
   '\0','\0','\0','\0','\0','\0','\0','\0',
   '\0','\0','\0','\0','\0','\0','\0','7',
@@ -35,7 +35,7 @@ char char_map[] =
 
 /* Returns -1 if out of bounds or is a control
  * character (\0) */
-char translate_key(char k) {
+char translate_key(int k) {
   char c;
   
   if (k > 0 && k < CHAR_MAP_SIZE) {
@@ -87,6 +87,10 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL) {
   idt[vector].segmentSelector = __KERNEL_CS;
   idt[vector].flags           = flags;
   idt[vector].highOffset      = highWord((DWord)handler);
+}
+
+void init_tics() {
+  tics = 0;
 }
 
 void setIdt() {
