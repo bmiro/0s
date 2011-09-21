@@ -66,7 +66,7 @@ int __attribute__((__section__(".text.main")))
   set_seg_regs(__KERNEL_DS, __KERNEL_DS, KERNEL_ESP);
 
 
-  printk("Kernel Loaded!    ");
+  printk("Kernel Loaded!\n");
 
   /* Initialize hardware data */
   setGdt(); /* Definicio de la taula de segments de memoria */
@@ -82,12 +82,11 @@ int __attribute__((__section__(".text.main")))
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
 
-  
-  /* Enabling interruptions, TODO: comprovar que es realment un bon lloc */
+  /* Enabling interruptions */
   init_tics();
   enable_int();
 
-  printk("Entering user mode..."); 
+  printk("Entering user mode...\n"); 
 
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
