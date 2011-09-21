@@ -7,7 +7,8 @@
 #define __LIBC_H__
 
 #include <stats.h>
-#include "errno.h"
+#include <errno.h>
+#include <entry.h>
 
 #define CONSOLE 1
 

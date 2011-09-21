@@ -20,5 +20,7 @@ int __attribute__ ((__section__(".text.main")))
 
   //__asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); /* Generates a General protection Exception */
 
+  write(1, "ABDC", 3);
+
   while(1);
 }

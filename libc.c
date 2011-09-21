@@ -6,7 +6,7 @@
 #include <libc.h>
 
 /* Caution!! this mask two parameters in one */
-#define WELL_FORMED_STR(x) (x, sizeof(x))
+#define WELL_FORMED_STR(x) x, sizeof(x)
 
 int errno;
 
@@ -23,22 +23,23 @@ int perror() {
   return errno;
 }
 
-
 /* Wrapper of write system call*/
 int write(int fd, char *buffer, int size) {
   int error;
+  int id = SYS_WRITE_ID;
   
   __asm__ __volatile__(
-    "popl %edx\n"
-    "popl %ecx\n"
-    "popl %ebx\n"
-    "movl $4, %eax\n" 
+    "popl %%edx\n"
+    "popl %%ecx\n"
+    "popl %%ebx\n"
+    "movl %1, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
-    :
-    : "g" (error));
+    : "=g" (error)
+    : "g" (id)
+    : "memory");
     
-    if (error > -1) {
+    if (error > 0) {
       /* Successful syscall */
       return error;
     } else {

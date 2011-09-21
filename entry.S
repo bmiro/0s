@@ -5,9 +5,6 @@
 #include <asm.h>
 #include <segment.h>
 
-#include "sys.h"
-
-
 /**************************************************/
 /**** Save & Restore ******************************/
 /**                                              **/
@@ -73,6 +70,12 @@
       movb $0x20, %al; \
       outb %al, $0x20
 
+
+ENTRY(syscall_table_size)
+	.long 4
+
+/* Linux syscall table:
+ * http://lxr.linux.no/#linux+v3.0.4/arch/x86/kernel/syscall_table_32.S */
 ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_ni_syscall
@@ -217,13 +220,25 @@ ENTRY(keyboard_handler)
 /* Syscall handler */
 ENTRY(system_call)
 	SAVE_ALL
-	/*TODO Comprova rang*/
-      
+
+	/* Bounds check */
+	movl $0, %ebx
+	cmp %eax, %ebx
+	jb err /* Jump if index is < 0 (out of bounds) */
+	movl syscall_table_size, %ebx
+	cmp %ebx, %eax
+	jb err /* Jumg if index is > 4 (out of bounds)*/
 
 	call *sys_call_table(, %eax, 0x04)
-	/*Processar sortida*/
-	RESTORE_ALL
+	pushl %eax
+	jmp end
+
+end:	RESTORE_ALL
+	/* Gets return value or error */
+	popl %eax
 	iret
 
+err:	pushl $-1
+	jmp end
 
 

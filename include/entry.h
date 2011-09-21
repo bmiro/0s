@@ -5,6 +5,9 @@
 #ifndef __ENTRY_H__
 #define __ENTRY_H__
 
+/* Sys calls ids (index in sys_call_table) */
+#define SYS_WRITE_ID 4
+
 void divide_error_handler();
 void debug_handler();
 void nm1_handler();
@@ -26,5 +29,7 @@ void alignment_check_handler();
 
 void clock_handler();
 void keyboard_handler();
+
+int system_call();
 
 #endif  /* __ENTRY_H__ */

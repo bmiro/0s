@@ -101,13 +101,15 @@ void setIdt() {
   
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
   
-  /** TODO Revisar nivells de privilegi TODO! */
+  
+  /* Privilege level extract from: 
+   * http://www.rlz.cl/papers/buffer_overflow/p59-0x04.txt */
   setInterruptHandler(0, divide_error_handler, KERNEL_LVL);
   setInterruptHandler(1, debug_handler, KERNEL_LVL);
   setInterruptHandler(2, nm1_handler, KERNEL_LVL);
-  setInterruptHandler(3, breakpoint_handler, KERNEL_LVL);
-  setInterruptHandler(4, overflow_handler, KERNEL_LVL);
-  setInterruptHandler(5, bounds_check_handler, KERNEL_LVL);
+  setInterruptHandler(3, breakpoint_handler, USER_LVL);     /** User Level */
+  setInterruptHandler(4, overflow_handler, USER_LVL);       /** User Level */
+  setInterruptHandler(5, bounds_check_handler, USER_LVL);   /** User Level */
   setInterruptHandler(6, invalid_opcode_handler, KERNEL_LVL);
   setInterruptHandler(7, devive_not_available_handler, KERNEL_LVL);
   setInterruptHandler(8, double_fault_handler, KERNEL_LVL);
@@ -126,7 +128,7 @@ void setIdt() {
   setInterruptHandler(33, keyboard_handler, KERNEL_LVL);
 
   /* System Calls */
-  setTrapHandler(0x80, system_call, KERNEL_LVL);
+  setTrapHandler(0x80, system_call, USER_LVL);
   
   set_idt_reg(&idtR);
 }

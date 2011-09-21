@@ -1,6 +1,8 @@
 #ifndef DEVICES_H__
 #define  DEVICES_H__
 
+#include <io.h>
+
 #define WRITE_MODE 1
 #define READ_MODE 0
 
