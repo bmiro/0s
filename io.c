@@ -40,11 +40,11 @@ void do_scroll() {
     }
   }
   /* Fill last line with blank charaters */
-  for (xx = 0; xx < NUM_COLUMNS; xx++) {
-    ch = (Word) (' ' & 0x00FF) | 0x0200;
-    screen = 0xb8000 + ((yy-1) * NUM_COLUMNS + xx) * 2;
-    asm("movw %0, (%1)" : : "r"(ch), "r"(screen));
-  }
+//  for (xx = 0; xx < NUM_COLUMNS; xx++) {
+//    ch = (Word) (' ' & 0x00FF) | 0x0200;
+//    screen = 0xb8000 + ((yy-1) * NUM_COLUMNS + xx) * 2;
+//    asm("movw %0, (%1)" : : "r"(ch), "r"(screen));
+//  }
   
 }
 
@@ -59,14 +59,14 @@ void printc(char c) {
   if (c == '\n') {
     x = 0;
     if (++y >= NUM_ROWS) {
-      //y = 0;
+      y--;
       do_scroll();
     }
   } else {
     if (++x >= NUM_COLUMNS) {
       x = 0;
       if (++y >= NUM_ROWS) {
-	//y = 0;
+	y--;
 	do_scroll();
       }
     }
