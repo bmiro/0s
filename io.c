@@ -21,6 +21,33 @@ Byte inb (unsigned short port) {
   return v;
 }
 
+void do_scroll() {
+  int xx, yy;
+    
+  Word ch; //= (Word) (c & 0x00FF) | 0x0200;
+  DWord screen;
+  
+  for (yy = 1; yy < NUM_ROWS; yy++) {
+    for (xx = 0; xx < NUM_COLUMNS; xx++) {
+      /* Reads old character */
+      screen = 0xb8000 + (yy * NUM_COLUMNS + xx) * 2;
+      asm("movw (%1), %0" : : "r"(ch), "r"(screen));
+      
+      ch = (Word) (ch & 0x00FF) | 0x0200;
+      /* Writes it to the scrolled position */
+      screen = 0xb8000 + ((yy-1) * NUM_COLUMNS + xx) * 2;
+      asm("movw %0, (%1)" : : "r"(ch), "r"(screen));
+    }
+  }
+  /* Fill last line with blank charaters */
+  for (xx = 0; xx < NUM_COLUMNS; xx++) {
+    ch = (Word) (' ' & 0x00FF) | 0x0200;
+    screen = 0xb8000 + ((yy-1) * NUM_COLUMNS + xx) * 2;
+    asm("movw %0, (%1)" : : "r"(ch), "r"(screen));
+  }
+  
+}
+
 /************************** Character printing **************************/
 void printc(char c) {
   Word ch = (Word) (c & 0x00FF) | 0x0200;
@@ -32,14 +59,16 @@ void printc(char c) {
   if (c == '\n') {
     x = 0;
     if (++y >= NUM_ROWS) {
-      y = 0;
+      //y = 0;
+      do_scroll();
     }
   } else {
-    if (++x >= NUM_COLUMNS)
-    {
+    if (++x >= NUM_COLUMNS) {
       x = 0;
-      if (++y >= NUM_ROWS)
-	y = 0;
+      if (++y >= NUM_ROWS) {
+	//y = 0;
+	do_scroll();
+      }
     }
     asm("movw %0, (%1)" : : "r"(ch), "r"(screen));
   }
