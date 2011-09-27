@@ -75,9 +75,6 @@ int __attribute__((__section__(".text.main")))
 
   /* Define the kernel segment registers */
   set_seg_regs(__KERNEL_DS, __KERNEL_DS, KERNEL_ESP);
-
-
-  clean_screen();
   
   printk(OS_STARTUP_LOGO);
   printk("Kernel Loaded!\n");
@@ -100,7 +97,8 @@ int __attribute__((__section__(".text.main")))
   init_tics();
   enable_int();
 
-  printk("Entering user mode...\n"); 
+  printk("0s OS loaded.\n\n");
+  printk("Entering user mode...\n\n"); 
 
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
