@@ -2,7 +2,7 @@
 
 int __attribute__ ((__section__(".text.main"))) main(void) {
   
-  runjp();
+  //runjp();
   
   while(1);
 }

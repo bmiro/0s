@@ -12,6 +12,17 @@
 #include <io.h>
 #include <utils.h>
 
+#define OS_STARTUP_LOGO \
+"      :::::::   :::::::: \n\
+    :+:   :+: :+:    :+: \n\
+   +:+   +:+ +:+        \n\
+  +#+   +:+ +#++:++#++ \n\
+ +#+   +#+        +#+ \n\
+#+#   #+# #+#    #+# \n\
+#######   ########  \n\
+\n\
+by Alberto Esteban && Bartomeu Miro \n\
+              ProSO UPC autunn 2011\n\n"
 
 int (*usr_main)(void) = (void *) PH_USER_START;
 unsigned int *p_sys_size = (unsigned int *) KERNEL_START;
@@ -67,6 +78,8 @@ int __attribute__((__section__(".text.main")))
 
 
   clean_screen();
+  
+  printk(OS_STARTUP_LOGO);
   printk("Kernel Loaded!\n");
 
   /* Initialize hardware data */
