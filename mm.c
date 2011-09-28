@@ -36,8 +36,7 @@ TSS         tss;
 
 /* Init page table directory */
   
-void init_dir_pages()
-{
+void init_dir_pages() {
   dir_pages[ENTRY_DIR_PAGES].entry = 0;
   dir_pages[ENTRY_DIR_PAGES].bits.pbase_addr = (((unsigned int)&pagusr_table) >> 12);
   dir_pages[ENTRY_DIR_PAGES].bits.user = 1;
@@ -46,8 +45,7 @@ void init_dir_pages()
 }
 
 /* Initializes the page table (kernel pages only) */
-void init_table_pages()
-{
+void init_table_pages() {
   int i;
   unsigned int page;
   /* reset all entries */
@@ -75,8 +73,7 @@ void init_table_pages()
 }
 
 /* Initialize pages for initial process (user pages) */
-void set_user_pages( struct task_struct *task )
-{
+void set_user_pages( struct task_struct *task ) {
  int pag; 
  int first_ph_page = NUM_PAG_KERNEL;
 
@@ -101,8 +98,7 @@ void set_user_pages( struct task_struct *task )
 }
 
 /* Writes on CR3 register producing a TLB flush */
-void set_cr3()
-{
+void set_cr3() {
  	asm volatile("movl %0,%%cr3": :"r" (dir_pages));
 }
 
@@ -118,16 +114,14 @@ void set_cr3()
          __asm__("movl %0,%%cr0": :"r" (x));
          
 /* Enable paging, modifying the CR0 register */
-void set_pe_flag()
-{
+void set_pe_flag() {
   unsigned int cr0 = read_cr0();
   cr0 |= 0x80000000;
   write_cr0(cr0);
 }
 
 /* Associates logical page 'page' with physical page 'frame' */
-void set_ss_pag(unsigned page,unsigned frame)
-{
+void set_ss_pag(unsigned page,unsigned frame) {
 	pagusr_table[page].entry=0;
 	pagusr_table[page].bits.pbase_addr=frame;
 	pagusr_table[page].bits.user=1;
@@ -136,8 +130,7 @@ void set_ss_pag(unsigned page,unsigned frame)
 
 }
 /* Initializes paging for the system address space */
-void init_mm()
-{
+void init_mm() {
   init_table_pages();
   init_frames();
   init_dir_pages();
@@ -147,8 +140,7 @@ void init_mm()
 /***********************************************/
 /************** SEGMENTATION MANAGEMENT ********/
 /***********************************************/
-void setGdt()
-{
+void setGdt() {
   /* Configure TSS base address, that wasn't initialized */
   gdt[KERNEL_TSS>>3].lowBase = lowWord((DWord)&(tss));
   gdt[KERNEL_TSS>>3].midBase  = midByte((DWord)&(tss));
@@ -163,8 +155,7 @@ void setGdt()
 /***********************************************/
 /************* TSS MANAGEMENT*******************/
 /***********************************************/
-void setTSS()
-{
+void setTSS() {
   tss.PreviousTaskLink   = NULL;
   tss.esp0               = KERNEL_ESP;
   tss.ss0                = __KERNEL_DS;
@@ -215,8 +206,7 @@ int init_frames( void )
 
 /* alloc_frame - Search a free physical page (== frame) and mark it as USED_FRAME. 
  * Returns the frame number or -1 if there isn't any frame available. */
-int alloc_frame( void )
-{
+int alloc_frame( void ) {
     int i;
     for (i=NUM_PAG_KERNEL; i<TOTAL_PAGES;) {
         if (phys_mem[i] == FREE_FRAME) {
@@ -233,6 +223,9 @@ int alloc_frame( void )
 /* free_frame - Mark as FREE_FRAME the frame  'frame'.*/
 void free_frame( unsigned int frame ) {
     /* You must insert code here */
+    phys_mem[frame] = FREE_FRAME;
+    //TODO codis d'error? alliberar frame que no es teu??
+ 
 }
 
 int access_ok(int type, const void *addr, unsigned long size); //TODO

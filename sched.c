@@ -23,4 +23,6 @@ void init_task0(void) {
 /* Initializes paging for the process 0 adress space */
   set_user_pages(&task[0].t.task);
   set_cr3();
+  
+  
 }

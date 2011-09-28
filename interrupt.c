@@ -10,8 +10,10 @@
 
 #include "kernutil.h"
 
+#define TICS_PER_SEC 18
+
 unsigned long tics = 0;
-char tacs = 0;
+char tacs = TICS_PER_SEC;
 
 /** Used in Clock_routine **/
 //int secs = 0;         /** **/
@@ -225,54 +227,24 @@ void alignment_check_routine() {
   while(1);
 }
 
-// void clock_routine() { 
-//   tics++;
-//   
-//   if (tacs == 0) {
-//     tacs = 18;
-//     secs++;
-//     sec = secs % 60;
-//     min = secs / 60;
-// 
-//     itoap(sec, s_str, 10, 2);
-//     itoa(min, m_str, 10);
-// 
-//     strcat(str, m_str, ":");
-//     strcat(str, str, s_str);
-//     
-//     printk_xyr(79, 0, str);
-//   }
-//   tacs--;
-// 
-// }
-
-void clock_routine() {
-  int secs;
-  char sec, min;
-  char m_str[8];
-  char s_str[8];
-  char str[8];
-
-  sec = 0;
-  min = 0;
-
+void clock_routine() { 
   tics++;
+  if (tacs == 0) {
+    tacs = TICS_PER_SEC;
+    secs++;
+    sec = secs % 60;
+    min = secs / 60;
 
-  secs = tics / 18;
-  sec = secs % 60;
-  min = secs / 60;
+    itoap(sec, s_str, 10, 2);
+    itoa(min, m_str, 10);
 
-  itoap(sec, s_str, 10, 2);
-  itoa(min, m_str, 10);
-
-  strcat(str, m_str, ":");
-  strcat(str, str, s_str);
-
-  printk_xyr(79, 0, str);
-
+    strcat(str, m_str, ":");
+    strcat(str, str, s_str);
+    
+    printk_xyr(79, 0, str);
+  }
+  tacs--;
 }
-
-
 
 void keyboard_routine() {
   char k, c;

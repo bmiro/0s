@@ -1,7 +1,7 @@
 #include <libc.h>
 
 int __attribute__ ((__section__(".text.main"))) main(void) {
-/*  
+ 
   write(1, "AA\n", 3);
   write(1, "BB\n", 3);
   write(1, "CC\n", 3);
@@ -12,8 +12,8 @@ int __attribute__ ((__section__(".text.main"))) main(void) {
   write(1, "HH\n", 3);	  
   write(1, "II\n", 3);
   write(1, "JJ\n", 3);
-  write(1, "KK", 3);*/
-  runjp();
+  write(1, "KK", 3);
+  //runjp();
 
   while(1);
 }
