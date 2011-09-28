@@ -31,18 +31,17 @@ struct task_struct* current() {
 }
   
 void init_queues () {
-  runqueue.next = NULL;
-  runqueue.prev = NULL;
-  blockedqueue.next = NULL;
-  blockedqueue.prev = NULL;
-  terminatedqueue.next = NULL;
-  terminatedqueue.prev = NULL;
+  INIT_LIST_HEAD(&runqueue);
+  INIT_LIST_HEAD(&blockedqueue);
+  INIT_LIST_HEAD(&terminatedqueue);
 }
    
 void init_task0(void) {
-/* Initializes paging for the process 0 adress space */
+  /* Initializes paging for the process 0 adress space */
   set_user_pages(&task[0].t.task);
   set_cr3();
+  
+  
   
   
 }
