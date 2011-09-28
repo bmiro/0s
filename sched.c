@@ -12,11 +12,31 @@ struct protected_task_struct task[NR_TASKS]
 struct list_head runqueue;
 struct list_head blockedqueue;
 struct list_head waitqueue;
-struct list_head termintatedqueue;
+struct list_head terminatedqueue;
 
+#define CURRENT_TASK_MASK 0xFFFFF000
+
+
+struct task_struct* current() {
+  unsigned long sp;
+  
+  __asm__ __volatile__(
+      "movl %%esp, %0\n"
+      : "=a" (sp)
+      :
+  );
+  
+  /* 2 Because we use empty protected blocks to control stack overflows */
+  return (struct task_struct*)((sp / KERNEL_STACK_SIZE*2) & CURRENT_TASK_MASK);
+}
   
 void init_queues () {
-  //TODO
+  runqueue.next = NULL;
+  runqueue.prev = NULL;
+  blockedqueue.next = NULL;
+  blockedqueue.prev = NULL;
+  terminatedqueue.next = NULL;
+  terminatedqueue.prev = NULL;
 }
    
 void init_task0(void) {

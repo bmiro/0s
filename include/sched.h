@@ -5,29 +5,30 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
+#include <list.h>
+
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
 
-#define PROC_RUNNING 0
-#define PROC_READY 1
-#define PROC_BLOCKED 2
-#define PROC_WAITING 4
+#define TASK_RUNNING 0
+#define TASK_READY 1
+#define TASK_BLOCKED 2
+#define TASK_WAITING 3
+#define TASK_FREE 4
 
 struct task_struct {
-  unsigned int pid;
+  unsigned int pid; /* Keep it the first member */
   char state;
   char priority;
-  unsigned int consumed_ticks;
+  unsigned int consumed_tics;
 //   unsigned int owner;
 //   unsigned int start_utime;
-  struct task_struct *runqueue_next;
-  struct task_struct *runqueue_prev;
-  struct task_struct *wait_queue_next;
-  struct task_struct *wait_queue_prev;
-  struct task_struct *blocked_queue_next;
-  struct task_struct *blocked_queue_prev;
+  struct list_head queue;
+
   struct task_struct *parent;
   struct task_struct *children;
+  struct task_struct *brotherhood; //TODO emprar llenguatge no sexista
+
 };
 
 union task_union {
@@ -49,5 +50,9 @@ extern struct protected_task_struct task[NR_TASKS];
 
 /* Inicialitza les dades del proces inicial */
 void init_task0(void);
+
+static inline struct task_struct* list_head_to_task_struct(struct list_head *l) {
+  return list_entry(l, struct task_struct, queue);
+}
 
 #endif  /* __SCHED_H__ */

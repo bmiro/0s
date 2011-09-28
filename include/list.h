@@ -25,11 +25,6 @@ static inline void INIT_LIST_HEAD(struct list_head *list) {
   list->prev = list;
 }
 
-static inline struct task_struct* list_head_to_task_struct(struct list_head *l) {
-  return l;
-  
-}
-
 /*
  * Insert a new entry between two known consecutive entries.
  *
@@ -135,6 +130,5 @@ static inline int list_empty(const struct list_head *head) {
  */
 #define list_first(head)                \
          (head)->next
-
 
 #endif /* _LINUX_LIST_H */

@@ -16,12 +16,12 @@ unsigned long tics = 0;
 char tacs = TICS_PER_SEC;
 
 /** Used in Clock_routine **/
-//int secs = 0;         /** **/
-//char sec = 0;         /** **/
-//int min = 0;          /** **/
-//char m_str[8];        /** **/
-//char s_str[8];        /** **/
-//char str[8];          /** **/
+int secs = 0;         /** **/
+char sec = 0;         /** **/
+int min = 0;          /** **/
+char m_str[8];        /** **/
+char s_str[8];        /** **/
+char str[8];          /** **/
 /** ************************/
   
 Gate idt[IDT_ENTRIES];
@@ -242,6 +242,7 @@ void clock_routine() {
     strcat(str, str, s_str);
     
     printk_xyr(79, 0, str);
+    
   }
   tacs--;
 }
