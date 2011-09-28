@@ -11,7 +11,17 @@
 #include "kernutil.h"
 
 unsigned long tics = 0;
+char tacs = 0;
 
+/** Used in Clock_routine **/
+//int secs = 0;         /** **/
+//char sec = 0;         /** **/
+//int min = 0;          /** **/
+//char m_str[8];        /** **/
+//char s_str[8];        /** **/
+//char str[8];          /** **/
+/** ************************/
+  
 Gate idt[IDT_ENTRIES];
 Register    idtR;
 
@@ -87,10 +97,6 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL) {
   idt[vector].segmentSelector = __KERNEL_CS;
   idt[vector].flags           = flags;
   idt[vector].highOffset      = highWord((DWord)handler);
-}
-
-void init_tics() {
-  tics = 0;
 }
 
 void setIdt() {
@@ -219,13 +225,34 @@ void alignment_check_routine() {
   while(1);
 }
 
-void clock_routine() {  
+// void clock_routine() { 
+//   tics++;
+//   
+//   if (tacs == 0) {
+//     tacs = 18;
+//     secs++;
+//     sec = secs % 60;
+//     min = secs / 60;
+// 
+//     itoap(sec, s_str, 10, 2);
+//     itoa(min, m_str, 10);
+// 
+//     strcat(str, m_str, ":");
+//     strcat(str, str, s_str);
+//     
+//     printk_xyr(79, 0, str);
+//   }
+//   tacs--;
+// 
+// }
+
+void clock_routine() {
   int secs;
   char sec, min;
   char m_str[8];
   char s_str[8];
   char str[8];
-  
+
   sec = 0;
   min = 0;
 
@@ -240,10 +267,12 @@ void clock_routine() {
 
   strcat(str, m_str, ":");
   strcat(str, str, s_str);
-  
+
   printk_xyr(79, 0, str);
 
 }
+
+
 
 void keyboard_routine() {
   char k, c;

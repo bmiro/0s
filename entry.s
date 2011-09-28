@@ -10,7 +10,7 @@
 # 6 "entry.S" 2
 # 1 "include/segment.h" 1
 # 7 "entry.S" 2
-# 74 "entry.S"
+# 73 "entry.S"
 .globl syscall_table_size; .type syscall_table_size, @function; .align 0; syscall_table_size:
  .long 5
 
@@ -141,7 +141,6 @@
  movl $0x2B, %edx; movl %edx, %ds; movl %edx, %es; popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs
  addl $4, %esp
  iret
-
 
 
 .globl clock_handler; .type clock_handler, @function; .align 0; clock_handler:

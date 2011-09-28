@@ -27,7 +27,7 @@ void do_scroll() {
   Word ch; //= (Word) (c & 0x00FF) | 0x0200;
   DWord screen;
   
-  for (yy = 1; yy < NUM_ROWS; yy++) {
+  for (yy = 2; yy < NUM_ROWS; yy++) {
     for (xx = 0; xx < NUM_COLUMNS; xx++) {
       /* Reads old character */
       screen = 0xb8000 + (yy * NUM_COLUMNS + xx) * 2;

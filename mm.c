@@ -231,9 +231,10 @@ int alloc_frame( void )
 }
 
 /* free_frame - Mark as FREE_FRAME the frame  'frame'.*/
-void free_frame( unsigned int frame )
-{
+void free_frame( unsigned int frame ) {
     /* You must insert code here */
 }
+
+int access_ok(int type, const void *addr, unsigned long size); //TODO
 
 

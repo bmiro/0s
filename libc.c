@@ -10,13 +10,29 @@
 
 int errno;
 
+#define EBADF        9  /* Bad file number */
+#define EFAULT      14  /* Bad address */
+#define EINVAL      22  /* Invalid argument */
+#define ENOSYS      38  /* Function not implemented */
+
+
 int perror() {
   switch (errno) {
-    case (0) :
+    case (EBADF) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Bad file number.\n"));
       break;
+    case (EFAULT) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Bad address.\n"));
+      break;
+    case (EINVAL) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Invalid argument.\n"));
+      break;
+    case (ENOSYS) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Function not implemented.\n"));
+      break;  
     default :
-        write(CONSOLE, WELL_FORMED_STR("Unknown error, fuck off!"));
-	break;
+      write(CONSOLE, WELL_FORMED_STR("[perror] Unknown error, fuck off!\n"));
+      break;
   }
   
   return errno;

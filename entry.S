@@ -70,7 +70,6 @@
       movb $0x20, %al; \
       outb %al, $0x20
 
-
 ENTRY(syscall_table_size)
 	.long 5
 
@@ -201,7 +200,6 @@ ENTRY(alignment_check_handler)
 	RESTORE_ALL
 	addl $4, %esp
 	iret
-
 
 /* Interrupt Handlers */
 ENTRY(clock_handler)

@@ -33,5 +33,6 @@ void setGdt();
 
 void setTSS();
 
+int access_ok(int type, const void *addr, unsigned long size); 
 
 #endif  /* __MM_H__ */

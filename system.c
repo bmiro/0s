@@ -94,7 +94,6 @@ int __attribute__((__section__(".text.main")))
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
 
   /* Enabling interruptions */
-  init_tics();
   enable_int();
 
   printk("0s OS loaded.\n\n");
