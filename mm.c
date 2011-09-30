@@ -49,22 +49,18 @@ void init_table_pages() {
   int i;
   unsigned int page;
   /* reset all entries */
-  for (i=0; i<TOTAL_PAGES; i++)
-    {
+  for (i=0; i<TOTAL_PAGES; i++) {
       pagusr_table[i].entry = 0;
     }
   /* Init kernel pages */
-  for (i=0; i<NUM_PAG_KERNEL; i++)
-    {
+  for (i=0; i<NUM_PAG_KERNEL; i++) {
       // Logical page equal to physical page (frame)
       pagusr_table[i].bits.pbase_addr = i;
       pagusr_table[i].bits.rw = 1;
       pagusr_table[i].bits.present = 1;
     }
   /* Protect task_structs */
-  for (i=0; i<NR_TASKS; i++)
-    {
-      
+  for (i=0; i<NR_TASKS; i++) {  
       page = ((DWord)&task[i].task_protect>>12); //Get the page to protect.
       pagusr_table[page].bits.pbase_addr = page;
       pagusr_table[page].bits.rw = 0; //Disable write access to protected page
@@ -122,13 +118,20 @@ void set_pe_flag() {
 
 /* Associates logical page 'page' with physical page 'frame' */
 void set_ss_pag(unsigned page,unsigned frame) {
-	pagusr_table[page].entry=0;
-	pagusr_table[page].bits.pbase_addr=frame;
-	pagusr_table[page].bits.user=1;
-	pagusr_table[page].bits.rw=1;
-	pagusr_table[page].bits.present=1;
-
+  pagusr_table[page].entry = 0;
+  pagusr_table[page].bits.pbase_addr = frame;
+  pagusr_table[page].bits.user = 1;
+  pagusr_table[page].bits.rw = 1;
+  pagusr_table[page].bits.present = 1;
 }
+
+/* Deassocietes a logical page 'page' from its phisical frame */
+void del_ss_pag(unsigned page) {
+  pageusr_table[page].entry = 0;
+  set_cr3(); //TODO assegurar que va aqui
+}
+
+
 /* Initializes paging for the system address space */
 void init_mm() {
   init_table_pages();
@@ -207,27 +210,37 @@ int init_frames( void )
 /* alloc_frame - Search a free physical page (== frame) and mark it as USED_FRAME. 
  * Returns the frame number or -1 if there isn't any frame available. */
 int alloc_frame( void ) {
-    int i;
-    for (i=NUM_PAG_KERNEL; i<TOTAL_PAGES;) {
-        if (phys_mem[i] == FREE_FRAME) {
-            phys_mem[i] = USED_FRAME;
-            return i;
-        }
-        i += 2; /* NOTE: There will be holes! This is intended. 
-			DO NOT MODIFY! */
+  int i;
+  for (i=NUM_PAG_KERNEL; i<TOTAL_PAGES;) {
+    if (phys_mem[i] == FREE_FRAME) {
+      phys_mem[i] = USED_FRAME;
+      return i;
     }
+    i += 2; /* NOTE: There will be holes! This is intended. 
+		      DO NOT MODIFY! */
+  }
 
-    return -1;
+  return -1;
 }
 
 /* free_frame - Mark as FREE_FRAME the frame  'frame'.*/
 void free_frame( unsigned int frame ) {
-    /* You must insert code here */
-    phys_mem[frame] = FREE_FRAME;
-    //TODO codis d'error? alliberar frame que no es teu??
- 
+  /* You must insert code here */
+  phys_mem[frame] = FREE_FRAME;
+  //TODO codis d'error? alliberar frame que no es teu??
+
 }
 
-int access_ok(int type, const void *addr, unsigned long size); //TODO
+int access_ok(int type, const void *addr, unsigned long size) {
+  
+  /*  */
+  
+  
+  pagusr_table[ENTRY_DIR_PAGES].bits.pbase_addr = (((unsigned int)&pagusr_table) >> 12);
+  pagusr_table[ENTRY_DIR_PAGES].bits.user = 1;
+  pagusr_table[ENTRY_DIR_PAGES].bits.rw = 1;
+  pagusr_table[ENTRY_DIR_PAGES].bits.present = 1;
+  
+}
 
 

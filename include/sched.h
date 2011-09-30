@@ -51,8 +51,12 @@ extern struct protected_task_struct task[NR_TASKS];
 /* Inicialitza les dades del proces inicial */
 void init_task0(void);
 
+void init_queues(void);
+
 static inline struct task_struct* list_head_to_task_struct(struct list_head *l) {
   return list_entry(l, struct task_struct, queue);
 }
+
+struct task_struct* current();
 
 #endif  /* __SCHED_H__ */

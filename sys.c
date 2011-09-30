@@ -7,6 +7,7 @@
 #include <devices.h>
 #include <utils.h>
 #include <errno.h>
+#include <sched.h>
 
 int check_fd(int fd, int mode) {
   if (fd != 1 || mode != WRITE_MODE) {
@@ -55,6 +56,18 @@ int sys_write(int fd, char *buffer, int size) {
   }
   
   return copied;
+}
+
+int sys_fork() {
+  //TODO
+}
+
+int sys_getpid() {
+  struct *tsk;
+  
+  tsk = current();
+  
+  return tsk->pid;
 }
 
 int sys_ni_syscall() {

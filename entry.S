@@ -71,17 +71,35 @@
       outb %al, $0x20
 
 ENTRY(syscall_table_size)
-	.long 5
+	.long 21
 
 /* Linux syscall table:
  * http://lxr.linux.no/#linux+v3.0.4/arch/x86/kernel/syscall_table_32.S */
 ENTRY(sys_call_table)
+
 	.long sys_ni_syscall
 	.long sys_ni_syscall
-	.long sys_ni_syscall
+	.long sys_fork
 	.long sys_ni_syscall 
 	.long sys_write
 	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_getpid
+
+
 
 
 /* Exception handlers */

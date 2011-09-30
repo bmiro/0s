@@ -30,7 +30,7 @@ struct task_struct* current() {
   return (struct task_struct*)((sp / KERNEL_STACK_SIZE*2) & CURRENT_TASK_MASK);
 }
   
-void init_queues () {
+void init_queues(void) {
   INIT_LIST_HEAD(&runqueue);
   INIT_LIST_HEAD(&blockedqueue);
   INIT_LIST_HEAD(&terminatedqueue);
