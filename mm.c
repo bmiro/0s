@@ -75,27 +75,27 @@ void set_user_pages( struct task_struct *task ) {
 
   /* CODE */
   for (pag=PAG_LOG_INIT_CODE_P0;pag<PAG_LOG_INIT_DATA_P0;pag++){
-  	pagusr_table[pag].entry = 0;
-  	pagusr_table[pag].bits.pbase_addr = first_ph_page;
-  	pagusr_table[pag].bits.user = 1;
-  	pagusr_table[pag].bits.present = 1;
-        phys_mem[first_ph_page] = USED_FRAME; // STATIC allocation
-        first_ph_page++;
+    pagusr_table[pag].entry = 0;
+    pagusr_table[pag].bits.pbase_addr = first_ph_page;
+    pagusr_table[pag].bits.user = 1;
+    pagusr_table[pag].bits.present = 1;
+    phys_mem[first_ph_page] = USED_FRAME; // STATIC allocation
+    first_ph_page++;
   }
   
   /* DATA */ 
   for (pag=PAG_LOG_INIT_DATA_P0;pag<PAG_LOG_INIT_DATA_P0+NUM_PAG_DATA;pag++){
-  	pagusr_table[pag].entry = 0;
-  	pagusr_table[pag].bits.pbase_addr = alloc_frame();
-  	pagusr_table[pag].bits.user = 1;
-  	pagusr_table[pag].bits.rw = 1;
-  	pagusr_table[pag].bits.present = 1;
+    pagusr_table[pag].entry = 0;
+    pagusr_table[pag].bits.pbase_addr = alloc_frame();
+    pagusr_table[pag].bits.user = 1;
+    pagusr_table[pag].bits.rw = 1;
+    pagusr_table[pag].bits.present = 1;
   }
 }
 
 /* Writes on CR3 register producing a TLB flush */
 void set_cr3() {
- 	asm volatile("movl %0,%%cr3": :"r" (dir_pages));
+  asm volatile("movl %0,%%cr3": :"r" (dir_pages));
 }
 
 /* Macros for reading/writing the CR0 register, where is shown the paging status */
@@ -230,17 +230,4 @@ void free_frame( unsigned int frame ) {
   //TODO codis d'error? alliberar frame que no es teu??
 
 }
-
-int access_ok(int type, const void *addr, unsigned long size) {
-  
-  /*  */
-  
-  
-  pagusr_table[ENTRY_DIR_PAGES].bits.pbase_addr = (((unsigned int)&pagusr_table) >> 12);
-  pagusr_table[ENTRY_DIR_PAGES].bits.user = 1;
-  pagusr_table[ENTRY_DIR_PAGES].bits.rw = 1;
-  pagusr_table[ENTRY_DIR_PAGES].bits.present = 1;
-  
-}
-
 

@@ -12,17 +12,35 @@
 # 7 "entry.S" 2
 # 73 "entry.S"
 .globl syscall_table_size; .type syscall_table_size, @function; .align 0; syscall_table_size:
- .long 5
+ .long 21
 
 
 
 .globl sys_call_table; .type sys_call_table, @function; .align 0; sys_call_table:
+
  .long sys_ni_syscall
  .long sys_ni_syscall
- .long sys_ni_syscall
+ .long sys_fork
  .long sys_ni_syscall
  .long sys_write
  .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_getpid
+
+
 
 
 

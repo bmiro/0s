@@ -1,5 +1,6 @@
 #include <utils.h>
 #include <types.h>
+
 void copy_data(void *start, void *dest, int size) {
   DWord *p = start, *q = dest;
   Byte *p1, *q1;
@@ -58,8 +59,23 @@ int copy_to_user(void *start, void *dest, int size)
  * Returns true (nonzero) if the memory block may be valid,
  *         false (zero) if it is definitely invalid
  */
-int access_ok(int type, const void * addr, unsigned long size)
-{
-  return 0;
+int access_ok(int type, const void *addr, unsigned long size) {
+  int pag_addr;
+  int page;
+  
+  /* Checks if block is in user-space logical memory range */
+  if (addr < L_USER_START || 
+      (addr+size) > (L_USER_START+(NUM_PAG_CODE+NUM_DATA_CODE)*PAGE_SIZE)) {
+    return 0;
+  }
+  
+  if (type == READ) return 1; /* No need to check write access */
+  
+  /* Checks write access to all involved pages in this mem range */
+  for (pag_addr = addr; pag_addr <= addr+size; pag_addr += PAGE_SIZE) {
+    page = pag_addr>>12;
+    if (pagusr_table[page].rw != 1) return 0; //TODO mirar si s'han de mirar mes camps 
+  }                                           // Mirar com es pot tenir access a aquesta variable
+  return 1;
 }
 
