@@ -16,7 +16,6 @@ struct list_head terminatedqueue;
 
 #define CURRENT_TASK_MASK 0xFFFFF000
 
-
 struct task_struct* current() {
   unsigned long sp;
   
@@ -40,6 +39,7 @@ void init_task0(void) {
   /* Initializes paging for the process 0 adress space */
   set_user_pages(&task[0].t.task);
   set_cr3();
+  
   
   
   

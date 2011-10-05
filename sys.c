@@ -46,12 +46,12 @@ int sys_write(int fd, char *buffer, int size) {
     copy_from_user(buffer + copied, sysbuff, chuck);
     switch (fd) {
       case(1):
-	      written = sys_write_console(sysbuff, chuck);
-	      /* By construction sys_write can NOT fail */
-	      remain -= written;
-	      copied += written;
+	written = sys_write_console(sysbuff, chuck);
+	/* By construction sys_write can NOT fail */
+	remain -= written;
+	copied += written;
       default:
-	      break;
+	break;
     }
   }
   
@@ -63,7 +63,7 @@ int sys_fork() {
 }
 
 int sys_getpid() {
-  struct *tsk;
+  struct task_struct *tsk;
   
   tsk = current();
   

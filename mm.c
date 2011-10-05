@@ -16,9 +16,6 @@ Descriptor  *gdt = (Descriptor *) GDT_START;
 /* Register pointing to the memory segments table */
 Register    gdtR;
 
-/* PAGING */
-/* Variables containing the page directory and the page table */
-  
 page_table_entry dir_pages[TOTAL_PAGES]
   __attribute__((__section__(".data.task")));
 
@@ -127,7 +124,7 @@ void set_ss_pag(unsigned page,unsigned frame) {
 
 /* Deassocietes a logical page 'page' from its phisical frame */
 void del_ss_pag(unsigned page) {
-  pageusr_table[page].entry = 0;
+  pagusr_table[page].entry = 0;
   set_cr3(); //TODO assegurar que va aqui
 }
 

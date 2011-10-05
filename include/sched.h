@@ -6,6 +6,7 @@
 #define __SCHED_H__
 
 #include <list.h>
+#include <mm_address.h>
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
@@ -19,16 +20,16 @@
 struct task_struct {
   unsigned int pid; /* Keep it the first member */
   char state;
-  char priority;
-  unsigned int consumed_tics;
-//   unsigned int owner;
-//   unsigned int start_utime;
+  char quantum;
   struct list_head queue;
-
-  struct task_struct *parent;
-  struct task_struct *children;
-  struct task_struct *brotherhood; //TODO emprar llenguatge no sexista
-
+  
+  //unsigned int consumed_tics;
+  
+  //struct task_struct *parent;
+  //struct task_struct *children;
+  //struct task_struct *brotherhood; //TODO emprar llenguatge no sexista
+  unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
+  
 };
 
 union task_union {

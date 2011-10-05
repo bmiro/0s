@@ -1,5 +1,7 @@
 #include <utils.h>
 #include <types.h>
+#include <mm_address.h>
+#include <mm.h>
 
 void copy_data(void *start, void *dest, int size) {
   DWord *p = start, *q = dest;
@@ -33,8 +35,7 @@ int copy_from_user(void *start, void *dest, int size) {
   return 0;
 }
 /* Copia de espacio de kernel a espacio de usuario, devuelve 0 si ok y -1 si error*/
-int copy_to_user(void *start, void *dest, int size)
-{
+int copy_to_user(void *start, void *dest, int size) {
   DWord *p = start, *q = dest;
   Byte *p1, *q1;
   while(size > 4) {
@@ -64,18 +65,21 @@ int access_ok(int type, const void *addr, unsigned long size) {
   int page;
   
   /* Checks if block is in user-space logical memory range */
-  if (addr < L_USER_START || 
-      (addr+size) > (L_USER_START+(NUM_PAG_CODE+NUM_DATA_CODE)*PAGE_SIZE)) {
+  if (((unsigned int)addr < L_USER_START) || 
+      (unsigned int)(addr+size) > (L_USER_START + (NUM_PAG_CODE + NUM_PAG_DATA)*PAGE_SIZE)) {
     return 0;
   }
   
   if (type == READ) return 1; /* No need to check write access */
   
-  /* Checks write access to all involved pages in this mem range */
-  for (pag_addr = addr; pag_addr <= addr+size; pag_addr += PAGE_SIZE) {
-    page = pag_addr>>12;
-    if (pagusr_table[page].rw != 1) return 0; //TODO mirar si s'han de mirar mes camps 
-  }                                           // Mirar com es pot tenir access a aquesta variable
-  return 1;
+  /* Checks if pointer is in user data range */
+  return ((unsigned int)addr > (L_USER_START + (NUM_PAG_CODE*PAGE_SIZE)));
+ 
+//   /* Checks write access to all involved pages in this mem range */
+//   for (pag_addr = addr; pag_addr <= addr+size; pag_addr += PAGE_SIZE) {
+//    page = pag_addr>>12;
+//    if (pagusr_table[page].bits.rw != 1) return 0; 
+//   }
+//  return 1;
 }
 

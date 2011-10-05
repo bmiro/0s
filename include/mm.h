@@ -20,6 +20,8 @@ int alloc_frame( void );
 void free_frame( unsigned int frame );
 void set_user_pages( struct task_struct *task );
 
+/* PAGING */
+/* Variables containing the page directory and the page table */
 
 extern Descriptor  *gdt;
 
