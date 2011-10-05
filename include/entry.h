@@ -6,7 +6,10 @@
 #define __ENTRY_H__
 
 /* Sys calls ids (index in sys_call_table) */
-#define SYS_WRITE_ID 4
+#define SYS_FORK_ID 	2
+#define SYS_WRITE_ID 	4
+#define SYS_GETPID_ID  20
+
 
 void divide_error_handler();
 void debug_handler();

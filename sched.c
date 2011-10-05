@@ -15,7 +15,6 @@ struct list_head waitqueue;
 struct list_head terminatedqueue;
 
 #define CURRENT_TASK_MASK 0xFFFFF000
-#define ACCES_TS(x, y) task[x].t.task.y
 
 struct task_struct* current() {
   unsigned long sp;
