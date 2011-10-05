@@ -49,17 +49,17 @@ unsigned int *p_rdtr = (unsigned int *) KERNEL_START+2;
  * This function MUST be 'inline' because it modifies the %esp 
  */
 inline void set_seg_regs(Word data_sel, Word stack_sel, DWord esp) {
-      esp = esp - 5*sizeof(DWord); /* To avoid overwriting task 1 */
-	  __asm__ __volatile__(
-		"cld\n\t"
-		"mov %0,%%ds\n\t"
-		"mov %0,%%es\n\t"
-		"mov %0,%%fs\n\t"
-		"mov %0,%%gs\n\t"
-		"mov %1,%%ss\n\t"
-		"mov %2,%%esp"
-		: /* no output */
-		: "r" (data_sel), "r" (stack_sel), "g" (esp) );
+  esp = esp - 5*sizeof(DWord); /* To avoid overwriting task 1 */
+  __asm__ __volatile__(
+			"cld\n\t"
+			"mov %0,%%ds\n\t"
+			"mov %0,%%es\n\t"
+			"mov %0,%%fs\n\t"
+			"mov %0,%%gs\n\t"
+			"mov %1,%%ss\n\t"
+			"mov %2,%%esp"
+			: /* no output */
+			: "r" (data_sel), "r" (stack_sel), "g" (esp) );
 
 }
 
@@ -83,7 +83,7 @@ int __attribute__((__section__(".text.main")))
   setIdt(); /* Definicio del vector de interrupcions */
   setTSS(); /* Definicio de la TSS */
 
-  /* Initialize task queues*/
+  /* Initialize task queues */
   init_queues();
   
   /* Initialize Memory */

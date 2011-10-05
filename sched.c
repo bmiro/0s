@@ -15,6 +15,7 @@ struct list_head waitqueue;
 struct list_head terminatedqueue;
 
 #define CURRENT_TASK_MASK 0xFFFFF000
+#define ACCES_TS(x, y) task[x].t.task.y
 
 struct task_struct* current() {
   unsigned long sp;
@@ -36,9 +37,21 @@ void init_queues(void) {
 }
    
 void init_task0(void) {
+  struct task_struct ts;
+  ts = task[0].t.task;
+
   /* Initializes paging for the process 0 adress space */
-  set_user_pages(&task[0].t.task);
+  set_user_pages(&ts);
   set_cr3();
+  
+  ts.pid = 0; /* Setting PID 0 */
+  ts.quantum = FULL_QUANTUM;
+  ts.state = TASK_RUNNING;
+  list_add(&ts.queue, &runqueue);
+  
+  
+  
+  
   
   
   

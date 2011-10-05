@@ -72,9 +72,11 @@ int access_ok(int type, const void *addr, unsigned long size) {
   
   if (type == READ) return 1; /* No need to check write access */
   
-  /* Checks if pointer is in user data range */
+  /* Checks if pointer is in user data range, it works because of memory implementation */
   return ((unsigned int)addr > (L_USER_START + (NUM_PAG_CODE*PAGE_SIZE)));
  
+  
+/* Si pagusr_table fos visible si que podriem */
 //   /* Checks write access to all involved pages in this mem range */
 //   for (pag_addr = addr; pag_addr <= addr+size; pag_addr += PAGE_SIZE) {
 //    page = pag_addr>>12;

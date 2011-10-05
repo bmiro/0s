@@ -17,6 +17,8 @@
 #define TASK_WAITING 3
 #define TASK_FREE 4
 
+#define FULL_QUANTUM 8
+
 struct task_struct {
   unsigned int pid; /* Keep it the first member */
   char state;

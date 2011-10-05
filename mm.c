@@ -67,9 +67,11 @@ void init_table_pages() {
 
 /* Initialize pages for initial process (user pages) */
 void set_user_pages( struct task_struct *task ) {
- int pag; 
- int first_ph_page = NUM_PAG_KERNEL;
+  int pag; 
+  int first_ph_page = NUM_PAG_KERNEL;
 
+  int i;
+  i = 0;
   /* CODE */
   for (pag=PAG_LOG_INIT_CODE_P0;pag<PAG_LOG_INIT_DATA_P0;pag++){
     pagusr_table[pag].entry = 0;
@@ -77,6 +79,10 @@ void set_user_pages( struct task_struct *task ) {
     pagusr_table[pag].bits.user = 1;
     pagusr_table[pag].bits.present = 1;
     phys_mem[first_ph_page] = USED_FRAME; // STATIC allocation
+    /*Our code*/
+    task->phpages[i] = first_ph_page;
+    i++;
+    /*End our code*/
     first_ph_page++;
   }
   
@@ -87,6 +93,9 @@ void set_user_pages( struct task_struct *task ) {
     pagusr_table[pag].bits.user = 1;
     pagusr_table[pag].bits.rw = 1;
     pagusr_table[pag].bits.present = 1;
+    /*Our code*/
+    task->phpages[i] = pagusr_table[pag].bits.pbase_addr;
+    i++;
   }
 }
 
@@ -224,7 +233,5 @@ int alloc_frame( void ) {
 void free_frame( unsigned int frame ) {
   /* You must insert code here */
   phys_mem[frame] = FREE_FRAME;
-  //TODO codis d'error? alliberar frame que no es teu??
-
 }
 
