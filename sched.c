@@ -34,6 +34,13 @@ void init_queues(void) {
   INIT_LIST_HEAD(&blockedqueue);
   INIT_LIST_HEAD(&terminatedqueue);
 }
+
+void init_task_structs(void) {
+  int i;
+  for (i=0; i < NR_TASKS; i++) {
+    task[i].t.task.pid = NULL_PID;
+  }
+}
    
 void init_task0(void) {
   struct task_struct ts;
@@ -47,13 +54,5 @@ void init_task0(void) {
   ts.quantum = FULL_QUANTUM;
   ts.state = TASK_RUNNING;
   list_add(&ts.queue, &runqueue);
-  
-  
-  
-  
-  
-  
-  
-  
   
 }

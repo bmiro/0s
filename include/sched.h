@@ -11,6 +11,8 @@
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
 
+#define NULL_PID -1
+
 #define TASK_RUNNING 0
 #define TASK_READY 1
 #define TASK_BLOCKED 2
@@ -53,6 +55,8 @@ extern struct protected_task_struct task[NR_TASKS];
 
 /* Inicialitza les dades del proces inicial */
 void init_task0(void);
+
+void init_task_structs(void);
 
 void init_queues(void);
 

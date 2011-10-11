@@ -58,11 +58,45 @@ int sys_write(int fd, char *buffer, int size) {
   return copied;
 }
 
-int sys_fork() {
+int sys_fork(void) {
+  int i;
+  struct task_struct *parent_tsk;
+  struct task_struct *children_tsk;
+  
+  children_tsk = NULL;
+  for (i=0; i < NR_TASKS; i++) {
+    if (task[i].t.task.pid == NULL_PID) {
+      children_tsk = task[i].t.task;
+      break;
+    }
+  }
+  /* There is no space to allocate the task_struct */
+  if (i == NR_TASKS) return -EAGAIN;
+  
+  /* Task_struct copy */
+  tsk = current();
+  copy_data(tsk, &task[i].t.task, KERNEL_STACK_SIZE);
+  
+  /* Switch to child pagetable */
+  //TODO
+  
+  for (i=NUM_PAG_CODE; i < NUM_PAG_DATA; i++) {
+    if (parent_tsk->phpages[i] != NULL) {
+      f = alloc_frame();
+      set_ss_pag( ,f);
+      //TODO verificar que ha alocat el frame
+      copy_data(FRAME_TO_PH_ADDR(parent_tsk.phpages[i]), FRAME_TO_PH_ADDR(f), PAGE_SIZE);
+      children_tsk->phpages[i] = f;
+    } else {
+      children_tsk->phpages[i] = NULL;
+    }
+    
+    
+  
   
 }
 
-int sys_getpid() {
+int sys_getpid(void) {
   struct task_struct *tsk;
   
   tsk = current();
@@ -70,7 +104,7 @@ int sys_getpid() {
   return tsk->pid;
 }
 
-int sys_ni_syscall() {
+int sys_ni_syscall(void) {
   printk_xyr(79, 20, "Not implemented yet!");
   return -ENOSYS;
 }

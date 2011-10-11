@@ -123,7 +123,7 @@ void set_pe_flag() {
 }
 
 /* Associates logical page 'page' with physical page 'frame' */
-void set_ss_pag(unsigned page,unsigned frame) {
+void set_ss_pag(unsigned page, unsigned frame) {
   pagusr_table[page].entry = 0;
   pagusr_table[page].bits.pbase_addr = frame;
   pagusr_table[page].bits.user = 1;

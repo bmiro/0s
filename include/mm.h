@@ -14,6 +14,7 @@
 #define USED_FRAME 1
 
 #define FRAME_FROM_PH_ADDR(x) (x>>12)
+#define FRAME_TO_PH_ADDR(x) (x<<12)
 
 /* Bytemap to mark the free physical pages */
 extern Byte phys_mem[TOTAL_PAGES];
@@ -31,7 +32,7 @@ extern Descriptor  *gdt;
 extern TSS         tss; 
 
 void init_mm();
-void set_ss_pag(unsigned page,unsigned frame);
+void set_ss_pag(unsigned page, unsigned frame);
 void set_cr3();
 
 void setGdt();

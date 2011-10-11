@@ -21,6 +21,9 @@ int perror() {
     case (EBADF) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Bad file number.\n"));
       break;
+    case (EAGAIN) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Try again.\n"));
+      break;
     case (EFAULT) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Bad address.\n"));
       break;
@@ -29,7 +32,7 @@ int perror() {
       break;
     case (ENOSYS) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Function not implemented.\n"));
-      break;  
+      break; 
     default :
       write(CONSOLE, WELL_FORMED_STR("[perror] Unknown error, fuck off!\n"));
       break;

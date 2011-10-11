@@ -86,6 +86,9 @@ int __attribute__((__section__(".text.main")))
   /* Initialize task queues */
   init_queues();
   
+  /* Initialize task structs */
+  init_task_structs();
+  
   /* Initialize Memory */
   init_mm();
 
