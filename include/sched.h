@@ -21,6 +21,11 @@
 
 #define FULL_QUANTUM 8
 
+struct list_head runqueue;
+struct list_head blockedqueue;
+struct list_head waitqueue;
+struct list_head terminatedqueue;
+
 struct task_struct {
   unsigned int pid; /* Keep it the first member */
   char state;
