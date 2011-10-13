@@ -51,3 +51,39 @@ void init_task0(void) {
   list_add(&ts.queue, &runqueue);
   
 }
+
+void task_switch(union task_union *t) {
+  int lpag, i;
+  /* Updates TSS to point stack of t */
+  tss.esp0 = &t->stack[KERNEL_STACK_SIZE];
+  
+  /* Updates page table to make accessible the data and stack pages to user */
+  lpag = (L_USER_START>>12)+NUM_PAG_CODE;
+  for (i=0; i < NUM_PAG_DATA; i++) {
+    set_ss_page(lpag + i, t->task.phpages[i]);
+  }
+  set_cr3();
+  
+  t->task.state = TASK_RUN;
+  
+  /* Switch system stack of new task. */
+  __asm__ __volatile__(
+    "movl %0, %%esp\n" 
+    :
+    : "g" (tss.esp0)
+  );
+
+  
+  /* Restore registers */
+
+
+Actualitzar la taula de pàgines perquè les pàgines de dades+pila d’usuari de t siguin accessibles.
+
+Canviar a la pila de sistema del nou procés Restaurar els registres.
+
+Cal fer EOI? (penseu si cal i on s’ha de fer)
+
+IRET (penseu perquè fem iret i no ret)
+
+  
+}

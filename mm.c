@@ -32,7 +32,6 @@ TSS         tss;
 /***********************************************/
 
 /* Init page table directory */
-  
 void init_dir_pages() {
   dir_pages[ENTRY_DIR_PAGES].entry = 0;
   dir_pages[ENTRY_DIR_PAGES].bits.pbase_addr = (((unsigned int)&pagusr_table) >> 12);
@@ -137,7 +136,6 @@ void del_ss_pag(unsigned page) {
   set_cr3(); //TODO assegurar que va aqui
 }
 
-
 /* Initializes paging for the system address space */
 void init_mm() {
   init_table_pages();
@@ -146,6 +144,7 @@ void init_mm() {
   set_cr3();
   set_pe_flag();
 }
+
 /***********************************************/
 /************** SEGMENTATION MANAGEMENT ********/
 /***********************************************/
@@ -199,8 +198,7 @@ void setTSS() {
  
 /* Initializes the ByteMap of free physical pages.
  * The kernel pages are marked as used */
-int init_frames( void )
-{
+int init_frames(void) {
     int i;
     /* Mark pages as Free */
     for (i=0; i<TOTAL_PAGES; i++) {

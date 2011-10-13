@@ -36,25 +36,21 @@ void set_gdt_reg(Register * gdt) {
     : "r" (gdt) );
 }
 
-void set_ldt_reg(Selector ldt)
-{
+void set_ldt_reg(Selector ldt) {
 __asm__ __volatile__(
   "lldtw %0"
   : /*no output*/
   : "r" (ldt) );
 }
 
-void set_task_reg(Selector tr)
-{
+void set_task_reg(Selector tr) {
 __asm__ __volatile__(
   "ltrw %0"
   : /*no output*/
   : "r" (tr) );
 }
 
-
-void return_gate(Word ds, Word ss, DWord esp, Word cs, DWord eip)
-{
+void return_gate(Word ds, Word ss, DWord esp, Word cs, DWord eip) {
   __asm__ __volatile__ (
     "mov %0,%%es\n\t"
     "mov %0,%%ds\n\t"
@@ -91,8 +87,7 @@ void return_gate(Word ds, Word ss, DWord esp, Word cs, DWord eip)
  *   x = 1 -> disabled
  */
 
-void enable_int(void)
-{
+void enable_int(void) {
 __asm__ __volatile__(
   /* 0xFF -> all bits disabled, 
      0xFE -> Clock enabled, 
@@ -106,8 +101,7 @@ __asm__ __volatile__(
   : "%al" );
 }
 
-void delay(void)
-{
+void delay(void) {
 __asm__ __volatile__(
   "jmp a\na:\t"
   : : );

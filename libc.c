@@ -4,20 +4,15 @@
  */
 
 #include <libc.h>
+#include <errno.h>
 
 /* Caution!! this mask two parameters in one */
 #define WELL_FORMED_STR(x) x, sizeof(x)
 
 int errno;
 
-#define EBADF        9  /* Bad file number */
-#define EFAULT      14  /* Bad address */
-#define EINVAL      22  /* Invalid argument */
-#define ENOSYS      38  /* Function not implemented */
-
-
 int perror() {
-  switch (errno) {
+  switch (errno) { //TODO Afegir nous valors
     case (EBADF) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Bad file number.\n"));
       break;
