@@ -73,7 +73,7 @@ int sys_fork(void) {
   union task_union *child;
   
   child = NULL;
-  for (i=0; i < NR_TASKS; i++) {
+  for (i=0; i < NR_TASKS; i++) { //TODO enllaçar blocs lliures
     if (task[i].t.task.pid == NULL_PID) {
       child = &task[i].t;
       break;
@@ -88,7 +88,7 @@ int sys_fork(void) {
   /* First of all we duplicate all the data pages in the parent space, just below its data pages */
   lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
   src = L_USER_START + NUM_PAG_CODE*PAGE_SIZE;
-  dst = src + NUM_PAG_CODE*PAGE_SIZE; 
+  dst = src + NUM_PAG_DATA*PAGE_SIZE; 
   for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
     f = alloc_frame();
     if (f == -1) return -ENOMEM;

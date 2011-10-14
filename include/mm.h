@@ -9,7 +9,6 @@
 #include <mm_address.h>
 #include <sched.h>
 
- 
 #define FREE_FRAME 0
 #define USED_FRAME 1
 
@@ -19,10 +18,12 @@
 /* Bytemap to mark the free physical pages */
 extern Byte phys_mem[TOTAL_PAGES];
 
-int init_frames( void );
-int alloc_frame( void );
-void free_frame( unsigned int frame );
-void set_user_pages( struct task_struct *task );
+int init_frames(void);
+int alloc_frame(void);
+void free_frame(unsigned int frame);
+void set_user_pages(struct task_struct *task);
+void del_user_pages(unsigned page);
+
 
 /* PAGING */
 /* Variables containing the page directory and the page table */
