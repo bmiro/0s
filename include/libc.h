@@ -14,5 +14,8 @@
 
 int perror();
 int write(int fd, char *buffer, int size);
+int fork(void);
+void exit(void);
+int getpid(void);
 
 #endif  /* __LIBC_H__ */

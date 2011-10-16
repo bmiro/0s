@@ -92,6 +92,7 @@ int sys_fork(void) {
   for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
     f = alloc_frame();
     if (f == -1) return -ENOMEM;
+    
     set_ss_pag(lpag + i, f);                                        /* Assing logic page to parent */
     copy_data((void *)(src + i * PAGE_SIZE), (void *)(dst + i * PAGE_SIZE), PAGE_SIZE); /* Data copy data */
     del_ss_pag(lpag + i);                                           /* De-assing logic page */
@@ -103,6 +104,9 @@ int sys_fork(void) {
   
   child->task.pid = getNewPid();
   child->task.state = TASK_READY;
+  
+  //TODO inicialitzar quantum
+  
   /* Modifies child eax value (fork returns 0 to the child)*/
   child->stack[KERNEL_STACK_SIZE-10] = 0;
   
@@ -111,12 +115,103 @@ int sys_fork(void) {
   return child->task.pid;
 }
 
+void sys_exit(void) {
+  struct task_struct *tsk;
+  int lpag;
+  
+  tsk = current();
+  
+  if (tsk->pid != 0) {
+    lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
+    for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
+      del_ss_pag(lpag + i); // TODO Revisar si es necessari
+      free_frame(tsk->task.phpages[i]);
+    }
+    set_cr3(); // TODO Revisar si es necessari
+  
+    //TODO alliberar semafors
+  
+    list_del(tsk->queue);
+    tsk->pid = NULL_PID;
+    
+    task_switch(sched_select_next());
+  }
+}
+
 int sys_getpid(void) {
   struct task_struct *tsk;
   
   tsk = current();
   
   return tsk->pid;
+}
+
+int sys_nice(int quantum) {
+  int old_quantum;
+  struct task_struct *tsk;
+  
+  if (quantum < 1) return -1;
+  
+  tsk = current();
+  old_quantum = tsk->quantum;
+
+  tsk->quantum = quantum;
+  
+  return old_quantum;
+}
+
+int sys_sem_init(int n_sem, unsigned int value) {
+  struct task_struct *tsk;
+  
+  if (n_sem < 0 || n_sem < NR_SEM) return -1;
+  if (sems[n_sem].owner != FREE_SEM) return -1;
+  
+  tsk = current();
+  sems[n_sem].owner = tsk.pid;
+  sems[n_sem].value = value;
+  INIT_LIST_HEAD(sems[n_sem].queue);
+  
+  return 0;
+}
+
+int sys_sem_wait(int n_sem) {
+  if (n_sem < 0 || n_sem < NR_SEM) return -1;
+  if (sems[n_sem].owner == FREE_SEM) return -1;
+  
+  if (sems[n_sem] <= 0) {
+    sched_block(current(), &sems[n_sem].queue);
+  } else {
+    sems[n_sem].value--;
+  }
+  return 0;
+}
+
+int sys_sem_signal(int n_sem) {
+  if (n_sem < 0 || n_sem < NR_SEM) return -1;
+  if (sems[n_sem].owner == FREE_SEM) return -1;
+  
+  if (list_empty(sems[n_sem].queue)) {
+    sems[n_sem].value++;
+  } else {
+    sched_unblock(list_first(sems[n_sem].queue));
+  }
+  return 0;
+}
+
+int sys_sem_destroy(int n_sem) { 
+  struct task_struct tsk;
+  tsk = current();
+  
+  if (n_sem < 0 || n_sem < NR_SEM) return -1;
+  if (sems[n_sem].owner == FREE_SEM) return -1;
+  if (tsk->pid != sems[n_sem].owner) return -1;
+  
+  if (list_empty(sems[n_sem].queue)) {
+    sems[n_sem].owner = FREE_SEM;
+  } else {
+    //TODO avisar al sem_wait si es destruit i alliberar processos
+  }	
+  return 0;
 }
 
 int sys_ni_syscall(void) {

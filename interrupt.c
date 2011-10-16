@@ -208,8 +208,25 @@ void general_protection_routine() {
 }
 
 void page_fault_routine() {
-  printk("Page fault exception found");
-  while(1);
+  char emsg_txt[] = "Page fault exeption al process ";
+  char emsg_pid[] "    ";
+  char emsg = "                                   ";
+  
+  struct task_struct tsk;
+  
+  tsk = current();
+  
+  if (tsk->pid == 0) {
+    printk("Page fault exception found at init process, system is dead.");
+    while(1);
+  }
+  
+  itoa(tsk->pid, emsg_pid, 10);
+  strcat(emsg, emsg_txt, emsg_pid);
+  printk(emsg);
+  printk("\n");
+  
+  sys_exit();
 }
 
 void intel_reserved_routine() {
@@ -227,7 +244,7 @@ void alignment_check_routine() {
   while(1);
 }
 
-void clock_routine() { 
+void clock_routine() {
   tics++;
   if (tacs == 0) {
     tacs = TICS_PER_SEC;
@@ -245,6 +262,14 @@ void clock_routine() {
     
   }
   tacs--;
+  
+  sched_update_status();
+  
+  if (sched_switch_needed()) {
+    sched_pause(current());
+    sched_continue(sched_select_next());
+  }
+ 
 }
 
 void keyboard_routine() {

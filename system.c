@@ -92,6 +92,9 @@ int __attribute__((__section__(".text.main")))
   /* Initialize Memory */
   init_mm();
 
+  /* Initialize semaphores*/
+  init_sems();
+  
   /* Initialize task 0 data */
   init_task0();
 

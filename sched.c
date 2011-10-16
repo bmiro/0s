@@ -65,8 +65,6 @@ struct task_struct* current() {
   
 void init_queues(void) {
   INIT_LIST_HEAD(&runqueue);
-  INIT_LIST_HEAD(&blockedqueue);
-  INIT_LIST_HEAD(&terminatedqueue);
 }
 
 void init_task_structs(void) {
@@ -93,7 +91,6 @@ void init_task0(void) {
 
 void task_switch(union task_union *t) {
   int lpag, i;
-  struct task_struct *oldTsk;
 
   /* Updates TSS to point stack of t */
   /* Also clears stack */
@@ -105,11 +102,7 @@ void task_switch(union task_union *t) {
     set_ss_pag(lpag + i, t->task.phpages[i]);
   }
   set_cr3();
-  
-  oldTsk = current();
-  oldTsk->state = TASK_READY;
-  t->task.state = TASK_RUNNING;
-  
+    
   /* Switch system stack of new task. */
   __asm__ __volatile__(
     "movl %0, %%esp\n" 
@@ -142,3 +135,39 @@ void task_switch(union task_union *t) {
   );
   
 }
+
+void sched_update_stauts() {
+  tics--;
+}
+
+int sched_switch_needed() {
+  return tics == 0;
+}
+
+int sched_select_next() {
+  return list_first(runqueue);
+}
+
+void sched_pause(struct task_struct *tsk) {
+  list_del(tsk->queue);
+  list_add_tail(tsk->queue, &runqueue);
+}
+
+void sched_continue(struct task_struct *tsk) {
+  tics = tsk->quantum;
+  task_switch(tsk);
+}
+  
+void sched_block(struct task_struct *tsk, struct list_head *queue) {
+  list_del(tsk->queue));
+  list_add_tail(tsk->queue, queue);
+}
+
+
+void sched_unblock(struct task_struct *tsk) {
+  list_del(tsk->queue));
+  list_add(tsk->queue, &runqueue);
+}
+
+
+

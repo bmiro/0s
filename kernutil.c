@@ -18,7 +18,7 @@ char* itoa(int value, char *str, int base) {
   return str;
 }
 
-/* Same as itoa but padding with 0 in left to achif a minlengh */
+/* Same as itoa but padding with 0 in left to achive a minlengh */
 char* itoap(int value, char *str, int base, int minlengh) {
   int i, n, l;
   int v;
