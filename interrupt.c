@@ -244,7 +244,7 @@ void alignment_check_routine() {
   while(1);
 }
 
-void clock_routine() {
+void clock_routine() {  
   tics++;
   if (tacs == 0) {
     tacs = TICS_PER_SEC;

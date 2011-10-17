@@ -49,6 +49,7 @@ struct protected_task_struct task[NR_TASKS]
 */
 
 char eoi_from_interrupt;
+int tics;
 
 struct task_struct* current() {
   unsigned long sp;
@@ -75,17 +76,18 @@ void init_task_structs(void) {
 }
    
 void init_task0(void) {
-  struct task_struct ts;
-  ts = task[0].t.task;
+  struct task_struct *ts;
+  ts = &task[0].t.task;
 
   /* Initializes paging for the process 0 adress space */
-  set_user_pages(&ts);
+  set_user_pages(ts);
   set_cr3();
   
-  ts.pid = 0; /* Setting PID 0 */
-  ts.quantum = FULL_QUANTUM;
-  ts.state = TASK_RUNNING;
-  list_add(&ts.queue, &runqueue);
+  ts->pid = 0; /* Setting PID 0 */
+  ts->st.tics = 0;
+  ts->st.cs = 0;
+  ts->st.remaining_quantum = ts->quantum;
+  list_add(&ts->queue, &runqueue);
   
 }
 
@@ -136,8 +138,26 @@ void task_switch(union task_union *t) {
   
 }
 
+struct task_struct* getTS(int pid) {
+  int i;
+  
+  //TODO fer alguna cosa més eficient
+  for (i=0; i < NR_TASK; i++) {
+    if (task[i].t.task.pid == pid) {
+      return &task[i].t.task;
+    }
+  }
+  
+  return NULL_TSK;
+}
+
 void sched_update_stauts() {
+  struct task_struct *tsk;
+  
   tics--;
+  tsk = current();
+  tsk->st.tics++;
+  tsk->st.remaining_quantum--;
 }
 
 int sched_switch_needed() {
@@ -155,6 +175,8 @@ void sched_pause(struct task_struct *tsk) {
 
 void sched_continue(struct task_struct *tsk) {
   tics = tsk->quantum;
+  tsk->st.cs++;
+  tsk->st.remaining_quantum = tsk->quantum;
   task_switch(tsk);
 }
   

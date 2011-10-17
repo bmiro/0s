@@ -103,10 +103,11 @@ int sys_fork(void) {
   set_cr3();
   
   child->task.pid = getNewPid();
-  child->task.state = TASK_READY;
   
-  //TODO inicialitzar quantum
-  
+  task->st.tics = 0;
+  task->st.cs = 0;
+  task->st.remaining_quantum = task->quantum;
+    
   /* Modifies child eax value (fork returns 0 to the child)*/
   child->stack[KERNEL_STACK_SIZE-10] = 0;
   
@@ -134,7 +135,7 @@ void sys_exit(void) {
     list_del(tsk->queue);
     tsk->pid = NULL_PID;
     
-    task_switch(sched_select_next());
+    sched_continue(sched_select_next());
   }
 }
 
@@ -144,20 +145,6 @@ int sys_getpid(void) {
   tsk = current();
   
   return tsk->pid;
-}
-
-int sys_nice(int quantum) {
-  int old_quantum;
-  struct task_struct *tsk;
-  
-  if (quantum < 1) return -1;
-  
-  tsk = current();
-  old_quantum = tsk->quantum;
-
-  tsk->quantum = quantum;
-  
-  return old_quantum;
 }
 
 int sys_sem_init(int n_sem, unsigned int value) {
@@ -212,6 +199,23 @@ int sys_sem_destroy(int n_sem) {
     //TODO avisar al sem_wait si es destruit i alliberar processos
   }	
   return 0;
+}
+
+int sys_get_stats(int pid, struct stat *st) {
+  int i;
+  struct task_struct *tsk;
+  
+  
+  if (pid > pid_counter) return -1;
+  
+  tsk = getTS(pid);
+  
+  //TODO podem tenir processos que no siguin actius??, si es aixi contemplar-ho
+  
+  if (tsk == NULL_TSK) return -1;
+  
+  return copy_to_user(tsk->st, st, sizeof(stats));
+  
 }
 
 int sys_ni_syscall(void) {

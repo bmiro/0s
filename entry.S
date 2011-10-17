@@ -112,7 +112,7 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_ni_syscall
 	.long sys_nice
-
+	.long sys_get_stats
 
 
 /* Exception handlers */

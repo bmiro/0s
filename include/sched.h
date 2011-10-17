@@ -6,12 +6,14 @@
 #define __SCHED_H__
 
 #include <list.h>
+#include <stats.h>
 #include <mm_address.h>
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
 
 #define NULL_PID -1
+#define NULL_TSK -1
 
 #define TASK_RUNNING 0
 #define TASK_READY 1
@@ -19,7 +21,6 @@
 #define TASK_WAITING 3
 #define TASK_FREE 4
 
-#define FULL_QUANTUM 8
 
 struct list_head runqueue;
   
@@ -27,6 +28,7 @@ struct task_struct {
   unsigned int pid; /* Keep it the first member */
   char quantum;
   struct list_head queue;
+  struct stats st;
   
   //unsigned int consumed_tics;
   
@@ -66,7 +68,17 @@ static inline struct task_struct* list_head_to_task_struct(struct list_head *l) 
 }
 
 struct task_struct* current();
+
+/* Returns the task struct corresponding to that pid, NULL_TSK if pid does NOT exist */
+struct task_struct* getTS(int pid);
 void task_switch(union task_union *t);
 
+void sched_update_stauts();
+int sched_switch_needed();
+int sched_select_next();
+void sched_pause(struct task_struct *tsk);
+void sched_continue(struct task_struct *tsk);
+void sched_block(struct task_struct *tsk, struct list_head *queue);
+void sched_unblock(struct task_struct *tsk);
 
 #endif  /* __SCHED_H__ */

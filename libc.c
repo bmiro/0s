@@ -231,3 +231,23 @@ int sem_destroy(int n_sem) {
   } 
   
 }
+
+int get_stats(int pid, struct stat *st) {
+  int error;
+  int id = SYS_GET_STATS_ID;
+
+  __asm__ __volatile__(
+    "movl %4, %%eax\n" 
+    "int $0x80\n"
+    "movl %%eax, %0\n"
+    : "=a" (error)
+    : "b" (pid), "c" (st), "g" (id)
+  );
+  
+  if (error < 0) {
+    errno = -error;
+    return -1;
+  } else {
+    /* Successful syscall */
+    return error;
+  } 
