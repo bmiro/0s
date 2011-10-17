@@ -142,13 +142,13 @@ struct task_struct* getTS(int pid) {
   int i;
   
   //TODO fer alguna cosa més eficient
-  for (i=0; i < NR_TASK; i++) {
+  for (i=0; i < NR_TASKS; i++) {
     if (task[i].t.task.pid == pid) {
       return &task[i].t.task;
     }
   }
   
-  return NULL_TSK;
+  return (struct task_struct*) NULL_TSK;
 }
 
 void sched_update_stauts() {
@@ -160,35 +160,35 @@ void sched_update_stauts() {
   tsk->st.remaining_quantum--;
 }
 
-int sched_switch_needed() {
+char sched_switch_needed() {
   return tics == 0;
 }
 
-int sched_select_next() {
-  return list_first(runqueue);
+struct task_struct* sched_select_next() {
+  return list_head_to_task_struct(list_first(&runqueue));
 }
 
 void sched_pause(struct task_struct *tsk) {
-  list_del(tsk->queue);
-  list_add_tail(tsk->queue, &runqueue);
+  list_del(&tsk->queue);
+  list_add_tail(&tsk->queue, &runqueue);
 }
 
 void sched_continue(struct task_struct *tsk) {
   tics = tsk->quantum;
   tsk->st.cs++;
   tsk->st.remaining_quantum = tsk->quantum;
-  task_switch(tsk);
+  task_switch((union task_union *) tsk);
 }
   
 void sched_block(struct task_struct *tsk, struct list_head *queue) {
-  list_del(tsk->queue));
-  list_add_tail(tsk->queue, queue);
+  list_del(&tsk->queue);
+  list_add_tail(&tsk->queue, queue);
 }
 
 
 void sched_unblock(struct task_struct *tsk) {
-  list_del(tsk->queue));
-  list_add(tsk->queue, &runqueue);
+  list_del(&tsk->queue);
+  list_add(&tsk->queue, &runqueue);
 }
 
 

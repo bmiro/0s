@@ -1,9 +1,11 @@
-#ifndef __SCHED_H__
-#define __SCHED_H__
+#ifndef __SEM_H__
+#define __SEM_H__
+
+#include <list.h>
 
 #define NR_SEM 10
 
-#define FREE_SEM
+#define FREE_SEM -1
 
 struct sem_struct {
   int owner;
@@ -12,5 +14,7 @@ struct sem_struct {
 };
 
 extern struct sem_struct sems[NR_SEM];
+
+void init_sems();
 
 #endif

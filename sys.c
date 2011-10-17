@@ -10,6 +10,8 @@
 #include <sched.h>
 #include <mm.h>
 #include <mm_address.h>
+#include <sem.h>
+#include <stats.h>
 
 unsigned int pid_counter = 1;
 
@@ -103,10 +105,11 @@ int sys_fork(void) {
   set_cr3();
   
   child->task.pid = getNewPid();
+  child->task.quantum = DEFAULT_QUANTUM;
   
-  task->st.tics = 0;
-  task->st.cs = 0;
-  task->st.remaining_quantum = task->quantum;
+  child->task.st.tics = 0;
+  child->task.st.cs = 0;
+  child->task.st.remaining_quantum = child->task.quantum;
     
   /* Modifies child eax value (fork returns 0 to the child)*/
   child->stack[KERNEL_STACK_SIZE-10] = 0;
@@ -119,6 +122,7 @@ int sys_fork(void) {
 void sys_exit(void) {
   struct task_struct *tsk;
   int lpag;
+  int i;
   
   tsk = current();
   
@@ -126,16 +130,17 @@ void sys_exit(void) {
     lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
     for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
       del_ss_pag(lpag + i); // TODO Revisar si es necessari
-      free_frame(tsk->task.phpages[i]);
+      free_frame(tsk->phpages[i]);
     }
     set_cr3(); // TODO Revisar si es necessari
   
     //TODO alliberar semafors
   
-    list_del(tsk->queue);
+    list_del(&tsk->queue);
     tsk->pid = NULL_PID;
     
-    sched_continue(sched_select_next());
+    //TODO alerta amb el EOI!! TODO TODO!!!
+    sched_continue((void *)sched_select_next());
   }
 }
 
@@ -147,16 +152,24 @@ int sys_getpid(void) {
   return tsk->pid;
 }
 
+int sys_nice(int quantum) {
+  struct task_struct *tsk;
+  
+  tsk = current();
+  
+  return tsk->quantum = quantum;
+}
+
 int sys_sem_init(int n_sem, unsigned int value) {
   struct task_struct *tsk;
   
-  if (n_sem < 0 || n_sem < NR_SEM) return -1;
+  if ((n_sem < 0) || (n_sem < NR_SEM)) return -1;
   if (sems[n_sem].owner != FREE_SEM) return -1;
   
   tsk = current();
-  sems[n_sem].owner = tsk.pid;
+  sems[n_sem].owner = tsk->pid;
   sems[n_sem].value = value;
-  INIT_LIST_HEAD(sems[n_sem].queue);
+  INIT_LIST_HEAD(&sems[n_sem].queue);
   
   return 0;
 }
@@ -165,7 +178,7 @@ int sys_sem_wait(int n_sem) {
   if (n_sem < 0 || n_sem < NR_SEM) return -1;
   if (sems[n_sem].owner == FREE_SEM) return -1;
   
-  if (sems[n_sem] <= 0) {
+  if (sems[n_sem].value <= 0) {
     sched_block(current(), &sems[n_sem].queue);
   } else {
     sems[n_sem].value--;
@@ -177,23 +190,23 @@ int sys_sem_signal(int n_sem) {
   if (n_sem < 0 || n_sem < NR_SEM) return -1;
   if (sems[n_sem].owner == FREE_SEM) return -1;
   
-  if (list_empty(sems[n_sem].queue)) {
+  if (list_empty(&sems[n_sem].queue)) {
     sems[n_sem].value++;
   } else {
-    sched_unblock(list_first(sems[n_sem].queue));
+    sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
   }
   return 0;
 }
 
 int sys_sem_destroy(int n_sem) { 
-  struct task_struct tsk;
+  struct task_struct *tsk;
   tsk = current();
   
   if (n_sem < 0 || n_sem < NR_SEM) return -1;
   if (sems[n_sem].owner == FREE_SEM) return -1;
   if (tsk->pid != sems[n_sem].owner) return -1;
   
-  if (list_empty(sems[n_sem].queue)) {
+  if (list_empty(&sems[n_sem].queue)) {
     sems[n_sem].owner = FREE_SEM;
   } else {
     //TODO avisar al sem_wait si es destruit i alliberar processos
@@ -201,10 +214,8 @@ int sys_sem_destroy(int n_sem) {
   return 0;
 }
 
-int sys_get_stats(int pid, struct stat *st) {
-  int i;
+int sys_get_stats(int pid, struct stats *st) {
   struct task_struct *tsk;
-  
   
   if (pid > pid_counter) return -1;
   
@@ -212,9 +223,9 @@ int sys_get_stats(int pid, struct stat *st) {
   
   //TODO podem tenir processos que no siguin actius??, si es aixi contemplar-ho
   
-  if (tsk == NULL_TSK) return -1;
+  if (tsk == (struct task_struct *)NULL_TSK) return -1;
   
-  return copy_to_user(tsk->st, st, sizeof(stats));
+  return copy_to_user(&tsk->st, st, sizeof(struct stats));
   
 }
 

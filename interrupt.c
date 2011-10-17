@@ -209,10 +209,10 @@ void general_protection_routine() {
 
 void page_fault_routine() {
   char emsg_txt[] = "Page fault exeption al process ";
-  char emsg_pid[] "    ";
-  char emsg = "                                   ";
+  char emsg_pid[] = "    ";
+  char emsg[] = "                                   ";
   
-  struct task_struct tsk;
+  struct task_struct *tsk;
   
   tsk = current();
   

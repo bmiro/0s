@@ -61,8 +61,6 @@ int copy_to_user(void *start, void *dest, int size) {
  *         false (zero) if it is definitely invalid
  */
 int access_ok(int type, const void *addr, unsigned long size) {
-  int pag_addr;
-  int page;
   
   /* Checks if block is in user-space logical memory range */
   if (((unsigned int)addr < L_USER_START) || 

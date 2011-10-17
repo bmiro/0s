@@ -26,7 +26,7 @@ SYSLDFLAGS = -T system.lds
 USRLDFLAGS = -T user.lds
 LINKFLAGS = -g 
 
-SYSOBJ = interrupt.o entry.o io.o kernutil.o sys.o sched.o mm.o devices.o utils.o hardware.o
+SYSOBJ = interrupt.o entry.o io.o kernutil.o sys.o sched.o sem.o mm.o devices.o utils.o hardware.o
 
 #add to USROBJ the object files required to complete the user program
 USROBJ = libc.o libjp.a
@@ -67,12 +67,13 @@ mm.o: mm.c $(INCLUDEDIR)/types.h $(INCLUDEDIR)/mm.h
 
 sched.o: sched.c $(INCLUDEDIR)/sched.h
 
+sem.o: sem.c $(INCLUDEDIR)/sem.h
+
 sys.o: sys.c $(INCLUDEDIR)/devices.h
 
 utils.o: utils.c $(INCLUDEDIR)/utils.h
 
-
-system.o:system.c $(INCLUDEDIR)/hardware.h system.lds $(SYSOBJ) $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/system.h $(INCLUDEDIR)/sched.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/io.h $(INCLUDEDIR)/mm_address.h 
+system.o: system.c $(INCLUDEDIR)/hardware.h system.lds $(SYSOBJ) $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/system.h $(INCLUDEDIR)/sched.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/io.h $(INCLUDEDIR)/sem.h $(INCLUDEDIR)/mm_address.h 
 
 
 system: system.o system.lds $(SYSOBJ)

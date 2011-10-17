@@ -21,6 +21,7 @@
 #define TASK_WAITING 3
 #define TASK_FREE 4
 
+#define DEFAULT_QUANTUM 50
 
 struct list_head runqueue;
   
@@ -73,9 +74,9 @@ struct task_struct* current();
 struct task_struct* getTS(int pid);
 void task_switch(union task_union *t);
 
-void sched_update_stauts();
-int sched_switch_needed();
-int sched_select_next();
+void sched_update_status();
+char sched_switch_needed();
+struct task_struct* sched_select_next();
 void sched_pause(struct task_struct *tsk);
 void sched_continue(struct task_struct *tsk);
 void sched_block(struct task_struct *tsk, struct list_head *queue);

@@ -11,6 +11,7 @@
 #include <mm.h>
 #include <io.h>
 #include <utils.h>
+#include <sem.h>
 
 #define OS_STARTUP_LOGO \
 "      :::::::   :::::::: \n\

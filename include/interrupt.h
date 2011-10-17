@@ -6,6 +6,7 @@
 #define __INTERRUPT_H__
 
 #include <types.h>
+#include <sched.h>
 
 #define IDT_ENTRIES 256
 

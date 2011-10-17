@@ -34,6 +34,7 @@ extern TSS         tss;
 
 void init_mm();
 void set_ss_pag(unsigned page, unsigned frame);
+void del_ss_pag(unsigned page);
 void set_cr3();
 
 void setGdt();
