@@ -30,14 +30,7 @@ struct task_struct {
   char quantum;
   struct list_head queue;
   struct stats st;
-  
-  //unsigned int consumed_tics;
-  
-  //struct task_struct *parent;
-  //struct task_struct *children;
-  //struct task_struct *brotherhood; //TODO emprar llenguatge no sexista
   unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
-  
 };
 
 union task_union {

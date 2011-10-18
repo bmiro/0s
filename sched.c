@@ -3,14 +3,9 @@
  */
 
 #include <sched.h>
-
 #include <mm.h>
 
-struct protected_task_struct task[NR_TASKS]
-  __attribute__((__section__(".data.task")));
-
 #define CURRENT_TASK_MASK 0xFFFFF000
-
 #define RESTORE_SIZE 16
 /* Restore Size for system stack
 16 ---------- KERNEL_STACK_SIZE-16 <- ESP
@@ -48,6 +43,10 @@ struct protected_task_struct task[NR_TASKS]
 00 ---------- KERNEL_STACK_SIZE
 */
 
+struct protected_task_struct task[NR_TASKS]
+  __attribute__((__section__(".data.task")));
+  
+  
 char eoi_from_interrupt;
 int tics;
 

@@ -86,21 +86,28 @@ int __attribute__((__section__(".text.main")))
 
   /* Initialize task queues */
   init_queues();
+  printk("Init Queues... done!\n");
   
   /* Initialize task structs */
   init_task_structs();
+  printk("Init task structs... done!\n");
   
   /* Initialize Memory */
   init_mm();
+  printk("Init memory... done!\n");
 
   /* Initialize semaphores*/
   init_sems();
-  
+  printk("Init semaphores... done!\n");
+
   /* Initialize task 0 data */
   init_task0();
+  printk("Init init process... done!\n");
+
 
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
+  printk("Moving user data after page table init... done!\n");
 
   /* Enabling interruptions */
   enable_int();
