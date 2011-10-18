@@ -151,7 +151,7 @@ struct task_struct* getTS(int pid) {
   return (struct task_struct*) NULL_TSK;
 }
 
-void sched_update_stauts() {
+void sched_update_status() {
   struct task_struct *tsk;
   
   tics--;

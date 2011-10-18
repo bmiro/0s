@@ -61,7 +61,7 @@ io.o: io.c $(INCLUDEDIR)/io.h
 
 kernutil.o: kernutil.c $(INCLUDEDIR)/kernutil.h
 
-libc.o: libc.c $(INCLUDEDIR)/libc.h
+libc.o: libc.c $(INCLUDEDIR)/libc.h 
 
 mm.o: mm.c $(INCLUDEDIR)/types.h $(INCLUDEDIR)/mm.h
 

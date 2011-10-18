@@ -80,7 +80,7 @@ int fork(void) {
   
 }
 
-void exit(void) {
+int exit(void) {
   int error;
   int id = SYS_EXIT_ID;
 
@@ -127,7 +127,7 @@ int nice(int quantum) {
   int id = SYS_NICE_ID;
 
   __asm__ __volatile__(
-    "movl %4, %%eax\n" 
+    "movl %2, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
     : "=a" (error)
@@ -149,7 +149,7 @@ int sem_init(int n_sem, unsigned int value) {
   int id = SYS_SEM_INIT_ID;
 
   __asm__ __volatile__(
-    "movl %4, %%eax\n" 
+    "movl %3, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
     : "=a" (error)
@@ -171,7 +171,7 @@ int sem_wait(int n_sem) {
   int id = SYS_SEM_WAIT_ID;
 
   __asm__ __volatile__(
-    "movl %4, %%eax\n" 
+    "movl %2, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
     : "=a" (error)
@@ -193,7 +193,7 @@ int sem_signal(int n_sem) {
   int id = SYS_SEM_SIGNAL_ID;
 
   __asm__ __volatile__(
-    "movl %4, %%eax\n" 
+    "movl %2, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
     : "=a" (error)
@@ -215,7 +215,7 @@ int sem_destroy(int n_sem) {
   int id = SYS_SEM_DESTROY_ID;
 
   __asm__ __volatile__(
-    "movl %4, %%eax\n" 
+    "movl %2, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
     : "=a" (error)
@@ -232,12 +232,12 @@ int sem_destroy(int n_sem) {
   
 }
 
-int get_stats(int pid, struct stat *st) {
+int get_stats(int pid, struct stats *st) {
   int error;
   int id = SYS_GET_STATS_ID;
 
   __asm__ __volatile__(
-    "movl %4, %%eax\n" 
+    "movl %3, %%eax\n" 
     "int $0x80\n"
     "movl %%eax, %0\n"
     : "=a" (error)
@@ -250,4 +250,5 @@ int get_stats(int pid, struct stat *st) {
   } else {
     /* Successful syscall */
     return error;
-  } 
+  }
+}
