@@ -48,7 +48,7 @@ struct protected_task_struct task[NR_TASKS]
   
   
 char eoi_from_interrupt;
-int tics;
+int roundtics;
 
 struct task_struct* current() {
   unsigned long sp;
@@ -83,6 +83,7 @@ void init_task0(void) {
   set_cr3();
   
   ts->pid = 0; /* Setting PID 0 */
+  ts->quantum = DEFAULT_QUANTUM;
   ts->st.tics = 0;
   ts->st.cs = 0;
   ts->st.remaining_quantum = ts->quantum;
@@ -153,14 +154,14 @@ struct task_struct* getTS(int pid) {
 void sched_update_status() {
   struct task_struct *tsk;
   
-  tics--;
+  roundtics--;
   tsk = current();
   tsk->st.tics++;
   tsk->st.remaining_quantum--;
 }
 
 char sched_switch_needed() {
-  return tics == 0;
+  return roundtics == 0;
 }
 
 struct task_struct* sched_select_next() {
@@ -173,7 +174,7 @@ void sched_pause(struct task_struct *tsk) {
 }
 
 void sched_continue(struct task_struct *tsk) {
-  tics = tsk->quantum;
+  roundtics = tsk->quantum;
   tsk->st.cs++;
   tsk->st.remaining_quantum = tsk->quantum;
   task_switch((union task_union *) tsk);

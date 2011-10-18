@@ -95,6 +95,9 @@ emul24: zeos.bin
 emul: zeos.bin
 	bochs -q -f bochsrc-2.3
 
+debug: zeos.bin
+	bochs -q -f bochsrc-debug
+
 emuldbg: zeos.bin
 	bochs_nogdb -q -f .bochsrc-2.4
 
