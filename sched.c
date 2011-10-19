@@ -89,6 +89,7 @@ void init_task0(void) {
   ts->st.remaining_quantum = ts->quantum;
   list_add(&ts->queue, &runqueue);
   
+  roundtics = ts->quantum;
 }
 
 void task_switch(union task_union *t) {
@@ -96,7 +97,7 @@ void task_switch(union task_union *t) {
 
   /* Updates TSS to point stack of t */
   /* Also clears stack */
-  tss.esp0 = (DWord) &(t->stack[KERNEL_STACK_SIZE - RESTORE_SIZE]);
+  tss.esp0 = (DWord) &(t->stack[KERNEL_STACK_SIZE]);
   
   /* Updates page table to make accessible the data and stack pages to user */
   lpag = (L_USER_START>>12)+NUM_PAG_CODE;
@@ -104,22 +105,22 @@ void task_switch(union task_union *t) {
     set_ss_pag(lpag + i, t->task.phpages[i]);
   }
   set_cr3();
-    
+      
   /* Switch system stack of new task. */
   __asm__ __volatile__(
     "movl %0, %%esp\n" 
     :
-    : "g" (tss.esp0)
+    : "g" (&(t->stack[KERNEL_STACK_SIZE - RESTORE_SIZE]))
   );
  
   if (eoi_from_interrupt) {
     __asm__ __volatile__(
-      "movb $0x20, %al\n"
-      "outb %al, $0x20"
+      "movb $0x20, %al\n \
+       outb %al, $0x20"
     );
     eoi_from_interrupt = 0;
   }
-  
+
   /* Restore registers */
   __asm__ __volatile__(
     "popl %ebx\n \
@@ -129,13 +130,12 @@ void task_switch(union task_union *t) {
      popl %edi\n \
      popl %ebp\n \
      popl %eax\n \
-     popl %ds\n	 \
+     popl %ds\n \
      popl %es\n \
      popl %fs\n \
      popl %gs\n \
      iret"
   );
-  
 }
 
 struct task_struct* getTS(int pid) {
@@ -177,14 +177,15 @@ void sched_continue(struct task_struct *tsk) {
   roundtics = tsk->quantum;
   tsk->st.cs++;
   tsk->st.remaining_quantum = tsk->quantum;
-  task_switch((union task_union *) tsk);
+  
+  eoi_from_interrupt = 1;
+  task_switch((void *) tsk);
 }
   
 void sched_block(struct task_struct *tsk, struct list_head *queue) {
   list_del(&tsk->queue);
   list_add_tail(&tsk->queue, queue);
 }
-
 
 void sched_unblock(struct task_struct *tsk) {
   list_del(&tsk->queue);

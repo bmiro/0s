@@ -14,6 +14,7 @@
 #define SYS_SEM_WAIT_ID		22
 #define SYS_SEM_SIGNAL_ID	23
 #define SYS_SEM_DESTROY_ID	24
+#define SYS_DEBUG_ID		32
 #define SYS_NICE_ID		34
 #define SYS_GET_STATS_ID	35
 

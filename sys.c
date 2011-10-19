@@ -115,7 +115,7 @@ int sys_fork(void) {
   child->stack[KERNEL_STACK_SIZE-10] = 0;
   
   list_add(&child->task.queue, &runqueue);
-  
+    
   return child->task.pid;
 }
 
@@ -229,7 +229,11 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_ni_syscall(void) {
-  printk("Not implemented yet!");
+  printk("Not implemented yet!\n");
   return -ENOSYS;
+}
+
+int sys_debug(void) {
+  printk("Debug syscall!\n");  
 }
 

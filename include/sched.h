@@ -21,7 +21,7 @@
 #define TASK_WAITING 3
 #define TASK_FREE 4
 
-#define DEFAULT_QUANTUM 50
+#define DEFAULT_QUANTUM 10
 
 struct list_head runqueue;
   

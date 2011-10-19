@@ -252,3 +252,25 @@ int get_stats(int pid, struct stats *st) {
     return error;
   }
 }
+
+/* Internal syscall for debug only */
+int debug() {
+  int error;
+  int id = SYS_DEBUG_ID;
+
+  __asm__ __volatile__(
+    "movl %1, %%eax\n" 
+    "int $0x80\n"
+    "movl %%eax, %0\n"
+    : "=a" (error)
+    : "g" (id)
+  );
+  
+  if (error < 0) {
+    errno = -error;
+    return -1;
+  } else {
+    /* Successful syscall */
+    return error;
+  }
+}

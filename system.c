@@ -104,7 +104,6 @@ int __attribute__((__section__(".text.main")))
   init_task0();
   printk("Init init process... done!\n");
 
-
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
   printk("Moving user data after page table init... done!\n");
