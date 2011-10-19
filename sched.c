@@ -60,9 +60,9 @@ struct task_struct* current() {
   );
   
   /* 2 Because we use empty protected blocks to control stack overflows */
-  return (struct task_struct*)((sp / KERNEL_STACK_SIZE*2) & CURRENT_TASK_MASK);
+  return (struct task_struct*)(sp & CURRENT_TASK_MASK);
 }
-  
+
 void init_queues(void) {
   INIT_LIST_HEAD(&runqueue);
 }

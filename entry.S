@@ -70,13 +70,13 @@
       movb $0x20, %al; \
       outb %al, $0x20
 
+/* TODO! uptade each time you add a sys_call in the table below!!!*/
 ENTRY(syscall_table_size)
-	.long 21
-
+	.long 36
 
 /* Linux syscall table:
  * http://lxr.linux.no/#linux+v3.0.4/arch/x86/kernel/syscall_table_32.S */
-ENTRY(sys_call_table)	
+ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_exit
 	.long sys_fork
@@ -254,7 +254,7 @@ ENTRY(system_call)
 	/* Bounds check */
 	cmpl $0, %eax
 	jl err /* Jump if index is < 0 (out of bounds) */
-	cmpl $4, %eax
+	cmpl syscall_table_size, %eax
 	jg err /* Jumg if index is > 4 (out of bounds)*/
 
 	call *sys_call_table(, %eax, 0x04)

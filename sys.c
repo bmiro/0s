@@ -148,7 +148,6 @@ int sys_getpid(void) {
   struct task_struct *tsk;
   
   tsk = current();
-  
   return tsk->pid;
 }
 
@@ -230,7 +229,7 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_ni_syscall(void) {
-  printk_xyr(79, 20, "Not implemented yet!");
+  printk("Not implemented yet!");
   return -ENOSYS;
 }
 
