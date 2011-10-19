@@ -153,10 +153,16 @@ int sys_getpid(void) {
 
 int sys_nice(int quantum) {
   struct task_struct *tsk;
+  int old_quantum;
+  
+  if (quantum <=0) return -EINVAL;
   
   tsk = current();
   
-  return tsk->quantum = quantum;
+  old_quantum = tsk->quantum;
+  tsk->quantum = quantum;
+  
+  return  old_quantum;
 }
 
 int sys_sem_init(int n_sem, unsigned int value) {
