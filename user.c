@@ -12,10 +12,12 @@ assignatura que mori envoltat de la seva familia sense resso mediatic.\n", 229);
   //p  = 1;
   while(1) {
     if (p == 0) {
-      write(1, "Fill!\n", 5);
+      write(1, "Fill!\n", 6);
     } else {
       write(1, "Pare!\n", 6);
+      nice(4);
     }
   }
-  //runjp();
+//  runjp();
 }
+
