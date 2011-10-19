@@ -18,17 +18,13 @@ int perror() {
       break;
     case (ESRCH) :
       write(CONSOLE, WELL_FORMED_STR("[perror] No such process.\n"));
-      break;
-      
-      
-      
+      break; 
     case (EBADF) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Bad file number.\n"));
       break;
     case (EAGAIN) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Try again.\n"));
       break;
-      
     case (ENOMEM) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Out of memory.\n"));
       break;

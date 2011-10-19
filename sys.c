@@ -81,6 +81,7 @@ int sys_fork(void) {
       break;
     }
   }
+  
   /* There is no space to allocate the task_struct */
   if (i == NR_TASKS) return -EAGAIN;
 
@@ -105,7 +106,7 @@ int sys_fork(void) {
   set_cr3();
   
   child->task.pid = getNewPid();
-  child->task.quantum = DEFAULT_QUANTUM;
+  child->task.quantum = current()->quantum;
   
   child->task.st.tics = 0;
   child->task.st.cs = 0;
@@ -117,31 +118,6 @@ int sys_fork(void) {
   list_add(&child->task.queue, &runqueue);
     
   return child->task.pid;
-}
-
-void sys_exit(void) {
-  struct task_struct *tsk;
-  int lpag;
-  int i;
-  
-  tsk = current();
-  
-  if (tsk->pid != 0) {
-    lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
-    for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
-      del_ss_pag(lpag + i); // TODO Revisar si es necessari
-      free_frame(tsk->phpages[i]);
-    }
-    set_cr3(); // TODO Revisar si es necessari
-  
-    //TODO alliberar semafors
-  
-    list_del(&tsk->queue);
-    tsk->pid = NULL_PID;
-    
-    //TODO alerta amb el EOI!! TODO TODO!!!
-    sched_continue((void *)sched_select_next());
-  }
 }
 
 int sys_getpid(void) {
@@ -183,6 +159,7 @@ int sys_sem_init(int n_sem, unsigned int value) {
 int sys_sem_wait(int n_sem) {
   if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
+  if (current()->pid == 0) return -EPERM;
   
   if (sems[n_sem].value <= 0) {
     sched_block(current(), &sems[n_sem].queue);
@@ -193,8 +170,8 @@ int sys_sem_wait(int n_sem) {
 }
 
 int sys_sem_signal(int n_sem) {
-  if (n_sem < 0 || n_sem > NR_SEM) return -1;
-  if (sems[n_sem].owner == FREE_SEM) return -1;
+  if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
+  if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   
   if (list_empty(&sems[n_sem].queue)) {
     sems[n_sem].value++;
@@ -205,19 +182,44 @@ int sys_sem_signal(int n_sem) {
 }
 
 int sys_sem_destroy(int n_sem) {
-  struct task_struct *tsk;
-  tsk = current();
-  
   if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
-  if (tsk->pid != sems[n_sem].owner) return -EPERM;
+  if (current()->pid != sems[n_sem].owner) return -EPERM;
   
-  if (list_empty(&sems[n_sem].queue)) {
-    sems[n_sem].owner = FREE_SEM;
-  } else {
+  sems[n_sem].owner = FREE_SEM;
+  if (!list_empty(&sems[n_sem].queue)) {
     //TODO avisar al sem_wait si es destruit i alliberar processos
   }	
   return 0;
+}
+
+void sys_exit(void) {
+  struct task_struct *tsk;
+  int lpag;
+  int i;
+  
+  tsk = current();
+  
+  if (tsk->pid != 0) {
+    lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
+    for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
+      del_ss_pag(lpag + i); // TODO Revisar si es necessari
+      free_frame(tsk->phpages[i]);
+    }
+    set_cr3(); // TODO Revisar si es necessari
+  
+    for (i = 0; i < NR_SEM; i++) { //TOOPTIMIZE: List of sems owned by a process?
+      if (sems[i].owner == tsk->pid) {
+	sys_sem_destroy(i);
+      }
+    }
+  
+    list_del(&tsk->queue);
+    tsk->pid = NULL_PID;
+    
+    //TODO alerta amb el EOI!! TODO TODO!!!
+    sched_continue((void *)sched_select_next());
+  }
 }
 
 int sys_get_stats(int pid, struct stats *st) {
