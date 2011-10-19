@@ -182,12 +182,21 @@ int sys_sem_signal(int n_sem) {
 }
 
 int sys_sem_destroy(int n_sem) {
+  struct task_struct *tsk;
+  struct list_head *waiting_tsk;
+  
   if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   if (current()->pid != sems[n_sem].owner) return -EPERM;
   
   sems[n_sem].owner = FREE_SEM;
   if (!list_empty(&sems[n_sem].queue)) {
+    list_for_each(waiting_tsk, &sems[n_sem].queue) {
+      printk("a");
+      tsk = list_head_to_task_struct(waiting_tsk);
+      //((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = -1;
+      sched_unblock(tsk);
+    }
     //TODO avisar al sem_wait si es destruit i alliberar processos
   }	
   return 0;
@@ -232,11 +241,9 @@ int sys_get_stats(int pid, struct stats *st) {
   //TODO podem tenir processos que no siguin actius??, si es aixi contemplar-ho
   if (tsk == (struct task_struct *)NULL_TSK) return -ESRCH;
   
-  /* Checks st parameter */
-  L_USER_START + NUM_PAG_CODE*PAGE_SIZE;
-  
-  if (st < (void *)(L_USER_START + NUM_PAG_CODE*PAGE_SIZE)) return -EFAULT;
-  if (st > (void *)(L_USER_START + (NUM_PAG_CODE+NUM_PAG_DATA)*PAGE_SIZE)) return -EFAULT;
+  /* Checks st parameter */  
+  if (st < (struct stats *)(L_USER_START + NUM_PAG_CODE*PAGE_SIZE)) return -EFAULT;
+  if (st > (struct stats *)(L_USER_START + (NUM_PAG_CODE+NUM_PAG_DATA)*PAGE_SIZE)) return -EFAULT;
   
   return copy_to_user(&tsk->st, st, sizeof(struct stats));
   

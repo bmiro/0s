@@ -11,6 +11,7 @@
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
+#define EAX_POS 10
 
 #define NULL_PID -1
 #define NULL_TSK -1
