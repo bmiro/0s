@@ -1,6 +1,7 @@
 #ifndef ERRNO_H__
 #define  ERRNO_H__
 
+#define ESRCH        3  /* No such process */
 #define EBADF        9  /* Bad file number */
 #define EAGAIN      11  /* Try again */
 #define	ENOMEM      12	/* Out of memory */

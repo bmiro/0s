@@ -222,13 +222,14 @@ int sys_sem_destroy(int n_sem) {
 int sys_get_stats(int pid, struct stats *st) {
   struct task_struct *tsk;
   
-  if (pid > pid_counter) return -1;
+  if (pid < 0) return -EINVAL;
+  if (pid > pid_counter) return -ESRCH;
   
   tsk = getTS(pid);
   
   //TODO podem tenir processos que no siguin actius??, si es aixi contemplar-ho
   
-  if (tsk == (struct task_struct *)NULL_TSK) return -1;
+  if (tsk == (struct task_struct *)NULL_TSK) return -ESRCH;
   
   return copy_to_user(&tsk->st, st, sizeof(struct stats));
   
