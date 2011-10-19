@@ -9,7 +9,7 @@ seva contribucio al llenguatge C i sistemes Unix, intimaments lligats a aquesta 
 assignatura que mori envoltat de la seva familia sense resso mediatic.\n", 229);
 
   p = fork();
-
+  //p  = 1;
   while(1) {
     if (p == 0) {
       write(1, "Fill!\n", 5);

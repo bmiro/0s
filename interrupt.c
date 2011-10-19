@@ -278,10 +278,19 @@ void clock_routine() {
     printk(dbg);
     
     printk("\n");
+    itoa(tsk->pid, dbg, 10);
+    printk(dbg);
+    
+    printk("\n");
     
     tsk2 = sched_select_next();
     itoa((int)tsk2, dbg, 10);
     printk(dbg);
+    
+    printk("\n");
+    itoa(tsk2->pid, dbg, 10);
+    printk(dbg);
+    
     
     sched_continue(sched_select_next());
   }

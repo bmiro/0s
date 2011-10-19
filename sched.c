@@ -180,6 +180,8 @@ void sched_continue(struct task_struct *tsk) {
   
   eoi_from_interrupt = 1;
   task_switch((void *) tsk);
+  
+  printk("hello\n");
 }
   
 void sched_block(struct task_struct *tsk, struct list_head *queue) {

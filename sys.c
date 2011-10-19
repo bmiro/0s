@@ -13,7 +13,7 @@
 #include <sem.h>
 #include <stats.h>
 
-unsigned int pid_counter = 1;
+unsigned int pid_counter = 0;
 
 int getNewPid() {
   pid_counter++; // TODO Check better place to control pid TODO check if value is overflowed
@@ -85,13 +85,13 @@ int sys_fork(void) {
   if (i == NR_TASKS) return -EAGAIN;
 
   /* Task_struct copy */
-  copy_data(current(), &task[i].t.task, KERNEL_STACK_SIZE);    
+  copy_data(current(), &task[i].t.task, KERNEL_STACK_SIZE*4);    
 
   /* First of all we duplicate all the data pages in the parent space, just below its data pages */
   lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
   src = L_USER_START + NUM_PAG_CODE*PAGE_SIZE;
   dst = src + NUM_PAG_DATA*PAGE_SIZE; 
-  for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
+  for (i = 0; i < NUM_PAG_DATA; i++) {
     f = alloc_frame();
     if (f == -1) return -ENOMEM;
     
