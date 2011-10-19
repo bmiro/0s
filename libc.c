@@ -13,14 +13,33 @@ int errno;
 
 int perror() {
   switch (errno) { //TODO Afegir nous valors
+    case (EPERM) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Operation not permitted.\n"));
+      break;
+    case (ESRCH) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] No such process.\n"));
+      break;
+      
+      
+      
     case (EBADF) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Bad file number.\n"));
       break;
     case (EAGAIN) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Try again.\n"));
       break;
+      
+    case (ENOMEM) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Out of memory.\n"));
+      break;
+    case (EACCES) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Permission denied.\n"));
+      break;
     case (EFAULT) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Bad address.\n"));
+      break;
+    case (EBUSY) :
+      write(CONSOLE, WELL_FORMED_STR("[perror] Device or resource busy.\n"));
       break;
     case (EINVAL) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Invalid argument.\n"));

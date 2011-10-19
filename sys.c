@@ -168,8 +168,9 @@ int sys_nice(int quantum) {
 int sys_sem_init(int n_sem, unsigned int value) {
   struct task_struct *tsk;
   
-  if ((n_sem < 0) || (n_sem < NR_SEM)) return -1;
-  if (sems[n_sem].owner != FREE_SEM) return -1;
+  if ((n_sem < 0) || (n_sem > NR_SEM)) return -EINVAL;
+  if (sems[n_sem].owner != FREE_SEM) return -EBUSY;
+  if (value < 0) return -EINVAL;
   
   tsk = current();
   sems[n_sem].owner = tsk->pid;
@@ -180,8 +181,8 @@ int sys_sem_init(int n_sem, unsigned int value) {
 }
 
 int sys_sem_wait(int n_sem) {
-  if (n_sem < 0 || n_sem < NR_SEM) return -1;
-  if (sems[n_sem].owner == FREE_SEM) return -1;
+  if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
+  if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   
   if (sems[n_sem].value <= 0) {
     sched_block(current(), &sems[n_sem].queue);
@@ -192,7 +193,7 @@ int sys_sem_wait(int n_sem) {
 }
 
 int sys_sem_signal(int n_sem) {
-  if (n_sem < 0 || n_sem < NR_SEM) return -1;
+  if (n_sem < 0 || n_sem > NR_SEM) return -1;
   if (sems[n_sem].owner == FREE_SEM) return -1;
   
   if (list_empty(&sems[n_sem].queue)) {
@@ -203,13 +204,13 @@ int sys_sem_signal(int n_sem) {
   return 0;
 }
 
-int sys_sem_destroy(int n_sem) { 
+int sys_sem_destroy(int n_sem) {
   struct task_struct *tsk;
   tsk = current();
   
-  if (n_sem < 0 || n_sem < NR_SEM) return -1;
-  if (sems[n_sem].owner == FREE_SEM) return -1;
-  if (tsk->pid != sems[n_sem].owner) return -1;
+  if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
+  if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
+  if (tsk->pid != sems[n_sem].owner) return -EPERM;
   
   if (list_empty(&sems[n_sem].queue)) {
     sems[n_sem].owner = FREE_SEM;
@@ -232,8 +233,8 @@ int sys_get_stats(int pid, struct stats *st) {
   /* Checks st parameter */
   L_USER_START + NUM_PAG_CODE*PAGE_SIZE;
   
-  if (st < (L_USER_START + NUM_PAG_CODE*PAGE_SIZE)) return -EFAULT;
-  if (st > (L_USER_START + (NUM_PAG_CODE+NUM_PAG_DATA)*PAGE_SIZE)) return -EFAULT;
+  if (st < (void *)(L_USER_START + NUM_PAG_CODE*PAGE_SIZE)) return -EFAULT;
+  if (st > (void *)(L_USER_START + (NUM_PAG_CODE+NUM_PAG_DATA)*PAGE_SIZE)) return -EFAULT;
   
   return copy_to_user(&tsk->st, st, sizeof(struct stats));
   
