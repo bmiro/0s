@@ -51,6 +51,24 @@ int perror() {
   return errno;
 }
 
+#define no_param_syscall(id) \
+  int error; \
+  __asm__ __volatile__( \
+    "movl %1, %%eax\n" \
+    "int $0x80\n" \
+    "movl %%eax, %0\n" \
+    : "=a" (error) \
+    : "g" (id) \
+  ); \
+  if (error < 0) { \
+    errno = -error; \
+    return -1; \
+  } else { \
+    /* Successful syscall */ \
+    return error; \
+  } \
+
+
 /* Wrapper of write system call*/
 int write(int fd, char *buffer, int size) {
   int error;
@@ -74,24 +92,24 @@ int write(int fd, char *buffer, int size) {
 }
 
 int fork(void) {
-  int error;
-  int id = SYS_FORK_ID;
 
-  __asm__ __volatile__(
-    "movl %1, %%eax\n" 
-    "int $0x80\n"
-    "movl %%eax, %0\n"
-    : "=a" (error)
-    : "g" (id)
-  );
-
-  if (error < 0) {
-    errno = -error;
-    return -1;
-  } else {
-    /* Successful syscall */
-    return error;
-  }
+  no_param_syscall(SYS_FORK_ID);
+  
+//   __asm__ __volatile__(
+//     "movl %1, %%eax\n" 
+//     "int $0x80\n"
+//     "movl %%eax, %0\n"
+//     : "=a" (error)
+//     : "g" (id)
+//   );
+// 
+//   if (error < 0) {
+//     errno = -error;
+//     return -1;
+//   } else {
+//     /* Successful syscall */
+//     return error;
+//   }
   
 }
 

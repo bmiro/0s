@@ -159,6 +159,10 @@ int sys_sem_init(int n_sem, unsigned int value) {
   return 0;
 }
 
+int zero_returner() {
+  return 0;
+}
+
 int sys_sem_wait(int n_sem) {
   if (n_sem < 0 || n_sem >= NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
@@ -167,10 +171,12 @@ int sys_sem_wait(int n_sem) {
   if (sems[n_sem].value > 0) {
     sems[n_sem].value--;
   } else {
+    /* Correct wait must return 0 */
+    ((unsigned long *)current())[KERNEL_STACK_SIZE-EAX_POS] = 0; 
+    
     sched_block(current(), &sems[n_sem].queue);
     sched_continue((void *)sched_select_next());
-  }
-  
+  }  
   return 0;
 }
 
@@ -251,7 +257,7 @@ int sys_get_stats(int pid, struct stats *st) {
   return copy_to_user(&tsk->st, st, sizeof(struct stats)); 
 }
 
-int sys_ni_syscall(void) {
+int sys_ni_syscall(dvoid) {
   printk("Not implemented yet!\n");
   return -ENOSYS;
 }

@@ -217,9 +217,9 @@ void sched_unblock(struct task_struct *tsk) {
 
 /* Sched function used ONLY in clock interrupt */
 void sched() {
-  sched_update_status();  
-  
   eoi_from_interrupt = 1;
+  
+  sched_update_status();  
   if (sched_switch_needed()) {
     sched_pause(current());
     sched_continue(sched_select_next());
