@@ -85,8 +85,8 @@ int sys_fork(void) {
 //   /* There is no space to allocate the task_struct */
 //   if (i == NR_TASKS) return -EAGAIN;
   
-  child = get_new_task_struct();
-  if (child = NULL_TSK) return -EAGAIN;
+  child = (union task_union *)get_new_task_struct();
+  if (child == NULL_TSK) return -EAGAIN;
 
   /* Task_struct copy */
   copy_data(current(), &child->task, KERNEL_STACK_SIZE*4);    
@@ -188,7 +188,6 @@ int sys_sem_signal(int n_sem) {
 
 int sys_sem_destroy(int n_sem) {
   struct task_struct *tsk;
-  struct list_head *waiting_tsk;
   
   if (n_sem < 0 || n_sem >= NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
@@ -220,14 +219,15 @@ void sys_exit(void) {
     }
     set_cr3();
   
-    for (i = 0; i < NR_SEM; i++) { //TOOPTIMIZE: List of sems owned by a process?
+    /* NR_SEM will never be big, so this will be always cost-less */
+    for (i = 0; i < NR_SEM; i++) {
       if (sems[i].owner == tsk->pid) {
 	sys_sem_destroy(i);
       }
     }
   
     list_del(&tsk->queue);
-    tsk->pid = NULL_PID;
+    free_task_struct(tsk);
     
     sched_continue((void *)sched_select_next());
   }
@@ -241,7 +241,6 @@ int sys_get_stats(int pid, struct stats *st) {
   
   /* Checks pid parameter */
   if (pid < 0) return -EINVAL;
-  if (pid > pid_counter) return -ESRCH;
   tsk = pid_to_task_struct(pid);
   if (tsk == (struct task_struct *)NULL_TSK) return -ESRCH;
 
@@ -249,10 +248,7 @@ int sys_get_stats(int pid, struct stats *st) {
       tsk->state != TASK_READY &&
       tsk->state != TASK_BLOCKED) return -ESRCH;
   
-
- 
-  return copy_to_user(&tsk->st, st, sizeof(struct stats));
-  
+  return copy_to_user(&tsk->st, st, sizeof(struct stats)); 
 }
 
 int sys_ni_syscall(void) {

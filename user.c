@@ -25,6 +25,20 @@ int __attribute__ ((__section__(".text.main"))) main(void) {
 //     }
 //   }
   runjp();
+  
+//   int p = fork();
+//   while(1) {
+//     if (p == 4) {
+//       write(1, "AAAA!\n", 6);
+//     }
+//     
+//     
+//     if (p == 0) {
+//       write(1, "Fill!\n", 6);
+//     } else {
+//       write(1, "Pare!\n", 6);
+//     }
+//   }
     
   
  write(1, "Aquesta entrega esta dedicada a Dennis Ritchie 1941 - 9 d'Octubre 2011 per la \

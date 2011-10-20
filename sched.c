@@ -158,13 +158,14 @@ struct task_struct* get_new_task_struct() {
   
   if (list_empty(&freequeue)) return NULL_TSK;
   
-  tsk = list_head_to_task_struct(&freequeue);
+  tsk = list_head_to_task_struct(list_first(&freequeue));
   list_del(&tsk->queue);
   
   return tsk;
 }
 
 void free_task_struct(struct task_struct* tsk) {
+  tsk->pid = NULL_PID;
   list_add(&tsk->queue, &freequeue);
 }
 
