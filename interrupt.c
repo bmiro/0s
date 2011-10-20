@@ -264,7 +264,6 @@ void clock_routine() {
   tacs--;
     
   sched();
- 
 }
 
 void keyboard_routine() {

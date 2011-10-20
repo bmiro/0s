@@ -65,19 +65,28 @@ static inline struct task_struct* list_head_to_task_struct(struct list_head *l) 
 
 struct task_struct* current();
 
-/* Returns the task struct corresponding to that pid, NULL_TSK if pid does NOT exist */
+/** Returns the task struct corresponding to that pid, NULL_TSK if pid does NOT exist */
 struct task_struct* pid_to_task_struct(int pid);
-void task_switch(union task_union *t);
 
 struct task_struct* get_new_task_struct();
 void free_task_struct(struct task_struct* tsk);
 
-void sched_update_status();
-char sched_switch_needed();
+/** Calls the scheduler, must be used in a interrupt, usually the clock */
+void sched();
+
+/** Selects next task that will use the CPU */
 struct task_struct* sched_select_next();
+
+/** Pause tsk task (keeping it in the run queue) */
 void sched_pause(struct task_struct *tsk);
+
+/** Restores tsk task */
 void sched_continue(struct task_struct *tsk);
+
+/** Blocks a task to a blocked queue */
 void sched_block(struct task_struct *tsk, struct list_head *queue);
+
+/** Unblocks a blocked task */
 void sched_unblock(struct task_struct *tsk);
 
 #endif  /* __SCHED_H__ */

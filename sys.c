@@ -86,7 +86,7 @@ int sys_fork(void) {
 //   if (i == NR_TASKS) return -EAGAIN;
   
   child = (union task_union *)get_new_task_struct();
-  if (child == NULL_TSK) return -EAGAIN;
+  if (child == (union task_union *)NULL_TSK) return -EAGAIN;
 
   /* Task_struct copy */
   copy_data(current(), &child->task, KERNEL_STACK_SIZE*4);    
@@ -256,7 +256,9 @@ int sys_ni_syscall(void) {
   return -ENOSYS;
 }
 
+/** Not real sys_call, used only for debug (uses a valid sys_call_table entry) */
 int sys_debug(void) {
-  printk("Debug syscall!\n");  
+  printk("Debug syscall!\n");
+  return 0;
 }
 

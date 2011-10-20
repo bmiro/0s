@@ -24,7 +24,7 @@ Byte inb (unsigned short port) {
 void do_scroll() {
   int xx, yy;
     
-  Word ch; //= (Word) (c & 0x00FF) | 0x0200;
+  Word ch = 0;
   DWord screen;
   
   for (yy = 2; yy < NUM_ROWS; yy++) {
@@ -60,7 +60,7 @@ void printc(char c) {
     /* Fills line with blank characters */
     while (++x >= NUM_COLUMNS) {
       screen = 0xb8000 + (y * NUM_COLUMNS + x) * 2;
-      asm("movw %0, (%1)" : : "r"((' ' & 0x00FF) | 0x0200), "r"(screen));
+      asm("movw %0, (%1)" : : "g"((' ' & 0x00FF) | 0x0200), "g"(screen));
     }
     x = 0;
     if (++y >= NUM_ROWS) {

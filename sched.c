@@ -143,8 +143,8 @@ void task_switch(union task_union *t) {
 struct task_struct* pid_to_task_struct(int pid) {
   int i;
   
-  //TODO fer alguna cosa més eficient
-  for (i=0; i < NR_TASKS; i++) {
+  //TOOPTIMIZE
+  for (i = 0; i < NR_TASKS; i++) {
     if (task[i].t.task.pid == pid) {
       return &task[i].t.task;
     }
@@ -156,7 +156,7 @@ struct task_struct* pid_to_task_struct(int pid) {
 struct task_struct* get_new_task_struct() {
   struct task_struct *tsk;
   
-  if (list_empty(&freequeue)) return NULL_TSK;
+  if (list_empty(&freequeue)) return (struct task_struct*)NULL_TSK;
   
   tsk = list_head_to_task_struct(list_first(&freequeue));
   list_del(&tsk->queue);
@@ -178,6 +178,8 @@ void sched_update_status() {
   tsk->st.remaining_quantum--;
 }
 
+/** Returns true if the scheduling algorism determines than the
+    current process must left the CPU */
 char sched_switch_needed() {
   return roundtics == 0;
 }

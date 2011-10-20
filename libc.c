@@ -156,7 +156,6 @@ int nice(int quantum) {
     /* Successful syscall */
     return error;
   } 
-  
 }
 
 int sem_init(int n_sem, unsigned int value) {
@@ -178,7 +177,6 @@ int sem_init(int n_sem, unsigned int value) {
     /* Successful syscall */
     return error;
   } 
-  
 }
 
 int sem_wait(int n_sem) {
@@ -200,7 +198,6 @@ int sem_wait(int n_sem) {
     /* Successful syscall */
     return error; //TODO si es posa un 0 funciona
   } 
-  
 }
 
 int sem_signal(int n_sem) {
@@ -222,7 +219,6 @@ int sem_signal(int n_sem) {
     /* Successful syscall */
     return error;
   } 
-  
 }
 
 int sem_destroy(int n_sem) {
@@ -244,7 +240,6 @@ int sem_destroy(int n_sem) {
     /* Successful syscall */
     return error;
   } 
-  
 }
 
 int get_stats(int pid, struct stats *st) {
