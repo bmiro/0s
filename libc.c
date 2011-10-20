@@ -217,7 +217,7 @@ int sem_signal(int n_sem) {
   
   if (error < 0) {
     errno = -error;
-    return -1;	
+    return -1;
   } else {
     /* Successful syscall */
     return error;

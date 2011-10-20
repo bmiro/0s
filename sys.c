@@ -74,19 +74,22 @@ int sys_fork(void) {
   int lpag, src, dst;
   union task_union *child;
   
-  child = NULL;
-  for (i=0; i < NR_TASKS; i++) { //TODO enllaçar blocs lliures
-    if (task[i].t.task.pid == NULL_PID) {
-      child = &task[i].t;
-      break;
-    }
-  }
+//   child = NULL;
+//   for (i=0; i < NR_TASKS; i++) { //TODO enllaçar blocs lliures
+//     if (task[i].t.task.pid == NULL_PID) {
+//       child = &task[i].t;
+//       break;
+//     }
+//   }
+//   
+//   /* There is no space to allocate the task_struct */
+//   if (i == NR_TASKS) return -EAGAIN;
   
-  /* There is no space to allocate the task_struct */
-  if (i == NR_TASKS) return -EAGAIN;
+  child = get_new_task_struct();
+  if (child = NULL_TSK) return -EAGAIN;
 
   /* Task_struct copy */
-  copy_data(current(), &task[i].t.task, KERNEL_STACK_SIZE*4);    
+  copy_data(current(), &child->task, KERNEL_STACK_SIZE*4);    
 
   /* First of all we duplicate all the data pages in the parent space, just below its data pages */
   lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
@@ -239,7 +242,7 @@ int sys_get_stats(int pid, struct stats *st) {
   /* Checks pid parameter */
   if (pid < 0) return -EINVAL;
   if (pid > pid_counter) return -ESRCH;
-  tsk = getTS(pid);
+  tsk = pid_to_task_struct(pid);
   if (tsk == (struct task_struct *)NULL_TSK) return -ESRCH;
 
   if (tsk->state != TASK_RUNNING &&

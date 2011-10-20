@@ -45,10 +45,11 @@
 
 struct protected_task_struct task[NR_TASKS]
   __attribute__((__section__(".data.task")));
-  
-  
+    
 char eoi_from_interrupt;
 int roundtics;
+
+struct list_head freequeue;
 
 struct task_struct* current() {
   unsigned long sp;
@@ -65,12 +66,13 @@ struct task_struct* current() {
 
 void init_queues(void) {
   INIT_LIST_HEAD(&runqueue);
+  INIT_LIST_HEAD(&freequeue);
 }
 
 void init_task_structs(void) {
   int i;
-  for (i=0; i < NR_TASKS; i++) {
-    task[i].t.task.pid = NULL_PID;
+  for (i = 1; i < NR_TASKS; i++) { /* Skips 0 used for system */
+    list_add(&task[i].t.task.queue, &freequeue);
   }
 }
    
@@ -138,7 +140,7 @@ void task_switch(union task_union *t) {
   );
 }
 
-struct task_struct* getTS(int pid) {
+struct task_struct* pid_to_task_struct(int pid) {
   int i;
   
   //TODO fer alguna cosa més eficient
@@ -149,6 +151,21 @@ struct task_struct* getTS(int pid) {
   }
   
   return (struct task_struct*) NULL_TSK;
+}
+
+struct task_struct* get_new_task_struct() {
+  struct task_struct *tsk;
+  
+  if (list_empty(&freequeue)) return NULL_TSK;
+  
+  tsk = list_head_to_task_struct(&freequeue);
+  list_del(&tsk->queue);
+  
+  return tsk;
+}
+
+void free_task_struct(struct task_struct* tsk) {
+  list_add(&tsk->queue, &freequeue);
 }
 
 void sched_update_status() {

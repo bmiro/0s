@@ -66,8 +66,11 @@ static inline struct task_struct* list_head_to_task_struct(struct list_head *l) 
 struct task_struct* current();
 
 /* Returns the task struct corresponding to that pid, NULL_TSK if pid does NOT exist */
-struct task_struct* getTS(int pid);
+struct task_struct* pid_to_task_struct(int pid);
 void task_switch(union task_union *t);
+
+struct task_struct* get_new_task_struct();
+void free_task_struct(struct task_struct* tsk);
 
 void sched_update_status();
 char sched_switch_needed();
