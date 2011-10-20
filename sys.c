@@ -193,7 +193,7 @@ int sys_sem_destroy(int n_sem) {
   
   sems[n_sem].owner = FREE_SEM;
   
-  while (!list_empty(&sems[n_sem].queue)) {//TODO avisar al sem_wait si es destruit i alliberar processos
+  while (!list_empty(&sems[n_sem].queue)) {
     tsk = list_head_to_task_struct(list_first(&sems[n_sem].queue));
     ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = -1;
     sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
