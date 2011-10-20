@@ -31,7 +31,6 @@ struct task_struct {
   unsigned int quantum;
   char state;
   struct list_head queue;
-  struct list_head resources;
   struct stats st;
   unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
 };

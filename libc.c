@@ -198,6 +198,9 @@ int sem_wait(int n_sem) {
     return -1;
   } else {
     /* Successful syscall */
+    if (error == 0) {
+      write(1, "0!\n", 6);
+    }
     return error;
   } 
   
