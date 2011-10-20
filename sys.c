@@ -144,7 +144,7 @@ int sys_nice(int quantum) {
 int sys_sem_init(int n_sem, unsigned int value) {
   struct task_struct *tsk;
   
-  if ((n_sem < 0) || (n_sem > NR_SEM)) return -EINVAL;
+  if ((n_sem < 0) || (n_sem >= NR_SEM)) return -EINVAL;
   if (sems[n_sem].owner != FREE_SEM) return -EBUSY;
   if (value < 0) return -EINVAL;
   
@@ -161,18 +161,18 @@ int sys_sem_wait(int n_sem) {
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   if (current()->pid == 0) return -EPERM;
   
-  if (sems[n_sem].value <= 0) {
+  if (sems[n_sem].value > 0) {
+    sems[n_sem].value--;
+  } else {
     sched_block(current(), &sems[n_sem].queue);
     sched_continue((void *)sched_select_next());
-  } else {
-    sems[n_sem].value--;
   }
   
   return 0;
 }
 
 int sys_sem_signal(int n_sem) {
-  if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
+  if (n_sem < 0 || n_sem >= NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   
   if (list_empty(&sems[n_sem].queue)) {
@@ -187,7 +187,7 @@ int sys_sem_destroy(int n_sem) {
   struct task_struct *tsk;
   struct list_head *waiting_tsk;
   
-  if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
+  if (n_sem < 0 || n_sem >= NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   if (current()->pid != sems[n_sem].owner) return -EPERM;
   
