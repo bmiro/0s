@@ -19,5 +19,6 @@ assignatura que mori envoltat de la seva familia sense resso mediatic.\n", 229);
 //     }
 //   }
   runjp();
+  while(1);
 }
 

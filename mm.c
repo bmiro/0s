@@ -127,7 +127,7 @@ void set_ss_pag(unsigned page, unsigned frame) {
 /* Deassocietes a logical page 'page' from its phisical frame */
 void del_ss_pag(unsigned page) {
   pagusr_table[page].entry = 0;
-  set_cr3(); //TODO assegurar que va aqui
+  set_cr3();
 }
 
 /* Initializes paging for the system address space */

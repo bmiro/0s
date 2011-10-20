@@ -28,8 +28,10 @@ struct list_head runqueue;
   
 struct task_struct {
   unsigned int pid; /* Keep it the first member */
-  char quantum;
+  unsigned int quantum;
+  char state;
   struct list_head queue;
+  struct list_head resources;
   struct stats st;
   unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
 };

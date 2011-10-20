@@ -171,24 +171,28 @@ struct task_struct* sched_select_next() {
 void sched_pause(struct task_struct *tsk) {
   list_del(&tsk->queue);
   list_add_tail(&tsk->queue, &runqueue);
+  tsk->state = TASK_READY;
 }
 
 void sched_continue(struct task_struct *tsk) {
   roundtics = tsk->quantum;
   tsk->st.cs++;
   tsk->st.remaining_quantum = tsk->quantum;
-  
+  tsk->state = TASK_RUNNING;
+
   task_switch((void *) tsk);
 }
   
 void sched_block(struct task_struct *tsk, struct list_head *queue) {
   list_del(&tsk->queue);
   list_add_tail(&tsk->queue, queue);
+  tsk->state = TASK_BLOCKED;
 }
 
 void sched_unblock(struct task_struct *tsk) {
   list_del(&tsk->queue);
   list_add_tail(&tsk->queue, &runqueue);
+  tsk->state = TASK_READY;
 }
 
 /* Sched function used ONLY in clock interrupt */

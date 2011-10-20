@@ -179,7 +179,6 @@ int sys_sem_signal(int n_sem) {
     sems[n_sem].value++;
   } else {
     sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
-    //sched();
   }
   return 0;
 }
@@ -198,7 +197,6 @@ int sys_sem_destroy(int n_sem) {
     tsk = list_head_to_task_struct(list_first(&sems[n_sem].queue));
     ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = -1;
     sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
-    //sched();
   }
     
   return 0;
@@ -228,7 +226,6 @@ void sys_exit(void) {
     list_del(&tsk->queue);
     tsk->pid = NULL_PID;
     
-    //TODO alerta amb el EOI!! TODO TODO!!!
     sched_continue((void *)sched_select_next());
   }
 }
@@ -236,17 +233,21 @@ void sys_exit(void) {
 int sys_get_stats(int pid, struct stats *st) {
   struct task_struct *tsk;
   
+  /* Checks st parameter */  
+  if (!access_ok(WRITE, st, sizeof(struct stats))) return -EFAULT;
+  
   /* Checks pid parameter */
   if (pid < 0) return -EINVAL;
   if (pid > pid_counter) return -ESRCH;
   tsk = getTS(pid);
-  //TODO podem tenir processos que no siguin actius??, si es aixi contemplar-ho
   if (tsk == (struct task_struct *)NULL_TSK) return -ESRCH;
+
+  if (tsk->state != TASK_RUNNING &&
+      tsk->state != TASK_READY &&
+      tsk->state != TASK_BLOCKED) return -ESRCH;
   
-  /* Checks st parameter */  
-  if (st < (struct stats *)(L_USER_START + NUM_PAG_CODE*PAGE_SIZE)) return -EFAULT;
-  if (st > (struct stats *)(L_USER_START + (NUM_PAG_CODE+NUM_PAG_DATA)*PAGE_SIZE)) return -EFAULT;
-  
+
+ 
   return copy_to_user(&tsk->st, st, sizeof(struct stats));
   
 }

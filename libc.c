@@ -12,7 +12,7 @@
 int errno;
 
 int perror() {
-  switch (errno) { //TODO Afegir nous valors
+  switch (errno) {
     case (EPERM) :
       write(CONSOLE, WELL_FORMED_STR("[perror] Operation not permitted.\n"));
       break;
