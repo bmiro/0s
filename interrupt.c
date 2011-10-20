@@ -263,37 +263,7 @@ void clock_routine() {
   }
   tacs--;
     
-  sched_update_status();
-  
-  
-  char dbg[] = "             ";
-  struct task_struct *tsk, *tsk2;
-    
-    
-  if (sched_switch_needed()) {
-    sched_pause(current());
-        
-//     tsk = current();
-//     itoa((int)tsk, dbg, 10);
-//     printk(dbg);
-//     
-//     printk("\n");
-//     itoa(tsk->pid, dbg, 10);
-//     printk(dbg);
-//     
-//     printk("\n");
-//     
-//     tsk2 = sched_select_next();
-//     itoa((int)tsk2, dbg, 10);
-//     printk(dbg);
-//     
-//     printk("\n");
-//     itoa(tsk2->pid, dbg, 10);
-//     printk(dbg);
-    
-    
-    sched_continue(sched_select_next());
-  }
+  sched();
  
 }
 

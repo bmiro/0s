@@ -113,7 +113,7 @@ int sys_fork(void) {
   child->task.st.remaining_quantum = child->task.quantum;
     
   /* Modifies child eax value (fork returns 0 to the child)*/
-  child->stack[KERNEL_STACK_SIZE-10] = 0;
+  child->stack[KERNEL_STACK_SIZE-EAX_POS] = 0;
   
   list_add(&child->task.queue, &runqueue);
     
@@ -138,7 +138,7 @@ int sys_nice(int quantum) {
   old_quantum = tsk->quantum;
   tsk->quantum = quantum;
   
-  return  old_quantum;
+  return old_quantum;
 }
 
 int sys_sem_init(int n_sem, unsigned int value) {
@@ -157,15 +157,17 @@ int sys_sem_init(int n_sem, unsigned int value) {
 }
 
 int sys_sem_wait(int n_sem) {
-  if (n_sem < 0 || n_sem > NR_SEM) return -EINVAL;
+  if (n_sem < 0 || n_sem >= NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   if (current()->pid == 0) return -EPERM;
   
   if (sems[n_sem].value <= 0) {
     sched_block(current(), &sems[n_sem].queue);
+    sched_continue((void *)sched_select_next());
   } else {
     sems[n_sem].value--;
   }
+  
   return 0;
 }
 
@@ -177,6 +179,7 @@ int sys_sem_signal(int n_sem) {
     sems[n_sem].value++;
   } else {
     sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
+    //sched();
   }
   return 0;
 }
@@ -190,15 +193,14 @@ int sys_sem_destroy(int n_sem) {
   if (current()->pid != sems[n_sem].owner) return -EPERM;
   
   sems[n_sem].owner = FREE_SEM;
-  if (!list_empty(&sems[n_sem].queue)) {
-    list_for_each(waiting_tsk, &sems[n_sem].queue) {
-      printk("a");
-      tsk = list_head_to_task_struct(waiting_tsk);
-      //((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = -1;
-      sched_unblock(tsk);
-    }
-    //TODO avisar al sem_wait si es destruit i alliberar processos
-  }	
+  
+  while (!list_empty(&sems[n_sem].queue)) {//TODO avisar al sem_wait si es destruit i alliberar processos
+    tsk = list_head_to_task_struct(list_first(&sems[n_sem].queue));
+    ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = -1;
+    sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
+    //sched();
+  }
+    
   return 0;
 }
 
@@ -211,11 +213,11 @@ void sys_exit(void) {
   
   if (tsk->pid != 0) {
     lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
-    for (i = 0; i < NUM_PAG_DATA; i++) { //TODO hem de mirar si totes les pagines de dades estan assignades??
-      del_ss_pag(lpag + i); // TODO Revisar si es necessari
+    for (i = 0; i < NUM_PAG_DATA; i++) {
+      del_ss_pag(lpag + i);
       free_frame(tsk->phpages[i]);
     }
-    set_cr3(); // TODO Revisar si es necessari
+    set_cr3();
   
     for (i = 0; i < NR_SEM; i++) { //TOOPTIMIZE: List of sems owned by a process?
       if (sems[i].owner == tsk->pid) {

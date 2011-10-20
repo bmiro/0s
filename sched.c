@@ -178,10 +178,7 @@ void sched_continue(struct task_struct *tsk) {
   tsk->st.cs++;
   tsk->st.remaining_quantum = tsk->quantum;
   
-  eoi_from_interrupt = 1;
   task_switch((void *) tsk);
-  
-  printk("hello\n");
 }
   
 void sched_block(struct task_struct *tsk, struct list_head *queue) {
@@ -191,8 +188,18 @@ void sched_block(struct task_struct *tsk, struct list_head *queue) {
 
 void sched_unblock(struct task_struct *tsk) {
   list_del(&tsk->queue);
-  list_add(&tsk->queue, &runqueue);
+  list_add_tail(&tsk->queue, &runqueue);
 }
 
+/* Sched function used ONLY in clock interrupt */
+void sched() {
+  sched_update_status();  
+  
+  eoi_from_interrupt = 1;
+  if (sched_switch_needed()) {
+    sched_pause(current());
+    sched_continue(sched_select_next());
+  } 
+}
 
 
