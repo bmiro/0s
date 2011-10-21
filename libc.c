@@ -119,8 +119,6 @@ int perror() {
   return errno;
 }
 
-
-  
 int write(int fd, char *buffer, int size) {
   three_arg_syscall(SYS_WRITE_ID, fd, buffer, size);
 }

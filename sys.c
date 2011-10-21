@@ -16,7 +16,9 @@
 unsigned int pid_counter = 0;
 
 int getNewPid() {
-  pid_counter++; // TODO Check better place to control pid TODO check if value is overflowed
+  /* An unsigned int is a huge value for this educational OS,
+  * we don't control overflow for simplicity */
+  pid_counter++;
   return pid_counter;
 }
 
@@ -74,17 +76,6 @@ int sys_fork(void) {
   int lpag, src, dst;
   union task_union *child;
   
-//   child = NULL;
-//   for (i=0; i < NR_TASKS; i++) { //TODO enllaçar blocs lliures
-//     if (task[i].t.task.pid == NULL_PID) {
-//       child = &task[i].t;
-//       break;
-//     }
-//   }
-//   
-//   /* There is no space to allocate the task_struct */
-//   if (i == NR_TASKS) return -EAGAIN;
-  
   child = (union task_union *)get_new_task_struct();
   if (child == (union task_union *)NULL_TSK) return -EAGAIN;
 
@@ -99,10 +90,10 @@ int sys_fork(void) {
     f = alloc_frame();
     if (f == -1) return -ENOMEM;
     
-    set_ss_pag(lpag + i, f);                                        /* Assing logic page to parent */
+    set_ss_pag(lpag + i, f);      /* Assing logic page to parent */
     copy_data((void *)(src + i * PAGE_SIZE), (void *)(dst + i * PAGE_SIZE), PAGE_SIZE); /* Data copy data */
-    del_ss_pag(lpag + i);                                           /* De-assing logic page */
-    child->task.phpages[i] = f;                                       /* Assing physic frame to child */
+    del_ss_pag(lpag + i);        /* De-assing logic page */
+    child->task.phpages[i] = f;  /* Assing physic frame to child */
   }
   
   /* TLB Flush */
@@ -131,35 +122,25 @@ int sys_getpid(void) {
 }
 
 int sys_nice(int quantum) {
-  struct task_struct *tsk;
   int old_quantum;
   
   if (quantum <=0) return -EINVAL;
-  
-  tsk = current();
-  
-  old_quantum = tsk->quantum;
-  tsk->quantum = quantum;
+    
+  old_quantum = current()->quantum;
+  current()->quantum = quantum;
   
   return old_quantum;
 }
 
-int sys_sem_init(int n_sem, unsigned int value) {
-  struct task_struct *tsk;
-  
+int sys_sem_init(int n_sem, unsigned int value) {  
   if ((n_sem < 0) || (n_sem >= NR_SEM)) return -EINVAL;
   if (sems[n_sem].owner != FREE_SEM) return -EBUSY;
   if (value < 0) return -EINVAL;
   
-  tsk = current();
-  sems[n_sem].owner = tsk->pid;
+  sems[n_sem].owner = current()->pid;
   sems[n_sem].value = value;
   INIT_LIST_HEAD(&sems[n_sem].queue);
   
-  return 0;
-}
-
-int zero_returner() {
   return 0;
 }
 
@@ -171,7 +152,7 @@ int sys_sem_wait(int n_sem) {
   if (sems[n_sem].value > 0) {
     sems[n_sem].value--;
   } else {
-    /* Correct wait must return 0 */
+    /* Correct sem_wait must return 0 */
     ((unsigned long *)current())[KERNEL_STACK_SIZE-EAX_POS] = 0; 
     
     sched_block(current(), &sems[n_sem].queue);

@@ -111,7 +111,7 @@ int __attribute__((__section__(".text.main")))
   /* Enabling interruptions */
   enable_int();
 
-  printk("0s OS loaded.\n\n");
+  printk("0s OS loaded.\n");
   printk("Entering user mode...\n\n"); 
 
   /*

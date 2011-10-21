@@ -27,7 +27,7 @@
 struct list_head runqueue;
   
 struct task_struct {
-  unsigned int pid; /* Keep it the first member */
+  unsigned int pid;
   unsigned int quantum;
   char state;
   struct list_head queue;

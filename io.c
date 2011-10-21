@@ -11,7 +11,7 @@
 #define NUM_COLUMNS 80
 #define NUM_ROWS    25
 
-Byte x, y=15;
+Byte x, y = 15;
 
 /* Read a byte from 'port' */
 Byte inb (unsigned short port) {

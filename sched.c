@@ -143,7 +143,7 @@ void task_switch(union task_union *t) {
 struct task_struct* pid_to_task_struct(int pid) {
   int i;
   
-  //TOOPTIMIZE
+  /* TOOPTIMIZE */
   for (i = 0; i < NR_TASKS; i++) {
     if (task[i].t.task.pid == pid) {
       return &task[i].t.task;
@@ -215,7 +215,7 @@ void sched_unblock(struct task_struct *tsk) {
   tsk->state = TASK_READY;
 }
 
-/* Sched function used ONLY in clock interrupt */
+/** Sched function used ONLY in clock interrupt */
 void sched() {
   eoi_from_interrupt = 1;
   
