@@ -6,17 +6,21 @@
 #define __ENTRY_H__
 
 /* Sys calls ids (index in sys_call_table) */
-#define SYS_EXIT_ID 		1
-#define SYS_FORK_ID 		2
-#define SYS_WRITE_ID 		4
-#define SYS_GETPID_ID  		20
-#define SYS_SEM_INIT_ID		21
-#define SYS_SEM_WAIT_ID		22
-#define SYS_SEM_SIGNAL_ID	23
-#define SYS_SEM_DESTROY_ID	24
-#define SYS_DEBUG_ID		32
-#define SYS_NICE_ID		34
-#define SYS_GET_STATS_ID	35
+#define SYS_EXIT_ID         1
+#define SYS_FORK_ID         2
+#define SYS_READ_ID         3
+#define SYS_WRITE_ID        4
+#define SYS_OPEN_ID         5
+#define SYS_CLOSE_ID        6
+#define SYS_GETPID_ID      20
+#define SYS_SEM_INIT_ID    21
+#define SYS_SEM_WAIT_ID    22
+#define SYS_SEM_SIGNAL_ID  23
+#define SYS_SEM_DESTROY_ID 24
+#define SYS_DEBUG_ID       32
+#define SYS_NICE_ID        34
+#define SYS_GET_STATS_ID   35
+#define SYS_DUP_ID         41
 
 void divide_error_handler();
 void debug_handler();

@@ -15,6 +15,7 @@
 
 unsigned int pid_counter = 0;
 
+/****************************** Internal Funtions ******************************/
 int getNewPid() {
   /* An unsigned int is a huge value for this educational OS,
   * we don't control overflow for simplicity */
@@ -23,52 +24,41 @@ int getNewPid() {
 }
 
 int check_fd(int fd, int mode) {
-  if (fd != 1 || mode != WRITE_MODE) {
+  if (fd != 1 || mode != O_WRONLY) {
     return -1;
   } else {
     return 0;
   }
 }
 
-int check_buffer(void *buffer) {
-    if (buffer == NULL) {
-      return -1;
-    } else {
-      return 0;
-    }
-}
-
-int sys_write(int fd, char *buffer, int size) {
-  char sysbuff[SYSBUFF_SIZE];
-  int chuck, remain, copied;
-  int written;    
+/************************ Service interrupt routines ************************/
+void sys_exit(void) {
+  struct task_struct *tsk;
+  int lpag;
+  int i;
   
-  if (check_fd(fd, WRITE_MODE) == -1) return -EBADF;
-  if (check_buffer((void*) buffer) == -1) return -EFAULT;
-  if (size < 0) return -EINVAL;
+  tsk = current();
+  
+  if (tsk->pid != 0) {
+    lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
+    for (i = 0; i < NUM_PAG_DATA; i++) {
+      del_ss_pag(lpag + i);
+      free_frame(tsk->phpages[i]);
+    }
+    set_cr3();
+  
+    /* NR_SEM will never be big, so this will be always cost-less */
+    for (i = 0; i < NR_SEM; i++) {
+      if (sems[i].owner == tsk->pid) {
+        sys_sem_destroy(i);
+      }
+    }
+  
+    list_del(&tsk->queue);
+    free_task_struct(tsk);
     
-  copied = 0;
-  remain = size;
-  while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }
-   
-    copy_from_user(buffer + copied, sysbuff, chuck);
-    switch (fd) {
-      case(1):
-	written = sys_write_console(sysbuff, chuck);
-	/* By construction sys_write can NOT fail */
-	remain -= written;
-	copied += written;
-      default:
-	break;
-    }
+    sched_continue((void *)sched_select_next());
   }
-  
-  return copied;
 }
 
 int sys_fork(void) {
@@ -122,22 +112,57 @@ int sys_fork(void) {
   return child->task.pid;
 }
 
+int sys_read(int fd, char *buffer, int size) {
+  return -ENOSYS;
+}
+
+int sys_write(int fd, char *buffer, int size) {
+  char sysbuff[SYSBUFF_SIZE];
+  int chuck, remain, copied;
+  int written;    
+  
+  if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
+  if (!access_ok((void*) buffer, WRITE, size)) return -EFAULT;
+  if (size < 0) return -EINVAL;
+    
+  copied = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
+    copy_from_user(buffer + copied, sysbuff, chuck);
+    switch (fd) {
+      case(1):
+        written = sys_write_console(sysbuff, chuck);
+        /* By construction sys_write can NOT fail */
+        remain -= written;
+        copied += written;
+        break;
+      default:
+        break;
+    }
+  }
+  
+  return copied;
+}
+
+int sys_open(const char *path, int flags) {
+  return -ENOSYS;
+}
+
+int sys_close(int fd) {
+  return -ENOSYS;
+}
+
 int sys_getpid(void) {
   struct task_struct *tsk;
   
   tsk = current();
   return tsk->pid;
-}
-
-int sys_nice(int quantum) {
-  int old_quantum;
-  
-  if (quantum <=0) return -EINVAL;
-    
-  old_quantum = current()->quantum;
-  current()->quantum = quantum;
-  
-  return old_quantum;
 }
 
 int sys_sem_init(int n_sem, unsigned int value) {  
@@ -200,33 +225,15 @@ int sys_sem_destroy(int n_sem) {
   return 0;
 }
 
-void sys_exit(void) {
-  struct task_struct *tsk;
-  int lpag;
-  int i;
+int sys_nice(int quantum) {
+  int old_quantum;
   
-  tsk = current();
-  
-  if (tsk->pid != 0) {
-    lpag = (L_USER_START>>12) + NUM_PAG_CODE + NUM_PAG_DATA;
-    for (i = 0; i < NUM_PAG_DATA; i++) {
-      del_ss_pag(lpag + i);
-      free_frame(tsk->phpages[i]);
-    }
-    set_cr3();
-  
-    /* NR_SEM will never be big, so this will be always cost-less */
-    for (i = 0; i < NR_SEM; i++) {
-      if (sems[i].owner == tsk->pid) {
-	sys_sem_destroy(i);
-      }
-    }
-  
-    list_del(&tsk->queue);
-    free_task_struct(tsk);
+  if (quantum <=0) return -EINVAL;
     
-    sched_continue((void *)sched_select_next());
-  }
+  old_quantum = current()->quantum;
+  current()->quantum = quantum;
+  
+  return old_quantum;
 }
 
 int sys_get_stats(int pid, struct stats *st) {
@@ -245,6 +252,10 @@ int sys_get_stats(int pid, struct stats *st) {
       tsk->state != TASK_BLOCKED) return -ESRCH;
   
   return copy_to_user(&tsk->st, st, sizeof(struct stats)); 
+}
+
+int sys_dup(int fd) {
+  return -ENOSYS;
 }
 
 int sys_ni_syscall(dvoid) {

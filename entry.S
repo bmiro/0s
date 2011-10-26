@@ -72,7 +72,7 @@
 
 /* TODO! uptade each time you add a sys_call in the table below!!!*/
 ENTRY(syscall_table_size)
-	.long 36
+	.long 41
 
 /* Linux syscall table:
  * http://lxr.linux.no/#linux+v3.0.4/arch/x86/kernel/syscall_table_32.S */
@@ -80,10 +80,10 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_exit
 	.long sys_fork
-	.long sys_ni_syscall 
+	.long sys_read 
 	.long sys_write
-	.long sys_ni_syscall
-	.long sys_ni_syscall
+	.long sys_open
+	.long sys_close
 	.long sys_ni_syscall
 	.long sys_ni_syscall
 	.long sys_ni_syscall
@@ -113,7 +113,13 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_nice
 	.long sys_get_stats
-
+  .long sys_ni_syscall
+  .long sys_ni_syscall
+  .long sys_ni_syscall
+  .long sys_ni_syscall
+  .long sys_ni_syscall
+  .long sys_dup
+  
 
 /* Exception handlers */
 ENTRY(divide_error_handler)

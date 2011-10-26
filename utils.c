@@ -64,22 +64,17 @@ int access_ok(int type, const void *addr, unsigned long size) {
   
   /* Checks if block is in user-space logical memory range */
   if (((unsigned int)addr < L_USER_START) || 
-      (unsigned int)(addr+size) > (L_USER_START + (NUM_PAG_CODE + NUM_PAG_DATA)*PAGE_SIZE)) {
+       (unsigned int)(addr+size) > 
+       (L_USER_START + (NUM_PAG_CODE + NUM_PAG_DATA)*PAGE_SIZE)) {
     return 0;
   }
   
+  //TODO something here to check write access??
   if (type == READ) return 1; /* No need to check write access */
   
-  /* Checks if pointer is in user data range, it works because of memory implementation */
+  /* Checks if pointer is in user data range, it works because
+   * of memory implementation */
   return ((unsigned int)addr > (L_USER_START + (NUM_PAG_CODE*PAGE_SIZE)));
- 
-  
-/* Si pagusr_table fos visible si que podriem */
-//   /* Checks write access to all involved pages in this mem range */
-//   for (pag_addr = addr; pag_addr <= addr+size; pag_addr += PAGE_SIZE) {
-//    page = pag_addr>>12;
-//    if (pagusr_table[page].bits.rw != 1) return 0; 
-//   }
-//  return 1;
+
 }
 

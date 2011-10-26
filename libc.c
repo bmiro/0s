@@ -119,24 +119,32 @@ int perror() {
   return errno;
 }
 
-int write(int fd, char *buffer, int size) {
-  three_arg_syscall(SYS_WRITE_ID, fd, buffer, size);
+int exit(void) {
+  no_arg_syscall(SYS_EXIT_ID);
 }
 
 int fork(void) {
   no_arg_syscall(SYS_FORK_ID);
 }
 
-int exit(void) {
-  no_arg_syscall(SYS_EXIT_ID);
+int read(int fd, char *buffer, int size) {
+  three_arg_syscall(SYS_READ_ID, fd, buffer, size);
+}
+
+int write(int fd, char *buffer, int size) {
+  three_arg_syscall(SYS_WRITE_ID, fd, buffer, size);
+}
+
+int open(const char *path, int flags) {
+  two_arg_syscall(SYS_OPEN_ID, path, flags);
+}
+
+int close(int fd) {
+  one_arg_syscall(SYS_CLOSE_ID, fd)
 }
 
 int getpid(void) {
   no_arg_syscall(SYS_GETPID_ID);
-}
-
-int nice(int quantum) {
-  one_arg_syscall(SYS_NICE_ID, quantum)
 }
 
 int sem_init(int n_sem, unsigned int value) {
@@ -155,8 +163,16 @@ int sem_destroy(int n_sem) {
   one_arg_syscall(SYS_SEM_DESTROY_ID, n_sem);
 }
 
+int nice(int quantum) {
+  one_arg_syscall(SYS_NICE_ID, quantum)
+}
+
 int get_stats(int pid, struct stats *st) {
   two_arg_syscall(SYS_GET_STATS_ID, pid, st);
+}
+
+int dup(int fd) {
+  one_arg_syscall(SYS_DUP_ID, fd)
 }
 
 /* Internal syscall for debug only */
