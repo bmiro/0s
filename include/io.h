@@ -5,6 +5,10 @@
 #ifndef __IO_H__
 #define __IO_H__
 
+//TODO check if these two values are needed
+#define WRITE_MODE 1
+#define READ_MODE 0
+
 #define O_RDONLY   0x1
 #define O_WRONLY   0x2
 #define O_RDWR     (O_RDONLY | O_WRONLY)

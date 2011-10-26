@@ -122,7 +122,7 @@ int sys_write(int fd, char *buffer, int size) {
   int written;    
   
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
-  if (!access_ok((void*) buffer, WRITE, size)) return -EFAULT;
+  if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
     
   copied = 0;
