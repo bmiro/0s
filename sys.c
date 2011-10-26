@@ -72,7 +72,7 @@ int sys_write(int fd, char *buffer, int size) {
 }
 
 int sys_fork(void) {
-  int i, f;
+  int i, j, f;
   int lpag, src, dst;
   union task_union *child;
   
@@ -88,7 +88,15 @@ int sys_fork(void) {
   dst = src + NUM_PAG_DATA*PAGE_SIZE; 
   for (i = 0; i < NUM_PAG_DATA; i++) {
     f = alloc_frame();
-    if (f == -1) return -ENOMEM;
+
+    if (f == -1) { /* If it fails free the allocated frames  */
+       for (j = i; j >= 0; j--) {
+         free_frame(child->task.phpages[j]);
+       }
+       /* TLB Flush */
+       set_cr3();
+       return -ENOMEM;
+    }
     
     set_ss_pag(lpag + i, f);      /* Assing logic page to parent */
     copy_data((void *)(src + i * PAGE_SIZE), (void *)(dst + i * PAGE_SIZE), PAGE_SIZE); /* Data copy data */
@@ -152,9 +160,6 @@ int sys_sem_wait(int n_sem) {
   if (sems[n_sem].value > 0) {
     sems[n_sem].value--;
   } else {
-    /* Correct sem_wait must return 0 */
-    ((unsigned long *)current())[KERNEL_STACK_SIZE-EAX_POS] = 0; 
-    
     sched_block(current(), &sems[n_sem].queue);
     sched_continue((void *)sched_select_next());
   }  
@@ -162,13 +167,17 @@ int sys_sem_wait(int n_sem) {
 }
 
 int sys_sem_signal(int n_sem) {
+  struct task_struct *tsk;
   if (n_sem < 0 || n_sem >= NR_SEM) return -EINVAL;
   if (sems[n_sem].owner == FREE_SEM) return -EINVAL;
   
   if (list_empty(&sems[n_sem].queue)) {
     sems[n_sem].value++;
   } else {
-    sched_unblock(list_head_to_task_struct(list_first(&sems[n_sem].queue)));
+    /* Correct sem_wait must return 0 */
+    tsk = list_head_to_task_struct(list_first(&sems[n_sem].queue)); 
+    ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = 0;   
+    sched_unblock(tsk);
   }
   return 0;
 }
