@@ -21,9 +21,6 @@
 #define KEY_MAKE      0
 #define KEY_BREAK     1
 
-#define VIRTUAL_KEYBOARD_PATH "KEYBOARD"
-#define VIRTUAL_DISPLAY_PATH "DISPLAY"
-
 #include <types.h>
 
 /** Screen functions **/
@@ -42,5 +39,9 @@ void printk_xyr(int xx, int yy, char *str);
 
 /* Other */
 void clean_screen();
+
+
+
+
 
 #endif  /* __IO_H__ */
