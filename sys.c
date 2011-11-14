@@ -296,7 +296,7 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_dup(int fd) {
-  return -ENOSYS;
+  
 }
 
 int sys_ni_syscall(dvoid) {
