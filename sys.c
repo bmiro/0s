@@ -113,45 +113,86 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
-  return -ENOSYS;
+  struct logic_file *lf;
+  
+  lf = current()->channels[fd];  
+  
+  if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
+  if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
+  if (size < 0) return -EINVAL;
+  
+  return lf.functions->f_read(&lf->dyn_char, sysbuff, chuck);
+
 }
 
 int sys_write(int fd, char *buffer, int size) {
-  char sysbuff[SYSBUFF_SIZE];
-  int chuck, remain, copied;
-  int written;    
+  struct logic_file *lf;
+  
+  lf = current()->channels[fd];  
   
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
-    
-  copied = 0;
-  remain = size;
-  while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }
-   
-    copy_from_user(buffer + copied, sysbuff, chuck);
-    switch (fd) {
-      case(1):
-        written = sys_write_console(sysbuff, chuck);
-        /* By construction sys_write can NOT fail */
-        remain -= written;
-        copied += written;
-        break;
-      default:
-        break;
-    }
-  }
   
-  return copied;
+  return lf.functions->f_write(&lf->dyn_char, sysbuff, chuck);
+
 }
 
+// int sys_write(int fd, char *buffer, int size) {
+//   char sysbuff[SYSBUFF_SIZE];
+//   int chuck, remain, copied;
+//   int written;    
+//   
+//   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
+//   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
+//   if (size < 0) return -EINVAL;
+//     
+//   copied = 0;
+//   remain = size;
+//   while (remain) {
+//     if (remain < SYSBUFF_SIZE) {
+//       chuck = remain;
+//     } else {
+//       chuck = SYSBUFF_SIZE;
+//     }
+//    
+//     copy_from_user(buffer + copied, sysbuff, chuck);
+//     switch (fd) {
+//       case(1):
+//         written = sys_write_console(sysbuff, chuck);
+//         /* By construction sys_write can NOT fail */
+//         remain -= written;
+//         copied += written;
+//         break;
+//       default:
+//         break;
+//     }
+//   }
+//   
+//   return copied;
+// }
+
 int sys_open(const char *path, int flags) {
-  return -ENOSYS;
+  int f;
+  int fd;
+  struct channel fds*;
+  
+  fds = current()->channels;
+  
+  f = fat_find_path(path);
+  
+  if (!f) {
+    ; //TODO CREATE FILE IF O_CREATE
+  }
+  
+  fd = find_free_channel(fds);
+  if (fd < 0) return -EMFILE;
+  
+  fds[fd]->file = f;
+  fds[fd]->mode = (flags & O_WRONLY) == O_WRONLY; //TODO: Check if corret
+  fds[fd]->offset = 0;
+  
+  return fd;
 }
 
 int sys_close(int fd) {

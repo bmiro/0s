@@ -33,6 +33,7 @@ struct task_struct {
   struct list_head queue;
   struct stats st;
   unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
+  struct channel channels[NUM_CHANNELS];
 };
 
 union task_union {
