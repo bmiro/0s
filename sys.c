@@ -31,7 +31,7 @@ int check_fd(int fd, int mode) {
   }
 }
 
-/************************ Service interrupt routines ************************/
+// /************************ Service interrupt routines ************************/
 void sys_exit(void) {
   struct task_struct *tsk;
   int lpag;
@@ -175,9 +175,9 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_open(const char *path, int flags) {
   int f;
   int fd;
-  struct channel fds*;
+  struct channel channels*;
   
-  fds = current()->channels;
+  channels = current()->channels;
   
   f = fat_find_path(path);
   
@@ -185,18 +185,26 @@ int sys_open(const char *path, int flags) {
     ; //TODO CREATE FILE IF O_CREATE
   }
   
-  fd = find_free_channel(fds);
+  fd = find_free_channel(channels);
   if (fd < 0) return -EMFILE;
   
-  fds[fd]->file = f;
-  fds[fd]->mode = (flags & O_WRONLY) == O_WRONLY; //TODO: Check if corret
-  fds[fd]->offset = 0;
+  channels[fd]->file = f;
+  channels[fd]->mode = (flags & O_WRONLY) == O_WRONLY; //TODO: Check if corret
+  channels[fd]->offset = 0;
   
   return fd;
 }
 
 int sys_close(int fd) {
-  return -ENOSYS;
+  
+  if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
+  
+  error = current()->channels[fd].functions->close();
+  if (error < 0) return error;
+  
+  current()->channels[fd].mode = FREE_CHANNEL;
+  
+  return 0;
 }
 
 int sys_getpid(void) {
@@ -296,7 +304,22 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_dup(int fd) {
+  int new_fd;
+  struct channel channels*;
   
+  if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
+  
+  channels = current()->channels;
+  
+  new_fd = find_free_channel(channels);
+  if (fd < 0) return -EMFILE;
+  
+  channels[new_fd]->file = channels[fd]->file;
+  channels[new_fd]->mode = channels[fd]->mode;
+  channels[new_fd]->offset = channels[fd]->offset;
+  channels[new_fd]->functions = channels[fd]->functions;
+
+  return new_fd;
 }
 
 int sys_ni_syscall(dvoid) {
