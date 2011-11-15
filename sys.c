@@ -171,7 +171,7 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_open(const char *path, int flags) {
   int f;
   int fd;
-  struct channel channels*;
+  struct channel *channels;
   
   //TODO check flags
   
