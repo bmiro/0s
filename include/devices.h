@@ -3,6 +3,7 @@
 
 #include <io.h>
 #include <file.h>
+#include <sched.h>
 
 struct file_operations {
   int (*f_read)(void*, void*, int);

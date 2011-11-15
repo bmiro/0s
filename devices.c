@@ -8,7 +8,7 @@ void init_devices() {
   display.f_dup = NULL;
 }
 
-void set_default_std_in_out_err(struct task_struct tsk*) {
+void set_default_std_in_out_err(struct task_struct *tsk) {
   tsk->channels[STDOUT].functions = &display;
   tsk->channels[STDOUT].mode = O_WRONLY;
   tsk->channels[STDOUT].offset = 0;

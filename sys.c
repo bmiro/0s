@@ -12,6 +12,8 @@
 #include <mm_address.h>
 #include <sem.h>
 #include <stats.h>
+#include <file.h>
+#include <fat.h>
 
 unsigned int pid_counter = 0;
 
@@ -187,18 +189,19 @@ int sys_open(const char *path, int flags) {
   fd = find_free_channel(channels);
   if (fd < 0) return -EMFILE;
   
-  channels[fd]->file = f;
-  channels[fd]->mode = (O_RDONLY | O_WRONLY) & flags; //TODO: Check if corret
-  channels[fd]->offset = 0;
+  channels[fd].file = f;
+  channels[fd].mode = (O_RDONLY | O_WRONLY) & flags; //TODO: Check if corret
+  channels[fd].offset = 0;
   
   return fd;
 }
 
 int sys_close(int fd) {
+  int error;
   
   if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
   
-  error = current().channels[fd].functions->close();
+  error = current()->channels[fd].functions->f_close(NULL); //TODO canviar el parametre
   if (error < 0) return error;
   
   current()->channels[fd].mode = FREE_CHANNEL;
@@ -304,7 +307,7 @@ int sys_get_stats(int pid, struct stats *st) {
 
 int sys_dup(int fd) {
   int new_fd;
-  struct channel channels*;
+  struct channel *channels;
   
   if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
   
@@ -313,10 +316,10 @@ int sys_dup(int fd) {
   new_fd = find_free_channel(channels);
   if (new_fd < 0) return -EMFILE;
   
-  channels[new_fd]->file = channels[fd]->file;
-  channels[new_fd]->mode = channels[fd]->mode;
-  channels[new_fd]->offset = channels[fd]->offset;
-  channels[new_fd]->functions = channels[fd]->functions;
+  channels[new_fd].file = channels[fd].file;
+  channels[new_fd].mode = channels[fd].mode;
+  channels[new_fd].offset = channels[fd].offset;
+  channels[new_fd].functions = channels[fd].functions;
 
   return new_fd;
 }
