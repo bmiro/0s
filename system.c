@@ -108,6 +108,9 @@ int __attribute__((__section__(".text.main")))
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
   printk("Moving user data after page table init... done!\n");
 
+  /* Initialization of devices FAT, keyboard & display */
+  init_devices();
+  
   /* Enabling interruptions */
   enable_int();
 
