@@ -113,28 +113,24 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
-  struct logic_file *lf;
-  
-  lf = current()->channels[fd];  
-  
+    
   if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
   
-  return lf.functions->f_read(&lf->dyn_char, sysbuff, chuck);
+  //return current()->channels[fd].functions->f_write(&c, buffer, size);
 
 }
 
 int sys_write(int fd, char *buffer, int size) {
-  struct logic_file *lf;
-  
-  lf = current()->channels[fd];  
-  
+
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
   
-  return lf.functions->f_write(&lf->dyn_char, sysbuff, chuck);
+  
+  //TODO hem de copiar a troços??  
+  return current()->channels[fd].functions->f_write(buffer, size);
 
 }
 
@@ -152,7 +148,7 @@ int sys_write(int fd, char *buffer, int size) {
 //   while (remain) {
 //     if (remain < SYSBUFF_SIZE) {
 //       chuck = remain;
-//     } else {
+//     } else {set_default_std_in_out_err
 //       chuck = SYSBUFF_SIZE;
 //     }
 //    
@@ -177,6 +173,9 @@ int sys_open(const char *path, int flags) {
   int fd;
   struct channel channels*;
   
+  //TODO check flags
+  
+  
   channels = current()->channels;
   
   f = fat_find_path(path);
@@ -189,7 +188,7 @@ int sys_open(const char *path, int flags) {
   if (fd < 0) return -EMFILE;
   
   channels[fd]->file = f;
-  channels[fd]->mode = (flags & O_WRONLY) == O_WRONLY; //TODO: Check if corret
+  channels[fd]->mode = (O_RDONLY | O_WRONLY) & flags; //TODO: Check if corret
   channels[fd]->offset = 0;
   
   return fd;
@@ -199,7 +198,7 @@ int sys_close(int fd) {
   
   if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
   
-  error = current()->channels[fd].functions->close();
+  error = current().channels[fd].functions->close();
   if (error < 0) return error;
   
   current()->channels[fd].mode = FREE_CHANNEL;
@@ -312,7 +311,7 @@ int sys_dup(int fd) {
   channels = current()->channels;
   
   new_fd = find_free_channel(channels);
-  if (fd < 0) return -EMFILE;
+  if (new_fd < 0) return -EMFILE;
   
   channels[new_fd]->file = channels[fd]->file;
   channels[new_fd]->mode = channels[fd]->mode;

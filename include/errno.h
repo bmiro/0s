@@ -10,6 +10,7 @@
 #define EFAULT      14  /* Bad address */
 #define EBUSY       16  /* Device or resource busy */
 #define EINVAL      22  /* Invalid argument */
+#define EMFILE      24      /* Too many open files */
 #define ENOSYS      38  /* Function not implemented */
 
 #endif /* ERRNO_H__*/
