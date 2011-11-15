@@ -16,6 +16,8 @@
 #include <fat.h>
 
 unsigned int pid_counter = 0;
+char sysbuff[SYSBUFF_SIZE];
+
 
 /****************************** Internal Funtions ******************************/
 int getNewPid() {
@@ -26,11 +28,7 @@ int getNewPid() {
 }
 
 int check_fd(int fd, int mode) {
-  if (fd != 1 || mode != O_WRONLY) {
-    return -1;
-  } else {
-    return 0;
-  }
+  return (current()->channels[fd].mode & mode) == mode;
 }
 
 // /************************ Service interrupt routines ************************/
@@ -125,22 +123,33 @@ int sys_read(int fd, char *buffer, int size) {
 }
 
 int sys_write(int fd, char *buffer, int size) {
-  char sysbuff[SYSBUFF_SIZE];
-
+  int copied, remain, chuck, written;
+  
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
-  
-  printk("hello!\n");
-  
-  //TODO hem de copiar a troços??  
+    
   copy_from_user(buffer, sysbuff, size);
   
-  printk("copied form user!\n");
+  copied = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
+    copy_from_user(buffer + copied, sysbuff, chuck);
 
-  /*return */current()->channels[fd].functions->f_write(sysbuff, size);
-
-  printk("there!\n");
+    written = current()->channels[fd].functions->f_write(sysbuff, size);
+    if (written < 0) return written;
+    
+    remain -= written;
+    copied += written;
+  }
+  
+  return copied;
   
 }
 
@@ -158,7 +167,7 @@ int sys_write(int fd, char *buffer, int size) {
 //   while (remain) {
 //     if (remain < SYSBUFF_SIZE) {
 //       chuck = remain;
-//     } else {set_default_std_in_out_err
+//     } else {
 //       chuck = SYSBUFF_SIZE;
 //     }
 //    
