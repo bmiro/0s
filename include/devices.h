@@ -18,6 +18,6 @@ void init_devices();
 int sys_write_console(char *buffer, int size);
 int sys_read_keyboard(char *buffer, int size);
 
-struct file_operations file, display, keyboard;
+struct file_operations file, console, keyboard;
 
 #endif /* DEVICES_H__*/

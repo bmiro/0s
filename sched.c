@@ -91,6 +91,9 @@ void init_task0(void) {
   ts->st.remaining_quantum = ts->quantum;
   list_add(&ts->queue, &runqueue);
   
+  /* Sets defaults std in out err to keyboard console console */
+  set_default_std_in_out_err();
+  
   roundtics = ts->quantum;
 }
 

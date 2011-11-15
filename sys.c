@@ -131,12 +131,17 @@ int sys_write(int fd, char *buffer, int size) {
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
   
+  printk("hello!\n");
   
   //TODO hem de copiar a troços??  
   copy_from_user(buffer, sysbuff, size);
   
-  return current()->channels[fd].functions->f_write(sysbuff, size);
+  printk("copied form user!\n");
 
+  /*return */current()->channels[fd].functions->f_write(sysbuff, size);
+
+  printk("there!\n");
+  
 }
 
 // int sys_write(int fd, char *buffer, int size) {

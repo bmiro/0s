@@ -1,15 +1,15 @@
 #include <devices.h>
 
 void init_devices() {
-  display.f_read = NULL;
-  display.f_write = &sys_write_console;
-  display.f_open = NULL;
-  display.f_close = NULL;
-  display.f_dup = NULL;
+  console.f_read = NULL;
+  console.f_write = &sys_write_console;
+  console.f_open = NULL;
+  console.f_close = NULL;
+  console.f_dup = NULL;
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
-  tsk->channels[STDOUT].functions = &display;
+  tsk->channels[STDOUT].functions = &console;
   tsk->channels[STDOUT].mode = O_WRONLY;
   tsk->channels[STDOUT].offset = 0;
 }
