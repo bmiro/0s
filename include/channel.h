@@ -6,9 +6,9 @@
 /** Becareful! this value is realted with O_RDONLY O_WRONLY, they must be distingible */
 #define FREE_CHANNEL 0
 
-#define DEFAULT_STDIN  0
-#define DEFAULT_STDOUT 1
-#define DEFAULT_STDERR 2
+#define STDIN  0
+#define STDOUT 1
+#define STDERR 2
 
 struct channel {
   struct file_operations *functions;

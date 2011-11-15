@@ -125,6 +125,7 @@ int sys_read(int fd, char *buffer, int size) {
 }
 
 int sys_write(int fd, char *buffer, int size) {
+  char sysbuff[SYSBUFF_SIZE];
 
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
@@ -132,7 +133,9 @@ int sys_write(int fd, char *buffer, int size) {
   
   
   //TODO hem de copiar a troços??  
-  return current()->channels[fd].functions->f_write(buffer, size);
+  copy_from_user(buffer, sysbuff, size);
+  
+  return current()->channels[fd].functions->f_write(sysbuff, size);
 
 }
 

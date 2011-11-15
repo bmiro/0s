@@ -2,7 +2,7 @@
 #define  DEVICES_H__
 
 #include <io.h>
-#include <file.h>
+#include <channel.h>
 #include <sched.h>
 
 struct file_operations {
