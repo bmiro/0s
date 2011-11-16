@@ -26,7 +26,16 @@ int sys_write_console(char *buffer, int size) {
 
 
 int sys_read_keyboard(char *buffer, int size) {
-  int s;
+  if (get_size(&cb) == size && list_empty(keyboardqueue)) {
+    read = get_character(cb, buffer, size);
+  } else {
+    current()->remain = size;
+    current()->buff = buffer;
+    
+    sched_block(current(), keyboardqueue);
+    sched_continue(sched_select_next());
+  }
   
-  return s;
+  return read;
+  
 }

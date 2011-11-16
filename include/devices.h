@@ -5,6 +5,8 @@
 #include <channel.h>
 #include <sched.h>
 
+list_head keyboardqueue;
+
 struct file_operations {
   int (*f_read)(void*, void*, int);
   int (*f_write)(void*, int);  
@@ -15,7 +17,10 @@ struct file_operations {
 
 void init_devices();
 
+/* Console */
 int sys_write_console(char *buffer, int size);
+
+/* Keyboard */
 int sys_read_keyboard(char *buffer, int size);
 
 struct file_operations file, console, keyboard;

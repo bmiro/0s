@@ -126,6 +126,8 @@ int sys_read(int fd, char *buffer, int size) {
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
   
+  COPY_TO_USER!!!!
+  
   //return current()->channels[fd].functions->f_write(&c, buffer, size);
 
 }

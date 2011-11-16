@@ -269,23 +269,65 @@ void clock_routine() {
 void keyboard_routine() {
   char k, c;
   char event;
+  
+  struct task_struct *tsk;
     
   k = inb(KEYBOARD_PORT);
     
   /* Make/Break */
   event = (0x80 & k) == 0x80;
   /* Warning in break state first bit must be removed */
-  
   if (event == KEY_MAKE) {
     c = translate_key(k);
-    if (c != -1) {
-      /* Removes Control string from screen if is there */
-       printk_xyr(79, 24, "       ");
-       printc_xy(79, 24, c);
-    } else {
-      printk_xyr(79, 24, "Control");
+    
+    if (!is_full(&cb)) {
+      set_character(&cb, c);
+    } /* If buffer is full the characters are discarted */
+    
+    if (!list_empty(keyboardqueue)) { /* there are blocked processes */
+      tsk = list_head_to_task_struct(list_first(keyboardqueue));
+      
+      if (get_size(&cb) == tsk->reamin) { /* We have all characters needed */
+	//TODO agafar pagines de l'altre procés
+	read = get_character(&cb, tsk->buff, remain);
+	tsk->read = read;
+	/* We write the return value to the process */
+	((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->read;   
+	sched_unblock(tsk);
+      }
+      if (is_full(&cb)) {
+	read = get_character(&cb, tsk->buff, get_size(&cb));
+	tsk->reamin -= read;
+	tsk->buff += read;
+	tsk->read += read;
+      }
+      
+      
+      
+      
     }
   }
 }
 
 
+// void keyboard_routine() {
+//   char k, c;
+//   char event;
+//     
+//   k = inb(KEYBOARD_PORT);
+//     
+//   /* Make/Break */
+//   event = (0x80 & k) == 0x80;
+//   /* Warning in break state first bit must be removed */
+//   
+//   if (event == KEY_MAKE) {
+//     c = translate_key(k);
+//     if (c != -1) {
+//       /* Removes Control string from screen if is there */
+//        printk_xyr(79, 24, "       ");
+//        printc_xy(79, 24, c);
+//     } else {
+//       printk_xyr(79, 24, "Control");
+//     }
+//   }
+// }
