@@ -29,6 +29,7 @@ int sys_read_keyboard(char *buffer, int size) {
   if (get_size(&cb) == size && list_empty(keyboardqueue)) {
     read = get_character(cb, buffer, size);
   } else {
+    current()->read = 0;
     current()->remain = size;
     current()->buff = buffer;
     

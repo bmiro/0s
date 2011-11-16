@@ -28,15 +28,23 @@
 struct list_head runqueue;
   
 struct task_struct {
+  /* Process IDentifier */
   unsigned int pid;
-  unsigned int quantum;
+  
+  /* scheduling */
   char state;
-  struct list_head queue;
   struct stats st;
+  unsigned int quantum; 
+  struct list_head queue;
+  
+  /* Memory */
   unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
-  struct channel channels[NUM_CHANNELS];
+  
+  /* I/O */
   void *buff; /* Pointer to system buffer position used to copy device reamin data */
   int remain; /* Amount of bytes to complete the copy */
+  int read; /* Amount of read bytes */
+  struct channel channels[NUM_CHANNELS];
 };
 
 union task_union {
@@ -54,9 +62,9 @@ struct protected_task_struct {
  * to the other ready to run process */
 extern struct protected_task_struct task[NR_TASKS];
 
-#define KERNEL_ESP       (DWord) &task[0].t.stack[KERNEL_STACK_SIZE]
+#define KERNEL_ESP (DWord) &task[0].t.stack[KERNEL_STACK_SIZE]
 
-/* Inicialitza les dades del proces inicial */
+/* Initializes initial process */
 void init_task0(void);
 
 void init_task_structs(void);

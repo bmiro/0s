@@ -121,15 +121,32 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
-    
+  int copied, remain, chuck, read;
+
   if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
   
-  COPY_TO_USER!!!!
-  
-  //return current()->channels[fd].functions->f_write(&c, buffer, size);
+  copied = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
+    read = current()->channels[fd].functions->f_read(sysbuff, size);
+    if (read < 0) return read; /* This is an error */
+    
+    copy_to_user(sysbuff, buffer + copied, chuck);
 
+    remain -= read;
+    copied += read;
+  }
+  
+  return copied;
+  
 }
 
 int sys_write(int fd, char *buffer, int size) {
@@ -138,9 +155,7 @@ int sys_write(int fd, char *buffer, int size) {
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
-    
-  copy_from_user(buffer, sysbuff, size);
-  
+      
   copied = 0;
   remain = size;
   while (remain) {
@@ -153,7 +168,7 @@ int sys_write(int fd, char *buffer, int size) {
     copy_from_user(buffer + copied, sysbuff, chuck);
 
     written = current()->channels[fd].functions->f_write(sysbuff, size);
-    if (written < 0) return written;
+    if (written < 0) return written; /* This is an error */
     
     remain -= written;
     copied += written;

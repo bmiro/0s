@@ -288,23 +288,19 @@ void keyboard_routine() {
       tsk = list_head_to_task_struct(list_first(keyboardqueue));
       
       if (get_size(&cb) == tsk->reamin) { /* We have all characters needed */
-	//TODO agafar pagines de l'altre procés
-	read = get_character(&cb, tsk->buff, remain);
-	tsk->read = read;
-	/* We write the return value to the process */
-	((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->read;   
-	sched_unblock(tsk);
+        //TODO agafar pagines de l'altre procés
+        read = get_character(&cb, tsk->buff, remain);
+        tsk->read = read;
+        /* We write the return value to the process */
+        ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->read;   
+        sched_unblock(tsk);
       }
       if (is_full(&cb)) {
-	read = get_character(&cb, tsk->buff, get_size(&cb));
-	tsk->reamin -= read;
-	tsk->buff += read;
-	tsk->read += read;
+        read = get_character(&cb, tsk->buff, get_size(&cb));
+        tsk->reamin -= read;
+        tsk->buff += read;
+        tsk->read += read;
       }
-      
-      
-      
-      
     }
   }
 }
