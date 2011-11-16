@@ -103,7 +103,15 @@ int sys_fork(void) {
   child->task.st.tics = 0;
   child->task.st.cs = 0;
   child->task.st.remaining_quantum = child->task.quantum;
-    
+  
+  /* File descriptors hierachy */
+  for (i = 0; i < NUM_CHANNELS && current->channels[i].mode != FREE_CHANNEL; i++) {
+    child->task.channels[i].file = current->channels[i].file;
+    child->task.channels[i].mode = current->channels[i].mode;
+    child->task.channels[i].offset = current->channels[i].offset;
+    child->task.channels[i].functions = current->channels[i].functions;
+  }
+  
   /* Modifies child eax value (fork returns 0 to the child)*/
   child->stack[KERNEL_STACK_SIZE-EAX_POS] = 0;
   
@@ -341,7 +349,7 @@ int sys_dup(int fd) {
   return new_fd;
 }
 
-int sys_ni_syscall(dvoid) {
+int sys_ni_syscall(void) {
   printk("Not implemented yet!\n");
   return -ENOSYS;
 }
