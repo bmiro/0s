@@ -121,37 +121,11 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
-  int copied, remain, chuck, read;
-
   if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
-  
-  copied = 0;
-  remain = size;
-  while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }
    
-    printk("I want to read ");
-    if (size == 1) {
-      printk("1\n");
-    }
-   
-    read = current()->channels[fd].functions->f_read(sysbuff, size);
-    if (read < 0) return read; /* This is an error */
-    
-    copy_to_user(sysbuff, buffer + copied, chuck);
-
-    remain -= read;
-    copied += read;
-  }
-  
-  return copied;
-  
+  return current()->channels[fd].functions->f_read(sysbuff, size); 
 }
 
 int sys_write(int fd, char *buffer, int size) {
