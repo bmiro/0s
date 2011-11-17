@@ -9,9 +9,20 @@ void init_devices() {
   console.f_open = NULL;
   console.f_close = NULL;
   console.f_dup = NULL;
+  
+  keyboard.f_read = &sys_read_keyboard;
+  keyboard.f_write = NULL;
+  keyboard.f_open = NULL;
+  keyboard.f_close = NULL;
+  keyboard.f_dup = NULL;
+  
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
+  tsk->channels[STDIN].functions = &keyboard;
+  tsk->channels[STDIN].mode = O_RDONLY;
+  tsk->channels[STDIN].offset = 0;
+  
   tsk->channels[STDOUT].functions = &console;
   tsk->channels[STDOUT].mode = O_WRONLY;
   tsk->channels[STDOUT].offset = 0;
