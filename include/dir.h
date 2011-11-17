@@ -11,11 +11,12 @@
 struct dir_entry {
   char name[FILE_NAME_SIZE];
   int size;
+  int file;
 }
 
 /* Inicialitzes KEYBOARD and DISPLAY */
 void init_dir();
 
-
+int find_path(const char *path);
 
 #endif

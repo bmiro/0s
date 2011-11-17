@@ -199,17 +199,22 @@ int sys_open(const char *path, int flags) {
   
   channels = current()->channels;
   
-  f = fat_find_path(path);
+  f = find_path(path);
   
   if (!f) {
-    ; //TODO CREATE FILE IF O_CREATE
+    if (flags & O_CREAT == O_CREAT) {
+      f = create_file(0, flags & O_RDWR);
+      if (f < 0) return -1;
+    }
+  } else {
+    if (flags & (O_EXCL|O_CREAT) == (O_EXCL|O_CREAT)) return -1;
   }
   
   fd = find_free_channel(channels);
   if (fd < 0) return -EMFILE;
   
   channels[fd].file = f;
-  channels[fd].mode = (O_RDONLY | O_WRONLY) & flags; //TODO: Check if corret
+  channels[fd].mode = flags & O_RDWR; //TODO: Check if corret
   channels[fd].offset = 0;
   
   return fd;
