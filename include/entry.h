@@ -12,6 +12,7 @@
 #define SYS_WRITE_ID        4
 #define SYS_OPEN_ID         5
 #define SYS_CLOSE_ID        6
+#define SYS_UNLINK_ID      10
 #define SYS_GETPID_ID      20
 #define SYS_SEM_INIT_ID    21
 #define SYS_SEM_WAIT_ID    22

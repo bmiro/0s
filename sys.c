@@ -233,6 +233,14 @@ int sys_close(int fd) {
   return 0;
 }
 
+int sys_unlink(const char *path) {
+  int f;
+  
+  f = find_path(path);
+  if (f < 0) return ;
+
+}
+
 int sys_getpid(void) {
   struct task_struct *tsk;
   

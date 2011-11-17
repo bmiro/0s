@@ -143,6 +143,10 @@ int close(int fd) {
   one_arg_syscall(SYS_CLOSE_ID, fd)
 }
 
+int unlink(const char *path) {
+  one_arg_syscall(SYS_UNLINK_ID, path);
+}
+
 int getpid(void) {
   no_arg_syscall(SYS_GETPID_ID);
 }

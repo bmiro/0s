@@ -13,16 +13,25 @@
 #define CONSOLE 1
 
 int perror();
-int write(int fd, char *buffer, int size);
-int fork();
+
 int exit();
+int fork();
+
+int read(int fd, char *buffer, int size);
+int write(int fd, char *buffer, int size);
+int open(const char *path, int flags);
+int close(int fd);
+int unlink(const char *path);
+
 int getpid();
 
 int nice(int quantum);
+
 int sem_init(int n_sem, unsigned int value);
 int sem_wait(int n_sem);
 int sem_signal(int n_sem);
 int sem_destroy(int n_sem);
+
 int get_stats(int pid, struct stats *st);
 
 #endif  /* __LIBC_H__ */
