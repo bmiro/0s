@@ -26,7 +26,7 @@ SYSLDFLAGS = -T system.lds
 USRLDFLAGS = -T user.lds
 LINKFLAGS = -g 
 
-SYSOBJ = interrupt.o channel.o fat.o entry.o io.o kernutil.o sys.o sched.o sem.o mm.o devices.o utils.o hardware.o
+SYSOBJ = interrupt.o channel.o circbuff.o fat.o entry.o io.o kernutil.o sys.o sched.o sem.o mm.o devices.o utils.o hardware.o
 
 #add to USROBJ the object files required to complete the user program
 USROBJ = libc.o libjp.a kernutil.o
@@ -73,19 +73,19 @@ sys.o: sys.c $(INCLUDEDIR)/devices.h
 
 channel.o: channel.c $(INCLUDEDIR)/channel.h
 
+circbuff.o: circbuff.c $(INCLUDEDIR)/circbuff.h
+
 fat.o: fat.c $(INCLUDEDIR)/fat.h
 
 utils.o: utils.c $(INCLUDEDIR)/utils.h
 
 system.o: system.c $(INCLUDEDIR)/hardware.h system.lds $(SYSOBJ) $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/system.h $(INCLUDEDIR)/sched.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/io.h $(INCLUDEDIR)/sem.h $(INCLUDEDIR)/mm_address.h 
 
-
 system: system.o system.lds $(SYSOBJ)
 	$(LD) $(LINKFLAGS) $(SYSLDFLAGS) -o $@ $< $(SYSOBJ) 
 
 user: user.o user.lds $(USROBJ) 
 	$(LD) $(LINKFLAGS) $(USRLDFLAGS) -o $@ $< $(USROBJ)
-
 
 clean:
 	rm -f *.o *.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build

@@ -1,6 +1,9 @@
 #include <devices.h>
 
 void init_devices() {
+  
+  init_circ_buff(&circular_buffer);
+  
   console.f_read = NULL;
   console.f_write = &sys_write_console;
   console.f_open = NULL;
@@ -26,17 +29,18 @@ int sys_write_console(char *buffer, int size) {
 
 
 int sys_read_keyboard(char *buffer, int size) {
-  if (get_size(&cb) == size && list_empty(keyboardqueue)) {
-    read = get_character(cb, buffer, size);
+  
+  if (get_size(&circular_buffer) == size && list_empty(&keyboardqueue)) {
+    return get_character(&circular_buffer, buffer, size);
   } else {
     current()->read = 0;
     current()->remain = size;
     current()->buff = buffer;
     
-    sched_block(current(), keyboardqueue);
+    sched_block(current(), &keyboardqueue);
     sched_continue(sched_select_next());
   }
   
-  return read;
+  return -1; /* We don't arrive here */
   
 }

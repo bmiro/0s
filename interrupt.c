@@ -267,6 +267,7 @@ void clock_routine() {
 }
 
 void keyboard_routine() {
+  int read;
   char k, c;
   char event;
   
@@ -280,24 +281,24 @@ void keyboard_routine() {
   if (event == KEY_MAKE) {
     c = translate_key(k);
     
-    if (!is_full(&cb)) {
-      set_character(&cb, c);
+    if (!is_full(&circular_buffer)) {
+      save_character(&circular_buffer, c);
     } /* If buffer is full the characters are discarted */
     
-    if (!list_empty(keyboardqueue)) { /* there are blocked processes */
-      tsk = list_head_to_task_struct(list_first(keyboardqueue));
+    if (!list_empty(&keyboardqueue)) { /* there are blocked processes */
+      tsk = list_head_to_task_struct(list_first(&keyboardqueue));
       
-      if (get_size(&cb) == tsk->reamin) { /* We have all characters needed */
+      if (get_size(&circular_buffer) == tsk->remain) { /* We have all characters needed */
         //TODO agafar pagines de l'altre procés
-        read = get_character(&cb, tsk->buff, remain);
+        read = get_character(&circular_buffer, tsk->buff, tsk->remain);
         tsk->read = read;
         /* We write the return value to the process */
         ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->read;   
         sched_unblock(tsk);
       }
-      if (is_full(&cb)) {
-        read = get_character(&cb, tsk->buff, get_size(&cb));
-        tsk->reamin -= read;
+      if (is_full(&circular_buffer)) {
+        read = get_character(&circular_buffer, tsk->buff, get_size(&circular_buffer));
+        tsk->remain -= read;
         tsk->buff += read;
         tsk->read += read;
       }

@@ -7,6 +7,8 @@
 
 #include <types.h>
 #include <sched.h>
+#include <circbuff.h>
+#include <devices.h>
 
 #define IDT_ENTRIES 256
 

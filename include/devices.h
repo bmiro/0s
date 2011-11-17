@@ -4,11 +4,13 @@
 #include <io.h>
 #include <channel.h>
 #include <sched.h>
+#include <circbuff.h>
 
-list_head keyboardqueue;
+struct list_head keyboardqueue;
+struct circ_buff circular_buffer;
 
 struct file_operations {
-  int (*f_read)(void*, void*, int);
+  int (*f_read)(void*, int);
   int (*f_write)(void*, int);  
   int (*f_open)(int);
   int (*f_close)(int);
