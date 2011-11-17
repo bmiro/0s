@@ -7,6 +7,8 @@
 #include <hardware.h>
 #include <io.h>
 #include <entry.h>
+#include <mm.h>
+#include <utils.h>
 
 #include "kernutil.h"
 
@@ -270,6 +272,8 @@ void keyboard_routine() {
   int read;
   char k, c;
   char event;
+  int lpage;
+  int i;
   
   struct task_struct *tsk;
     
@@ -287,24 +291,49 @@ void keyboard_routine() {
     
     if (!list_empty(&keyboardqueue)) { /* there are blocked processes */
       tsk = list_head_to_task_struct(list_first(&keyboardqueue));
-            
-      if(tsk->remain == 1) printk("1");
-      
-      
+                  
       if (get_size(&circular_buffer) == tsk->remain) { /* We have all characters needed */	
-        printk("Enough keys\n");
+	read = get_character(&circular_buffer, sysbuff, tsk->remain);
 	
-	read = get_character(&circular_buffer, tsk->buff, tsk->remain);
-        tsk->read = read;
+	/* We temporally can access the blocked process pages */
+	lpage = L_USER_START + NUM_PAG_CODE*PAGE_SIZE;
+	for(i = 0; i < NUM_PAG_DATA; i++) {
+	  set_ss_pag((lpage>>12) + i, tsk->phpages[i]);
+	}
+	set_cr3();	
+	
+	copy_to_user(sysbuff, tsk->buff[tsk->offset], tsk->remain);
+        tsk->offset += read;
+	
+	/* Deassociation of blocked process pages */
+	for(i=0; i < NUM_PAG_DATA; i++) {
+	  set_ss_pag((lpage>>12) + i, current()->phpages[i]);
+	}
+	set_cr3();
+	
         /* We write the return value to the process */
-        ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->read;   
+        ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->offset;   
         sched_unblock(tsk);
       }
       if (is_full(&circular_buffer)) {
-        read = get_character(&circular_buffer, tsk->buff, get_size(&circular_buffer));
+	/* We temporally can access the blocked process pages */
+	lpage = L_USER_START + NUM_PAG_CODE*PAGE_SIZE;
+	for(i = 0; i < NUM_PAG_DATA; i++) {
+	  set_ss_pag((lpage>>12) + i, tsk->phpages[i]);
+	}
+	set_cr3();
+	
+	read = get_character(&circular_buffer, sysbuff, get_size(&circular_buffer));
+	copy_to_user(sysbuff, tsk->buff[tsk->offset], read);
+	
+	/* Deassociation of blocked process pages */
+	for(i=0; i < NUM_PAG_DATA; i++) {
+	  set_ss_pag((lpage>>12) + i, current()->phpages[i]);
+	}
+	set_cr3();
+	
         tsk->remain -= read;
-        tsk->buff += read;
-        tsk->read += read;
+        tsk->offset += read;
       }
     }
   }

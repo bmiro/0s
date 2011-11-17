@@ -5,6 +5,8 @@
 #include <channel.h>
 #include <sched.h>
 #include <circbuff.h>
+#include <mm.h>
+#include <utils.h>
 
 struct list_head keyboardqueue;
 struct circ_buff circular_buffer;

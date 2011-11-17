@@ -2,8 +2,6 @@
  * sys.c - Syscalls implementation
  */
 
-#define SYSBUFF_SIZE 1024
-
 #include <devices.h>
 #include <utils.h>
 #include <errno.h>
@@ -16,8 +14,6 @@
 #include <fat.h>
 
 unsigned int pid_counter = 0;
-char sysbuff[SYSBUFF_SIZE];
-
 
 /****************************** Internal Funtions ******************************/
 int getNewPid() {
@@ -121,11 +117,13 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
+  int copied, remain, chuck, read;
+
   if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    
-  return current()->channels[fd].functions->f_read(sysbuff, size); 
+  return current()->channels[fd].functions->f_read(buffer, size); 
 }
 
 int sys_write(int fd, char *buffer, int size) {

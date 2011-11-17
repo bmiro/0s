@@ -94,7 +94,7 @@ void init_task0(void) {
   /* Sets defaults std in out err to keyboard console console */
   set_default_std_in_out_err();
   
-  ts->read = 0;
+  ts->offset = 0;
   ts->remain = 0;
   ts->buff = NULL;
   
@@ -222,7 +222,7 @@ void sched_unblock(struct task_struct *tsk) {
   tsk->state = TASK_READY;
   
   tsk->remain = 0;
-  tsk->read = 0;
+  tsk->offset = 0;
 }
 
 /** Sched function used ONLY in clock interrupt */

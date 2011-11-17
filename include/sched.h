@@ -41,9 +41,9 @@ struct task_struct {
   unsigned int phpages[NUM_PAG_CODE + NUM_PAG_DATA];
   
   /* I/O */
-  void *buff; /* Pointer to system buffer position used to copy device reamin data */
+  char *buff; /* Pointer to first position of system buffer */
   int remain; /* Amount of bytes to complete the copy */
-  int read; /* Amount of read bytes */
+  int offset; /* Amount of already copied bytes */
   struct channel channels[NUM_CHANNELS];
 };
 
