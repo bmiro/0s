@@ -24,7 +24,6 @@ void free_frame(unsigned int frame);
 void set_user_pages(struct task_struct *task);
 void del_user_pages(unsigned page);
 
-
 /* PAGING */
 /* Variables containing the page directory and the page table */
 

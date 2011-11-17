@@ -3,6 +3,7 @@
 void init_circ_buff(struct circ_buff *cb) {
   cb->head = 0;
   cb->tail = 0;
+  cb->count = 0;
 }
 
 /* Returns in buffer the amout of charactars specified in size,
@@ -13,6 +14,7 @@ int get_character(struct circ_buff *cb, char *dest_buf, int size) {
   for (i = 0; i < size && !is_empty(cb); i++) {
     dest_buf[i] = cb->mem[cb->head];
     cb->head = (cb->head + 1) % CIRC_BUFF_SIZE;
+    cb->count--;
   }
   
   return i;
@@ -22,9 +24,10 @@ int get_character(struct circ_buff *cb, char *dest_buf, int size) {
 /* Puts the character c into the buffer */
 int save_character(struct circ_buff *cb, char c) {
   if (is_full(cb)) return -1;
-  
+    
   cb->mem[cb->tail] = c;
   cb->tail = (cb->tail + 1) % CIRC_BUFF_SIZE;
+  cb->count++;
   
   return 0;
 }
@@ -34,11 +37,9 @@ char is_empty(struct circ_buff *cb) {
 }
 
 char is_full(struct circ_buff *cb) {
-  return ((cb->tail + 1) % (CIRC_BUFF_SIZE)) == cb->head;
+  return cb->count == CIRC_BUFF_SIZE;
 }
 
 int get_size(struct circ_buff *cb) {
-  if (cb->head > cb->tail) return CIRC_BUFF_SIZE - cb->head + cb->tail;
-  if (cb->head < cb->tail) return cb->tail - cb->head;
-  return 0;
+  return cb->count;
 }

@@ -274,23 +274,27 @@ void keyboard_routine() {
   struct task_struct *tsk;
     
   k = inb(KEYBOARD_PORT);
-    
+      
   /* Make/Break */
   event = (0x80 & k) == 0x80;
   /* Warning in break state first bit must be removed */
   if (event == KEY_MAKE) {
     c = translate_key(k);
-    
+        
     if (!is_full(&circular_buffer)) {
       save_character(&circular_buffer, c);
     } /* If buffer is full the characters are discarted */
     
     if (!list_empty(&keyboardqueue)) { /* there are blocked processes */
       tsk = list_head_to_task_struct(list_first(&keyboardqueue));
+            
+      if(tsk->remain == 1) printk("1");
       
-      if (get_size(&circular_buffer) == tsk->remain) { /* We have all characters needed */
-        //TODO agafar pagines de l'altre procés
-        read = get_character(&circular_buffer, tsk->buff, tsk->remain);
+      
+      if (get_size(&circular_buffer) == tsk->remain) { /* We have all characters needed */	
+        printk("Enough keys\n");
+	
+	read = get_character(&circular_buffer, tsk->buff, tsk->remain);
         tsk->read = read;
         /* We write the return value to the process */
         ((unsigned long *)tsk)[KERNEL_STACK_SIZE-EAX_POS] = tsk->read;   

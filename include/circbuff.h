@@ -1,11 +1,12 @@
 #ifndef __CIRCBUFF_H__
 #define __CIRCBUFF_H__
 
-#define CIRC_BUFF_SIZE 80
+#define CIRC_BUFF_SIZE 10
 
 struct circ_buff {
   char mem[CIRC_BUFF_SIZE];
   int head, tail;
+  int count;
 };
 
 void init_circ_buff(struct circ_buff *cb);

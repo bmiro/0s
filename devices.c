@@ -2,7 +2,8 @@
 
 void init_devices() {
   
-  init_circ_buff(&circular_buffer);
+  INIT_LIST_HEAD(&keyboardqueue);
+  init_circ_buff(&circular_buffer); 
   
   console.f_read = NULL;
   console.f_write = &sys_write_console;
@@ -41,14 +42,25 @@ int sys_write_console(char *buffer, int size) {
 
 int sys_read_keyboard(char *buffer, int size) {
   
-  if (get_size(&circular_buffer) == size && list_empty(&keyboardqueue)) {
+  if (get_size(&circular_buffer) >= size && list_empty(&keyboardqueue)) {
     return get_character(&circular_buffer, buffer, size);
   } else {
     current()->read = 0;
     current()->remain = size;
     current()->buff = buffer;
     
+    if (current()->remain == 1) printk("Is one");
+    
+    printk("There are not enought chars in the buff blocking\n");
+    if (list_empty(&keyboardqueue)) printk("No keyblocked procs\n");
+    
     sched_block(current(), &keyboardqueue);
+    
+    struct task_struct *tsk;
+    tsk = list_head_to_task_struct(&keyboardqueue);
+    
+    if (tsk->remain == 1) printk ("Is also one");
+    
     sched_continue(sched_select_next());
   }
   

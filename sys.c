@@ -136,6 +136,11 @@ int sys_read(int fd, char *buffer, int size) {
       chuck = SYSBUFF_SIZE;
     }
    
+    printk("I want to read ");
+    if (size == 1) {
+      printk("1\n");
+    }
+   
     read = current()->channels[fd].functions->f_read(sysbuff, size);
     if (read < 0) return read; /* This is an error */
     

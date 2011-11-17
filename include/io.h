@@ -36,8 +36,4 @@ void printk_xyr(int xx, int yy, char *str);
 /* Other */
 void clean_screen();
 
-
-
-
-
 #endif  /* __IO_H__ */
