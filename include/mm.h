@@ -16,7 +16,7 @@
 #define FRAME_TO_PH_ADDR(x) (x<<12)
 
 #define SYSBUFF_SIZE 1024
-extern char sysbuff[SYSBUFF_SIZE];
+char sysbuff[SYSBUFF_SIZE];
 
 /* Bytemap to mark the free physical pages */
 extern Byte phys_mem[TOTAL_PAGES];

@@ -26,7 +26,7 @@ SYSLDFLAGS = -T system.lds
 USRLDFLAGS = -T user.lds
 LINKFLAGS = -g 
 
-SYSOBJ = interrupt.o channel.o circbuff.o fat.o entry.o io.o kernutil.o sys.o sched.o sem.o mm.o devices.o utils.o hardware.o
+SYSOBJ = interrupt.o mm.o channel.o circbuff.o fat.o entry.o io.o kernutil.o sys.o sched.o sem.o devices.o utils.o hardware.o
 
 #add to USROBJ the object files required to complete the user program
 USROBJ = libc.o libjp.a kernutil.o
@@ -55,7 +55,7 @@ entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 
 user.o: user.c $(INCLUDEDIR)/libc.h
 
-interrupt.o: interrupt.c $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h
+interrupt.o: interrupt.c $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/types.h
 
 io.o: io.c $(INCLUDEDIR)/io.h
 
@@ -69,7 +69,7 @@ sched.o: sched.c $(INCLUDEDIR)/sched.h
 
 sem.o: sem.c $(INCLUDEDIR)/sem.h
 
-sys.o: sys.c $(INCLUDEDIR)/devices.h
+sys.o: sys.c $(INCLUDEDIR)/devices.h $(INCLUDEDIR)/mm.h
 
 channel.o: channel.c $(INCLUDEDIR)/channel.h
 

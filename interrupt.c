@@ -302,7 +302,7 @@ void keyboard_routine() {
 	}
 	set_cr3();	
 	
-	copy_to_user(sysbuff, tsk->buff[tsk->offset], tsk->remain);
+	copy_to_user(sysbuff, &tsk->buff[tsk->offset], tsk->remain);
         tsk->offset += read;
 	
 	/* Deassociation of blocked process pages */
@@ -324,7 +324,7 @@ void keyboard_routine() {
 	set_cr3();
 	
 	read = get_character(&circular_buffer, sysbuff, get_size(&circular_buffer));
-	copy_to_user(sysbuff, tsk->buff[tsk->offset], read);
+	copy_to_user(sysbuff, &tsk->buff[tsk->offset], read);
 	
 	/* Deassociation of blocked process pages */
 	for(i=0; i < NUM_PAG_DATA; i++) {

@@ -8,7 +8,6 @@
 #define FROM_USER 1
 
 void copy_data(void *start, void *dest, int size);
-int copy_chuck_chuck(void *start, void *dest, int size, int scope);
 int copy_from_user(void *start, void *dest, int size);
 int copy_to_user(void *start, void *dest, int size);
 

@@ -18,35 +18,6 @@ void copy_data(void *start, void *dest, int size) {
   }
 }
 
-int copy_chuck_chuck(void *start, void *dest, int size, char scope) {
-  int copied, remain, chuck;
-  
-  copied = 0;
-  remain = size;
-  while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }
-     
-    switch(scope) {
-      case (TO_USER):
-	copy_to_user(sysbuff, buffer + copied, chuck);
-	break;
-      case (FROM_USER):
-	copy_from_user(sysbuff, buffer + copied, chuck);
-	break;
-      default:
-	copy_data(sysbuff, buffer + copied, chuck);
-    }
-
-    remain -= chuck;
-    copied += chuck;
-  }
-  return copied;
-}
-
 /* Copia de espacio de usuario a espacio de kernel, devuelve 0 si ok y -1 si error*/
 int copy_from_user(void *start, void *dest, int size) {
   DWord *p = start, *q = dest;
