@@ -172,12 +172,16 @@ int sys_open(const char *path, int flags) {
       return -ENOENT;
     }
   } else {
-    if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -1;
-  }  
-  
-  fd = find_free_channel(channels);
+    printk(path);
+    printk(" found\n");
     
+    if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -EEXIST;
+  }
+  
+  fd = find_free_channel(channels);  
   if (fd < 0) return -EMFILE;
+    
+  printk("Got new fd\n");
     
   fat_find_entry(&file, f);
   
@@ -186,8 +190,14 @@ int sys_open(const char *path, int flags) {
   
   current()->channels[fd].fops = file.fops;
   
-  error = current()->channels[fd].fops->f_open(f);
-  if (error < 0) return error;
+  printk("Trying to f_open\n");
+  
+  if (current()->channels[fd].fops->f_open != NULL) {
+    error = current()->channels[fd].fops->f_open(f);
+    if (error < 0) return error;
+  }
+  
+  printk("f_open success\n");
     
   channels[fd].file = f;
   channels[fd].mode = flags & O_RDWR; //TODO: Check if corret

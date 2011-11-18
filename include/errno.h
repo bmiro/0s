@@ -10,6 +10,7 @@
 #define EACCES       13  /* Permission denied */
 #define EFAULT       14  /* Bad address */
 #define EBUSY        16  /* Device or resource busy */
+#define	EEXIST       17  /* File exists */
 #define EINVAL       22  /* Invalid argument */
 #define EMFILE       24  /* Too many open files */
 #define	ENAMETOOLONG 36  /* File name too long */   
