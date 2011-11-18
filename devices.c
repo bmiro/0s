@@ -37,7 +37,7 @@ void set_default_std_in_out_err(struct task_struct *tsk) {
   
 }
 
-int sys_write_console(char *buffer, int size) {
+int sys_write_console(int file, char *buffer, int offset, int size) {
   int chuck, remain;
   int written;
   int i;
@@ -64,7 +64,7 @@ int sys_write_console(char *buffer, int size) {
 
 
 
-int sys_read_keyboard(char *buffer, int size) {
+int sys_read_keyboard(int file, char *buffer, int offset, int size) {
   int read;
   
   read = 0;
@@ -87,7 +87,7 @@ int sys_read_keyboard(char *buffer, int size) {
 
 /* File */
 int sys_open_file(int file) {
-  return fat_file_open(file);
+  return fat_open(file);
 }
 
 int sys_write_file(int file, char *buffer, int offset, int size) {

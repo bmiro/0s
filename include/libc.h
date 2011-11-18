@@ -9,8 +9,11 @@
 #include <stats.h>
 #include <errno.h>
 #include <entry.h>
+#include <file.h>
 
-#define CONSOLE 1
+#define STDIN  0
+#define STDOUT 1
+#define STDERR 2
 
 int perror();
 

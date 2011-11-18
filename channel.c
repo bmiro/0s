@@ -1,4 +1,4 @@
-#include <file.h>
+#include <channel.h>
 
 int find_free_channel(struct channel *chs) {
   int i;

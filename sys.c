@@ -3,6 +3,7 @@
  */
 
 #include <devices.h>
+#include <file.h>
 #include <utils.h>
 #include <errno.h>
 #include <sched.h>
@@ -10,7 +11,6 @@
 #include <mm_address.h>
 #include <sem.h>
 #include <stats.h>
-#include <file.h>
 #include <fat.h>
 
 unsigned int pid_counter = 0;
@@ -117,19 +117,27 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
+  struct channel *ch;
+  
   if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    
-  return current()->channels[fd].functions->f_read(NULL, buffer, size); 
+  ch = &current()->channels[fd];
+   
+  return ch->functions->f_read(ch->file, buffer, ch->offset, size);
 }
 
 int sys_write(int fd, char *buffer, int size) {  
+  struct channel *ch;
+
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
-  return current()->channels[fd].functions->f_write(current()->channels[fd].file, buffer, size);  
+  ch = &current()->channels[fd];
+   
+  return ch->functions->f_write(ch->file, buffer, ch->offset, size);  
 }
 
 int sys_open(const char *path, int flags) {
@@ -145,15 +153,15 @@ int sys_open(const char *path, int flags) {
   f = find_path(path);
   
   if (!f) {
-    if (flags & O_CREAT == O_CREAT) {
+    if ((flags & O_CREAT) == O_CREAT) {
       f = create_file(0, flags & O_RDWR);
       if (f < 0) return -1;
     } else {
       /* File does not exist */
-      return -1
+      return -1;
     }
   } else {
-    if (flags & (O_EXCL|O_CREAT) == (O_EXCL|O_CREAT)) return -1;
+    if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -1;
   }
   
   fd = find_free_channel(channels);
@@ -183,11 +191,7 @@ int sys_close(int fd) {
 }
 
 int sys_unlink(const char *path) {
-  int f;
-  
-  f = find_path(path);
-  if (f < 0) return ;
-
+  return 0;
 }
 
 int sys_getpid(void) {

@@ -8,10 +8,6 @@
 #include <mm.h>
 #include <utils.h>
 
-#define O_RDONLY   0x1
-#define O_WRONLY   0x2
-#define O_RDWR     (O_RDONLY | O_WRONLY)
-
 struct list_head keyboardqueue;
 struct circ_buff circular_buffer;
 
@@ -28,10 +24,10 @@ struct file_operations {
 void init_devices();
 
 /* Console */
-int sys_write_console(int null0, char *buffer, int null1, int size);
+int sys_write_console(int file, char *buffer, int offset, int size);
 
 /* Keyboard */
-int sys_read_keyboard(int null0, char *buffer, int null1, int size);
+int sys_read_keyboard(int file, char *buffer, int offset, int size);
 
 /* File */
 int sys_open_file(int file);

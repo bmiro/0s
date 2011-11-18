@@ -69,7 +69,7 @@ sched.o: sched.c $(INCLUDEDIR)/sched.h
 
 sem.o: sem.c $(INCLUDEDIR)/sem.h
 
-sys.o: sys.c $(INCLUDEDIR)/devices.h $(INCLUDEDIR)/mm.h
+sys.o: sys.c $(INCLUDEDIR)/devices.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/file.h
 
 channel.o: channel.c $(INCLUDEDIR)/channel.h
 

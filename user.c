@@ -27,14 +27,14 @@ pare dels sistemes Unix i llenguatge C, fonament d'aquesta assignatura.", 145);
     //write(1, "FATHER", 6);
   }
 
-  f = open("fitxer", O_CREATE|O_WRONLY);
+  f = open("fitxer", O_CREAT|O_WRONLY);
 
   read(STDIN, &c, 1);
   write(f, &c, 1);
   
   close(f);
   
-  f = open("fitxer", O_CREATE|O_RDONLY);
+  f = open("fitxer", O_CREAT|O_RDONLY);
   read(f, &d, 1);
   write(STDOUT, &d, 1);
   

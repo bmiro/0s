@@ -109,7 +109,7 @@ int delete_file(int file) {
   fs.root[file].file = EOC;
 }
 
-int fat_open_file(int file) {
+int fat_open(int file) {
   if (file > MAX_FILES) return -1;
   fs.root[file].opens++;
   return 0;

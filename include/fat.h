@@ -72,7 +72,7 @@ int delete_file(int f);
 /* Creates a file in FAT metadata pre-allocating size bytes */
 int create_file(const char *path, int permissions);
 
-int fat_open_file(int f);
+int fat_open(int file);
 int fat_read(int f, void *buffer, int offset, int size);
 int fat_write(int f, void *buffer, int offset, int size);
 

@@ -60,3 +60,15 @@ char* strcat(char* dst, char* first, char* second) {
   
   return dst;
 }
+
+int strcmp(char* s1, char* s2) {
+  int i;
+  
+  for (i = 0; s1 != '\0'; i++) {
+    if (s1[i] - s2[i]) break;
+  }
+  
+  return s1[i] - s2[i];
+  
+}
+
