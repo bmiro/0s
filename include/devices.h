@@ -8,6 +8,10 @@
 #include <mm.h>
 #include <utils.h>
 #include <libc.h>
+#include <fat.h>
+
+#define KEYBOARD_PATH "KEYBOARD"
+#define CONSOLE_PATH "DISPLAY"
 
 struct list_head keyboardqueue;
 struct circ_buff circular_buffer;

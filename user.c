@@ -1,4 +1,5 @@
 #include <libc.h>
+#include <kernutil.h>
 
 int __attribute__ ((__section__(".text.main"))) main(void) {
 

@@ -149,18 +149,23 @@ int sys_open(const char *path, int flags) {
   struct channel *channels;
   struct fat_dir_entry file;
   
+  if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
   if (error = check_path(path)) return error;
-  
-  //TODO check flags
-  
+    
   channels = current()->channels;
+  
+  printk("\n");
+  printk("Trying to open ");
+  printk(path);
+  printk("\n");
   
   f = find_path(path);
       
-  if (!f) {
-    if ((flags & O_CREAT) == O_CREAT) {
-      f = fat_create(path, flags & O_RDWR);
+  if (f < 0) {
+    printk("FILE NOT FOUND");
+    if ((flags & O_CREAT) == O_CREAT) {      
+      f = fat_create(path, flags & O_RDWR, &dev_file);      
       if (f < 0) return -1;
     } else {
       /* File does not exist */
@@ -168,12 +173,16 @@ int sys_open(const char *path, int flags) {
     }
   } else {
     if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -1;
-  }
+  }  
   
   fd = find_free_channel(channels);
+    
   if (fd < 0) return -EMFILE;
     
   fat_find_entry(&file, f);
+  
+  /* Flag check */
+  if ((file.mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
   
   current()->channels[fd].fops = file.fops;
   

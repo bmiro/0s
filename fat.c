@@ -4,7 +4,8 @@ int initZeOSFAT() {
   int i;
   
   for (i = 0; i < MAX_FILES; i++) {
-    fs.root[i].type = FREE_TYPE;
+    strcat(fs.root[i].name, "", "");
+    fs.root[i].mode = FREE_TYPE;
     fs.root[i].size = 0;
     fs.root[i].first_block = EOC;
     fs.root[i].last_block = EOC;
@@ -96,8 +97,9 @@ int find_path(const char *path) {
   int i;
   
   for (i = 0; i < MAX_FILES; i++) {
-    if (strcmp(fs.root[i].name, path)) return i;
+    if (!strcmp(fs.root[i].name, path)) return i;
   }
+  
   return -1;
 }
 
@@ -106,7 +108,6 @@ int fat_find_entry(struct fat_dir_entry *file, int f) {
   file->file = fs.root[f].file;
   file->size = fs.root[f].size;
   file->mode = fs.root[f].mode;
-  file->type = fs.root[f].type;
   file->first_block = fs.root[f].first_block;
   file->last_block = fs.root[f].last_block;
   file->opens = fs.root[f].opens;
@@ -134,9 +135,7 @@ int delete_file(int file) {
   fs.root[file].file = EOC;
 }
 
-int fat_open(int file) {
-  printk("OPENING FILE\n");
-  
+int fat_open(int file) {  
   if (file > MAX_FILES) return -1;
   fs.root[file].opens++;
   return 0;
@@ -151,15 +150,14 @@ int fat_close(int file) {
 }
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
-int fat_create(const char *path, int permissions) {
+int fat_create(const char *path, int permissions, struct file_operations *fops) {
   int i;
   for (i = 0; i < MAX_FILES; i++) {
-    if (fs.root[i].type == FREE_TYPE) {
+    if (fs.root[i].mode == FREE_TYPE) {
       strcat(fs.root[i].name, (char *)path, "");
       fs.root[i].mode = (permissions & O_RDWR);
       fs.root[i].size = 0;
-      fs.root[i].type = FILE_TYPE;
-      fs.root[i].fops = &dev_file;
+      fs.root[i].fops = fops;
       return i;
     }
   }

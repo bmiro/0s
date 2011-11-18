@@ -17,9 +17,6 @@
 #define EOC -1
 
 #define FREE_TYPE -1
-#define FILE_TYPE 0
-#define DIRECTORY_TYPE 1
-#define DEVICE_TYPE 2
 
 /* Remember that this is an educational, memory allocated &
  single directory level FS developed to run easily on this
@@ -33,7 +30,6 @@ struct fat_dir_entry {
   int file;
   int size;
   int mode;
-  char type;
   int first_block; /* Pointer to first data block */
   int last_block;
   int opens; /* Counts number of procs that opened the file */
@@ -75,7 +71,7 @@ int append_file_blocks(int f, int size);
 int delete_file(int f);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
-int fat_create(const char *path, int permissions);
+int fat_create(const char *path, int permissions, struct file_operations *fops);
 
 int fat_open(int file);
 int fat_read(int f, void *buffer, int offset, int size);

@@ -2,6 +2,8 @@
 
 void init_devices() {
   
+  initZeOSFAT();
+
   INIT_LIST_HEAD(&keyboardqueue);
   init_circ_buff(&circular_buffer); 
   
@@ -23,13 +25,15 @@ void init_devices() {
   dev_file.f_close = NULL;
   dev_file.f_dup = NULL;
   
-  initZeOSFAT();
+  fat_create(KEYBOARD_PATH, O_RDONLY, &dev_keyboard);
+  fat_create(CONSOLE_PATH, O_WRONLY, &dev_console);
+  
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
-//   open(VIRTUAL_KEYBOARD_PATH, O_RDONLY);
-//   open(VIRTUAL_DISPLAY_PATH, O_WRONLY);
-//   open(VIRTUAL_DISPLAY_PATH, O_WRONLY);
+//   sys_open(KEYBOARD_PATH, O_RDONLY);
+//   sys_open(CONSOLE_PATH, O_WRONLY);
+//   sys_open(CONSOLE_PATH, O_WRONLY);
   tsk->channels[STDIN].fops = &dev_keyboard;
   tsk->channels[STDIN].mode = O_RDONLY;
   tsk->channels[STDIN].offset = 0;
@@ -94,7 +98,6 @@ int sys_read_keyboard(int file, char *buffer, int offset, int size) {
 
 /* File */
 int sys_open_file(int file) {
-  printk("Trying to open a file\n");
   return fat_open(file);
 }
 
