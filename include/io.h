@@ -9,10 +9,6 @@
 #define WRITE_MODE 1
 #define READ_MODE 0
 
-#define O_RDONLY   0x1
-#define O_WRONLY   0x2
-#define O_RDWR     (O_RDONLY | O_WRONLY)
-
 #define KEYBOARD_PORT 0x60
 #define KEY_MAKE      0
 #define KEY_BREAK     1

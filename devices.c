@@ -86,6 +86,10 @@ int sys_read_keyboard(char *buffer, int size) {
 }
 
 /* File */
+int sys_open_file(int file) {
+  return fat_file_open(file);
+}
+
 int sys_write_file(int file, char *buffer, int offset, int size) {
   int chuck, remain;
   int written;

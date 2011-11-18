@@ -129,16 +129,16 @@ int sys_write(int fd, char *buffer, int size) {
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
-  return current()->channels[fd].functions->f_write(NULL, buffer, size);  
+  return current()->channels[fd].functions->f_write(current()->channels[fd].file, buffer, size);  
 }
 
 int sys_open(const char *path, int flags) {
+  int error;
   int f;
   int fd;
   struct channel *channels;
   
   //TODO check flags
-  
   
   channels = current()->channels;
   
@@ -148,6 +148,9 @@ int sys_open(const char *path, int flags) {
     if (flags & O_CREAT == O_CREAT) {
       f = create_file(0, flags & O_RDWR);
       if (f < 0) return -1;
+    } else {
+      /* File does not exist */
+      return -1
     }
   } else {
     if (flags & (O_EXCL|O_CREAT) == (O_EXCL|O_CREAT)) return -1;
@@ -155,6 +158,9 @@ int sys_open(const char *path, int flags) {
   
   fd = find_free_channel(channels);
   if (fd < 0) return -EMFILE;
+  
+  error = current()->channels[fd].functions->f_open(f);
+  if (error < 0) return error;
   
   channels[fd].file = f;
   channels[fd].mode = flags & O_RDWR; //TODO: Check if corret
