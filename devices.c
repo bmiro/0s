@@ -87,13 +87,43 @@ int sys_read_keyboard(char *buffer, int size) {
 
 /* File */
 int sys_write_file(int file, char *buffer, int offset, int size) {
-  
-  
-  
-  
-  return fat_write(file, buffer, offset, size);
+  int chuck, remain;
+  int written;
+  int i;
+
+  written = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
+    copy_from_user(buffer + written, sysbuff, chuck);
+    
+    written += fat_write(file, sysbuff, offset + written, chuck);
+  }
+
+  return written;
 }
 
 int sys_read_file(int file, char *buffer, int offset, int size) {
-  return fat_read(file, buffer, offset, size);
+  int chuck, remain;
+  int read;
+  int i;
+
+  read = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }    
+    read += fat_read(file, sysbuff, offset + read, chuck);
+    copy_to_user(sysbuff, buffer + read, chuck);
+  }
+
+  return read;
 }

@@ -24,14 +24,14 @@ struct file_operations {
 void init_devices();
 
 /* Console */
-int sys_write_console(int file, char *buffer, int offset, int size);
+int sys_write_console(int fd, char *buffer, int offset, int size);
 
 /* Keyboard */
-int sys_read_keyboard(int file, char *buffer, int offset, int size);
+int sys_read_keyboard(int fd, char *buffer, int offset, int size);
 
 /* File */
-int sys_write_file(int file, char *buffer, int offset, int size);
-int sys_read_file(int file, char *buffer, int offset, int size);
+int sys_write_file(int fd, char *buffer, int offset, int size);
+int sys_read_file(int fd, char *buffer, int offset, int size);
 
 
 struct file_operations file, console, keyboard;

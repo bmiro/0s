@@ -25,7 +25,7 @@ char block_buffer [BLOCK_SIZE];
 struct dir_entry {
   char name[FILE_NAME_SIZE];
   int size;
-  int file;
+  int data; /* Pointer to first data block */
   int mode;
   char type;
 }
@@ -63,6 +63,9 @@ int delete_file(int file);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
 int create_file(int size, int permissions);
+
+int fat_read(int file, void *buffer, int offset, int size);
+int fat_write(int file, void *buffer, int offset, int size);
 
 
 #endif

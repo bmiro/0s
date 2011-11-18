@@ -15,6 +15,8 @@
 #define FRAME_FROM_PH_ADDR(x) (x>>12)
 #define FRAME_TO_PH_ADDR(x) (x<<12)
 
+/* It will be great if is bigger than BLOCK_SIZE in fat.h
+ * and SYSBUFF_SIZE % BLOCK_SIZE == 0 */
 #define SYSBUFF_SIZE 1024
 char sysbuff[SYSBUFF_SIZE];
 
