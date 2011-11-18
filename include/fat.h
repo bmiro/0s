@@ -22,12 +22,14 @@
 
 char block_buffer [BLOCK_SIZE];
 
-struct dir_entry {
+struct fat_dir_entry {
   char name[FILE_NAME_SIZE];
   int size;
-  int data; /* Pointer to first data block */
   int mode;
   char type;
+  int first_block; /* Pointer to first data block */
+  int last_block;
+  int opens; /* Counts number of procs that opened the file */
 }
 
 struct data_block {
@@ -36,7 +38,7 @@ struct data_block {
 
 struct fat {
   /* Root directory pointing to files */
-  struct dir_entry root[MAX_FILES];
+  struct fat_dir_entry root[MAX_FILES];
   
   int total_block_count;
   int used_block_count;
@@ -56,16 +58,16 @@ int initZeOSFAT();
 int find_path(const char *path);
 
 /* Adds capatity to a file the number of size bytes */
-int append_file_blocks(int file, int size);
+int append_file_blocks(int f, int size);
 
 /* Deletes a file from FAT metadata */
-int delete_file(int file);
+int delete_file(int f);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
 int create_file(int size, int permissions);
 
-int fat_read(int file, void *buffer, int offset, int size);
-int fat_write(int file, void *buffer, int offset, int size);
+int fat_read(int f, void *buffer, int offset, int size);
+int fat_write(int f, void *buffer, int offset, int size);
 
 
 #endif
