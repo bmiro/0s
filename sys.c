@@ -23,9 +23,14 @@ int getNewPid() {
   return pid_counter;
 }
 
-int fd_ok(int fd, int mode) {
+int fd_ok(int fd) {
   if (fd < 0 || fd > NUM_CHANNELS) return 0;
-  
+  if (current()->channels[fd].mode == FREE_CHANNEL) return 0;
+  return 1;
+}
+
+int fd_access_ok(int fd, int mode) {
+  if (!fd_ok(fd)) return 0;
   return (current()->channels[fd].mode & mode) == mode;
 }
 
@@ -121,7 +126,7 @@ int sys_fork(void) {
 int sys_read(int fd, char *buffer, int size) {
   struct channel *ch;
   
-  if (!fd_ok(fd, O_RDONLY) == -1) return -EBADF;
+  if (!fd_access_ok(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    
@@ -133,7 +138,7 @@ int sys_read(int fd, char *buffer, int size) {
 int sys_write(int fd, char *buffer, int size) {  
   struct channel *ch;
 
-  if (!fd_ok(fd, O_WRONLY)) return -EBADF;
+  if (!fd_access_ok(fd, O_WRONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
@@ -155,15 +160,17 @@ int sys_open(const char *path, int flags) {
     
   channels = current()->channels;
   
-  printk("\n");
-  printk("Trying to open ");
-  printk(path);
-  printk("\n");
-  
   f = find_path(path);
+
+  if (is_already_open(channels, f)) {
+    printk("ALREADDDYYYYYY OOOPPPPEEENNNEEDDD!!\n\n");
+    return -1;
+  }
+  
+  fd = find_free_channel(channels);  
+  if (fd < 0) return -EMFILE;
       
   if (f < 0) {
-    printk("FILE NOT FOUND");
     if ((flags & O_CREAT) == O_CREAT) {      
       f = fat_create(path, flags & O_RDWR, &dev_file);      
       if (f < 0) return -1;
@@ -171,34 +178,22 @@ int sys_open(const char *path, int flags) {
       /* File does not exist */
       return -ENOENT;
     }
-  } else {
-    printk(path);
-    printk(" found\n");
-    
+  } else { 
     if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -EEXIST;
   }
-  
-  fd = find_free_channel(channels);  
-  if (fd < 0) return -EMFILE;
-    
-  printk("Got new fd\n");
-    
+      
   fat_find_entry(&file, f);
   
   /* Flag check */
   if ((file.mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
   
-  current()->channels[fd].fops = file.fops;
-  
-  printk("Trying to f_open\n");
-  
-  if (current()->channels[fd].fops->f_open != NULL) {
-    error = current()->channels[fd].fops->f_open(f);
+  channels[fd].fops = file.fops;
+    
+  if (channels[fd].fops->f_open != NULL) {
+    error = channels[fd].fops->f_open(f);
     if (error < 0) return error;
   }
-  
-  printk("f_open success\n");
-    
+      
   channels[fd].file = f;
   channels[fd].mode = flags & O_RDWR; //TODO: Check if corret
   channels[fd].offset = 0;
@@ -210,13 +205,14 @@ int sys_close(int fd) {
   int error;
   struct channel *ch;
 
-  
-  if (!fd_ok(fd, O_WRONLY|O_RDONLY)) return -EBADF;
+  if (!fd_ok(fd)) return -EBADF;
   
   ch = &(current()->channels[fd]);
   
-  error = ch->fops->f_close(NULL); //TODO canviar el parametre
-  if (error < 0) return error;
+  if (ch->fops->f_close != NULL) {
+    error = ch->fops->f_close(ch->file); //TODO canviar el parametre
+    if (error < 0) return error;
+  }
   
   current()->channels[fd].mode = FREE_CHANNEL;
   
@@ -327,7 +323,7 @@ int sys_dup(int fd) {
   int new_fd;
   struct channel *channels;
   
-  if (!fd_ok(fd, O_WRONLY|O_RDONLY)) return -EBADF;
+  if (!fd_ok(fd)) return -EBADF;
   
   channels = current()->channels;
   

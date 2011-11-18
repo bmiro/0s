@@ -8,11 +8,12 @@
 
 struct channel {
   struct file_operations *fops;
-  char mode; /** O_RDONLY, O_WRONLY, NULL if unopened */
+  int mode; /** O_RDONLY, O_WRONLY, NULL if unopened */
   int file; // File identifier
   int offset; // Read offset
 };
 
 int find_free_channel(struct channel *channels);
+int is_already_open(struct channel *channels, int file);
 
 #endif
