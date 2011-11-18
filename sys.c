@@ -105,7 +105,7 @@ int sys_fork(void) {
     child->task.channels[i].file = current()->channels[i].file;
     child->task.channels[i].mode = current()->channels[i].mode;
     child->task.channels[i].offset = current()->channels[i].offset;
-    child->task.channels[i].functions = current()->channels[i].functions;
+    child->task.channels[i].fops = current()->channels[i].fops;
   }
   
   /* Modifies child eax value (fork returns 0 to the child)*/
@@ -125,7 +125,7 @@ int sys_read(int fd, char *buffer, int size) {
    
   ch = &current()->channels[fd];
    
-  return ch->functions->f_read(ch->file, buffer, ch->offset, size);
+  return ch->fops->f_read(ch->file, buffer, ch->offset, size);
 }
 
 int sys_write(int fd, char *buffer, int size) {  
@@ -135,9 +135,9 @@ int sys_write(int fd, char *buffer, int size) {
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
-  ch = &current()->channels[fd];
+  ch = &(current()->channels[fd]);
    
-  return ch->functions->f_write(ch->file, buffer, ch->offset, size);  
+  return ch->fops->f_write(ch->file, buffer, ch->offset, size);  
 }
 
 int sys_open(const char *path, int flags) {
@@ -145,20 +145,24 @@ int sys_open(const char *path, int flags) {
   int f;
   int fd;
   struct channel *channels;
+  struct fat_dir_entry file;
+  
+  if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
+  if (error = check_path(path)) return error;
   
   //TODO check flags
   
   channels = current()->channels;
   
   f = find_path(path);
-  
+      
   if (!f) {
     if ((flags & O_CREAT) == O_CREAT) {
-      f = create_file(0, flags & O_RDWR);
+      f = fat_create(path, flags & O_RDWR);
       if (f < 0) return -1;
     } else {
       /* File does not exist */
-      return -1;
+      return -ENOENT;
     }
   } else {
     if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -1;
@@ -166,23 +170,31 @@ int sys_open(const char *path, int flags) {
   
   fd = find_free_channel(channels);
   if (fd < 0) return -EMFILE;
+    
+  fat_find_entry(&file, f);
   
-  error = current()->channels[fd].functions->f_open(f);
+  current()->channels[fd].fops = file.fops;
+  
+  error = current()->channels[fd].fops->f_open(f);
   if (error < 0) return error;
-  
+    
   channels[fd].file = f;
   channels[fd].mode = flags & O_RDWR; //TODO: Check if corret
   channels[fd].offset = 0;
-  
+    
   return fd;
 }
 
 int sys_close(int fd) {
   int error;
+  struct channel *ch;
+
   
   if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
   
-  error = current()->channels[fd].functions->f_close(NULL); //TODO canviar el parametre
+  ch = &(current()->channels[fd]);
+  
+  error = ch->fops->f_close(NULL); //TODO canviar el parametre
   if (error < 0) return error;
   
   current()->channels[fd].mode = FREE_CHANNEL;
@@ -304,7 +316,7 @@ int sys_dup(int fd) {
   channels[new_fd].file = channels[fd].file;
   channels[new_fd].mode = channels[fd].mode;
   channels[new_fd].offset = channels[fd].offset;
-  channels[new_fd].functions = channels[fd].functions;
+  channels[new_fd].fops = channels[fd].fops;
 
   return new_fd;
 }

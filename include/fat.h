@@ -4,6 +4,8 @@
 #include <utils.h>
 #include <kernutil.h>
 #include <devices.h>
+#include <file.h>
+#include <error.h>
 
 #define MAX_BLOCKS 100
 #define BLOCK_SIZE 256
@@ -35,6 +37,7 @@ struct fat_dir_entry {
   int first_block; /* Pointer to first data block */
   int last_block;
   int opens; /* Counts number of procs that opened the file */
+  struct file_operations *fops;
 };
 
 struct data_block {
@@ -60,6 +63,8 @@ struct fat fs;
 
 int initZeOSFAT();
 
+int check_path(const char *path);
+
 /* Returns first data block for the given path */
 int find_path(const char *path);
 
@@ -70,7 +75,7 @@ int append_file_blocks(int f, int size);
 int delete_file(int f);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
-int create_file(const char *path, int permissions);
+int fat_create(const char *path, int permissions);
 
 int fat_open(int file);
 int fat_read(int f, void *buffer, int offset, int size);

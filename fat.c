@@ -72,14 +72,25 @@ int fat_write_block(struct data_block *block, int ph_block) {
   return 0;
 }
 
-int find_entry(struct fat_dir_entry *f, int file) {
-  f = &fs.root[file];
+int find_entry(struct fat_dir_entry *file, int f) {  
+  file = &fs.root[f];
   return 0;
 }
 
 /***********************************************************************
  ************** high level external public FAT functions ***************
  ***********************************************************************/
+
+int check_path(const char *path) {
+  int i;
+  
+  for (i = 0; i < FILE_NAME_SIZE; i++) {
+    if (path[i] == '\0') return 0;
+  } 
+  return -ENAMETOOLONG;  
+}
+
+
 /* Returns file identifier for the given path */
 int find_path(const char *path) {
   int i;
@@ -88,6 +99,20 @@ int find_path(const char *path) {
     if (strcmp(fs.root[i].name, path)) return i;
   }
   return -1;
+}
+
+int fat_find_entry(struct fat_dir_entry *file, int f) {  
+  strcat(file->name, fs.root[f].name, "");
+  file->file = fs.root[f].file;
+  file->size = fs.root[f].size;
+  file->mode = fs.root[f].mode;
+  file->type = fs.root[f].type;
+  file->first_block = fs.root[f].first_block;
+  file->last_block = fs.root[f].last_block;
+  file->opens = fs.root[f].opens;
+  file->fops = fs.root[f].fops;
+  
+  return 0;
 }
 
 /* Deletes a file from FAT metadata */
@@ -110,12 +135,14 @@ int delete_file(int file) {
 }
 
 int fat_open(int file) {
+  printk("OPENING FILE\n");
+  
   if (file > MAX_FILES) return -1;
   fs.root[file].opens++;
   return 0;
 }
 
-int fat_close_file(int file) {
+int fat_close(int file) {
   if (file > MAX_FILES) return -1;
   if (fs.root[file].opens == 0) return -1;
 
@@ -124,7 +151,7 @@ int fat_close_file(int file) {
 }
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
-int create_file(const char *path, int permissions) {
+int fat_create(const char *path, int permissions) {
   int i;
   for (i = 0; i < MAX_FILES; i++) {
     if (fs.root[i].type == FREE_TYPE) {
@@ -132,6 +159,7 @@ int create_file(const char *path, int permissions) {
       fs.root[i].mode = (permissions & O_RDWR);
       fs.root[i].size = 0;
       fs.root[i].type = FILE_TYPE;
+      fs.root[i].fops = &dev_file;
       return i;
     }
   }

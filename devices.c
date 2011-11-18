@@ -5,33 +5,40 @@ void init_devices() {
   INIT_LIST_HEAD(&keyboardqueue);
   init_circ_buff(&circular_buffer); 
   
-  console.f_read = NULL;
-  console.f_write = &sys_write_console;
-  console.f_open = NULL;
-  console.f_close = NULL;
-  console.f_dup = NULL;
+  dev_console.f_read = NULL;
+  dev_console.f_write = &sys_write_console;
+  dev_console.f_open = NULL;
+  dev_console.f_close = NULL;
+  dev_console.f_dup = NULL;
   
-  keyboard.f_read = &sys_read_keyboard;
-  keyboard.f_write = NULL;
-  keyboard.f_open = NULL;
-  keyboard.f_close = NULL;
-  keyboard.f_dup = NULL;
+  dev_keyboard.f_read = &sys_read_keyboard;
+  dev_keyboard.f_write = NULL;
+  dev_keyboard.f_open = NULL;
+  dev_keyboard.f_close = NULL;
+  dev_keyboard.f_dup = NULL;
   
+  dev_file.f_read = &sys_read_file;
+  dev_file.f_write = &sys_write_file;
+  dev_file.f_open = &sys_open_file;
+  dev_file.f_close = NULL;
+  dev_file.f_dup = NULL;
+  
+  initZeOSFAT();
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
 //   open(VIRTUAL_KEYBOARD_PATH, O_RDONLY);
 //   open(VIRTUAL_DISPLAY_PATH, O_WRONLY);
 //   open(VIRTUAL_DISPLAY_PATH, O_WRONLY);
-  tsk->channels[STDIN].functions = &keyboard;
+  tsk->channels[STDIN].fops = &dev_keyboard;
   tsk->channels[STDIN].mode = O_RDONLY;
   tsk->channels[STDIN].offset = 0;
   
-  tsk->channels[STDOUT].functions = &console;
+  tsk->channels[STDOUT].fops = &dev_console;
   tsk->channels[STDOUT].mode = O_WRONLY;
   tsk->channels[STDOUT].offset = 0;
   
-  tsk->channels[STDERR].functions = &console;
+  tsk->channels[STDERR].fops = &dev_console;
   tsk->channels[STDERR].mode = O_WRONLY;
   tsk->channels[STDERR].offset = 0;
   
@@ -87,6 +94,7 @@ int sys_read_keyboard(int file, char *buffer, int offset, int size) {
 
 /* File */
 int sys_open_file(int file) {
+  printk("Trying to open a file\n");
   return fat_open(file);
 }
 

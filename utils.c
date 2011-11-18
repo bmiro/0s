@@ -69,7 +69,6 @@ int access_ok(int type, const void *addr, unsigned long size) {
     return 0;
   }
   
-  //TODO something here to check write access??
   if (type == READ) return 1; /* No need to check write access */
   
   /* Checks if pointer is in user data range, it works because

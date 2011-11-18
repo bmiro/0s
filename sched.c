@@ -104,6 +104,8 @@ void init_task0(void) {
 void task_switch(union task_union *t) {
   int lpag, i;
 
+  printk("Task switch");
+  
   /* Updates TSS to point stack of t */
   /* Also clears stack */
   tss.esp0 = (DWord) &(t->stack[KERNEL_STACK_SIZE]);

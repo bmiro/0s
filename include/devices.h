@@ -7,6 +7,7 @@
 #include <circbuff.h>
 #include <mm.h>
 #include <utils.h>
+#include <libc.h>
 
 struct list_head keyboardqueue;
 struct circ_buff circular_buffer;
@@ -35,6 +36,6 @@ int sys_write_file(int file, char *buffer, int offset, int size);
 int sys_read_file(int file, char *buffer, int offset, int size);
 
 
-struct file_operations file, console, keyboard;
+struct file_operations dev_file, dev_console, dev_keyboard;
 
 #endif /* DEVICES_H__*/
