@@ -23,7 +23,9 @@ int getNewPid() {
   return pid_counter;
 }
 
-int check_fd(int fd, int mode) {
+int fd_ok(int fd, int mode) {
+  if (fd < 0 || fd > NUM_CHANNELS) return 0;
+  
   return (current()->channels[fd].mode & mode) == mode;
 }
 
@@ -119,7 +121,7 @@ int sys_fork(void) {
 int sys_read(int fd, char *buffer, int size) {
   struct channel *ch;
   
-  if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
+  if (!fd_ok(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    
@@ -131,7 +133,7 @@ int sys_read(int fd, char *buffer, int size) {
 int sys_write(int fd, char *buffer, int size) {  
   struct channel *ch;
 
-  if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
+  if (!fd_ok(fd, O_WRONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
@@ -190,7 +192,7 @@ int sys_close(int fd) {
   struct channel *ch;
 
   
-  if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
+  if (!fd_ok(fd, O_WRONLY|O_RDONLY)) return -EBADF;
   
   ch = &(current()->channels[fd]);
   
@@ -306,7 +308,7 @@ int sys_dup(int fd) {
   int new_fd;
   struct channel *channels;
   
-  if (check_fd(fd, O_WRONLY|O_RDONLY) == -1) return -EBADF;
+  if (!fd_ok(fd, O_WRONLY|O_RDONLY)) return -EBADF;
   
   channels = current()->channels;
   
