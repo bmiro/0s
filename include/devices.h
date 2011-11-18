@@ -11,9 +11,11 @@
 struct list_head keyboardqueue;
 struct circ_buff circular_buffer;
 
+/* The buffers must be in user-space, the device driver
+   must take care to copy data to/from user space */
 struct file_operations {
-  int (*f_read)(void*, int, int);
-  int (*f_write)(void*, int, int);  
+  int (*f_read)(int, void*, int, int);
+  int (*f_write)(int, void*, int, int);  
   int (*f_open)(int);
   int (*f_close)(int);
   int (*f_dup)(int);
@@ -22,14 +24,14 @@ struct file_operations {
 void init_devices();
 
 /* Console */
-int sys_write_console(char *buffer, int offset, int size);
+int sys_write_console(int file, char *buffer, int offset, int size);
 
 /* Keyboard */
-int sys_read_keyboard(char *buffer, int offset, int size);
+int sys_read_keyboard(int file, char *buffer, int offset, int size);
 
 /* File */
-int sys_write_file(char *buffer, int offset, int size);
-int sys_read_file(char *buffer, int offset, int size);
+int sys_write_file(int file, char *buffer, int offset, int size);
+int sys_read_file(int file, char *buffer, int offset, int size);
 
 
 struct file_operations file, console, keyboard;

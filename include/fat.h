@@ -4,20 +4,39 @@
 #define MAX_BLOCKS 100
 #define BLOCK_SIZE 256
 
-#define MAX_FILES
+#define MAX_FILES 10
+
+/* End of Chain */
+#define EOC -1
+
+#define FREE_TYPE -1
+#define FILE_TYPE 0
+#define DIRECTORY_TYPE 1
+#define DEVICE_TYPE 2
+
 
 /* Remember that this is an educational, memory allocated &
  single directory level FS developed to run easily on this
  ZeOS implementation, for a complete FS with i-nodes
  see https://github.com/bmiro/EmoFS */
 
+char block_buffer [BLOCK_SIZE];
+
+struct dir_entry {
+  char name[FILE_NAME_SIZE];
+  int size;
+  int file;
+  int mode;
+  char type;
+}
+
 struct data_block {
-  char block [256];
+  char block [BLOCK_SIZE];
 };
 
 struct fat {
   /* Root directory pointing to files */
-  int root[MAX_FILES];
+  struct dir_entry root[MAX_FILES];
   
   int total_block_count;
   int used_block_count;
@@ -31,23 +50,10 @@ struct fat {
 
 struct fat fs;
 
-int initZeOSFAT() {
-  int i;
-  
-  for (i = 0; i < MAX_FILES; i++) {
-    fs.root[i] = NULL;
-  }
-  
-  fs.total_block_count = MAX_BLOCKS;
-  fs.used_block_count = 0;
-  fs.first_free_block = 0;
-  fs.free_block_count = MAX_BLOCKS;
-  
-  for (i = 0; i < MAX_BLOCKS-1; i++) {
-    fs.block_lists[i] = i+1;
-  }
-  fs.block_lists[i] = NULL;
-}
+int initZeOSFAT();
+
+/* Returns first data block for the given path */
+int find_path(const char *path);
 
 /* Adds capatity to a file the number of size bytes */
 int append_file_blocks(int file, int size);
@@ -57,7 +63,6 @@ int delete_file(int file);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
 int create_file(int size, int permissions);
-
 
 
 #endif

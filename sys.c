@@ -117,77 +117,20 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
-  int copied, remain, chuck, read;
-
   if (check_fd(fd, O_RDONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    
-  return current()->channels[fd].functions->f_read(buffer, size); 
+  return current()->channels[fd].functions->f_read(NULL, buffer, size); 
 }
 
-int sys_write(int fd, char *buffer, int size) {
-  int copied, remain, chuck, written;
-  
+int sys_write(int fd, char *buffer, int size) {  
   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
-  copied = 0;
-  remain = size;
-  while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }
-   
-    copy_from_user(buffer + copied, sysbuff, chuck);
-
-    written = current()->channels[fd].functions->f_write(sysbuff, size);
-    if (written < 0) return written; /* This is an error */
-    
-    remain -= written;
-    copied += written;
-  }
-  
-  return copied;
-  
+  return current()->channels[fd].functions->f_write(NULL, buffer, size);  
 }
-
-// int sys_write(int fd, char *buffer, int size) {
-//   char sysbuff[SYSBUFF_SIZE];
-//   int chuck, remain, copied;
-//   int written;    
-//   
-//   if (check_fd(fd, O_WRONLY) == -1) return -EBADF;
-//   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
-//   if (size < 0) return -EINVAL;
-//     
-//   copied = 0;
-//   remain = size;
-//   while (remain) {
-//     if (remain < SYSBUFF_SIZE) {
-//       chuck = remain;
-//     } else {
-//       chuck = SYSBUFF_SIZE;
-//     }
-//    
-//     copy_from_user(buffer + copied, sysbuff, chuck);
-//     switch (fd) {
-//       case(1):
-//         written = sys_write_console(sysbuff, chuck);
-//         /* By construction sys_write can NOT fail */
-//         remain -= written;
-//         copied += written;
-//         break;
-//       default:
-//         break;
-//     }
-//   }
-//   
-//   return copied;
-// }
 
 int sys_open(const char *path, int flags) {
   int f;

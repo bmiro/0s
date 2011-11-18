@@ -20,6 +20,9 @@ void init_devices() {
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
+//   open(VIRTUAL_KEYBOARD_PATH, O_RDONLY);
+//   open(VIRTUAL_DISPLAY_PATH, O_WRONLY);
+//   open(VIRTUAL_DISPLAY_PATH, O_WRONLY);
   tsk->channels[STDIN].functions = &keyboard;
   tsk->channels[STDIN].mode = O_RDONLY;
   tsk->channels[STDIN].offset = 0;
@@ -27,17 +30,38 @@ void set_default_std_in_out_err(struct task_struct *tsk) {
   tsk->channels[STDOUT].functions = &console;
   tsk->channels[STDOUT].mode = O_WRONLY;
   tsk->channels[STDOUT].offset = 0;
+  
+  tsk->channels[STDERR].functions = &console;
+  tsk->channels[STDERR].mode = O_WRONLY;
+  tsk->channels[STDERR].offset = 0;
+  
 }
 
 int sys_write_console(char *buffer, int size) {
+  int chuck, remain;
+  int written;
   int i;
 
-  for (i = 0; i < size; i++) {
-    printc(buffer[i]);
+  written = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
+    copy_from_user(buffer + written, sysbuff, chuck);
+    for (i = 0; i < size; i++) {
+      printc(sysbuff[i]);
+      written++;
+      remain--;
+    }
   }
-  
-  return i;
+
+  return written;
 }
+
 
 
 int sys_read_keyboard(char *buffer, int size) {
@@ -59,4 +83,17 @@ int sys_read_keyboard(char *buffer, int size) {
   
   return -1; /* We don't arrive here */
   
+}
+
+/* File */
+int sys_write_file(int file, char *buffer, int offset, int size) {
+  
+  
+  
+  
+  return fat_write(file, buffer, offset, size);
+}
+
+int sys_read_file(int file, char *buffer, int offset, int size) {
+  return fat_read(file, buffer, offset, size);
 }
