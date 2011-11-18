@@ -51,5 +51,14 @@ pare dels sistemes Unix i llenguatge C, fonament d'aquesta assignatura.", 145);
 //   write(STDOUT, &d, 1);
 //   
 //   close(f);
+
+//    write(STDOUT, "START\n", 10);
+// 
+//    f = open("fitxer", O_CREAT|O_WRONLY);
+//    write(f, "WRITE_TO_FILE\n", 14);
+// 
+//    write(STDOUT, "END\n", 10);
+
+   
   while(1);
 }

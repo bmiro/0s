@@ -143,7 +143,7 @@ int sys_write(int fd, char *buffer, int size) {
   if (size < 0) return -EINVAL;
       
   ch = &(current()->channels[fd]);
-   
+    
   return ch->fops->f_write(ch->file, buffer, ch->offset, size);  
 }
 
@@ -162,10 +162,10 @@ int sys_open(const char *path, int flags) {
   
   f = find_path(path);
 
-  if (is_already_open(channels, f)) {
-    printk("ALREADDDYYYYYY OOOPPPPEEENNNEEDDD!!\n\n");
-    return -1;
-  }
+//   if (is_already_open(channels, f)) {
+//     printk("ALREADDDYYYYYY OOOPPPPEEENNNEEDDD!!\n\n");
+//     return -1;
+//   }
   
   fd = find_free_channel(channels);  
   if (fd < 0) return -EMFILE;

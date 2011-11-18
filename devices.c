@@ -119,7 +119,11 @@ int sys_write_file(int file, char *buffer, int offset, int size) {
    
     copy_from_user(buffer + written, sysbuff, chuck);
     
+    printk("Calling fat write\n");
+    
     written += fat_write(file, sysbuff, offset + written, chuck);
+    
+    remain -= chuck;
   }
 
   return written;
