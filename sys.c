@@ -126,7 +126,7 @@ int sys_fork(void) {
 int sys_read(int fd, char *buffer, int size) {
   struct channel *ch;
   
-  if (!fd_access_ok(fd, O_RDONLY) == -1) return -EBADF;
+  if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    

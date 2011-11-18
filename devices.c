@@ -78,6 +78,8 @@ int sys_write_console(int file, char *buffer, int offset, int size) {
 int sys_read_keyboard(int file, char *buffer, int offset, int size) {
   int read;
   
+  if (current()->pid == 0) return -EPERM;
+  
   read = 0;
   if (get_size(&circular_buffer) >= size && list_empty(&keyboardqueue)) {
     read += get_character(&circular_buffer, sysbuff, size);
