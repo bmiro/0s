@@ -109,25 +109,25 @@ int sys_write_file(int file, char *buffer, int offset, int size) {
   int i;
 
   
-  copy_from_user(buffer, sysbuff, size);
-  fat_write(file, sysbuff, offset, size);
-  return size;
+//   copy_from_user(buffer, sysbuff, size);
+//   fat_write(file, sysbuff, offset, size);
+//   return size;
   
-//   written = 0;
-//   remain = size;
-//   while (remain) {
-//     if (remain < SYSBUFF_SIZE) {
-//       chuck = remain;
-//     } else {
-//       chuck = SYSBUFF_SIZE;
-//     }
-//    
-//     copy_from_user(buffer + written, sysbuff, chuck);  
-//     written += fat_write(file, sysbuff, offset + written, chuck);
-//     remain -= chuck;
-//   }
-//   
-//   return written;
+  written = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }
+   
+    copy_from_user(buffer + written, sysbuff, chuck);  
+    written += fat_write(file, sysbuff, offset + written, chuck);
+    remain -= chuck;
+  }
+  
+  return written;
 }
 
 int sys_read_file(int file, char *buffer, int offset, int size) {
@@ -135,27 +135,24 @@ int sys_read_file(int file, char *buffer, int offset, int size) {
   int read;
   int i;
 
-  
-  fat_read(file, sysbuff, offset, size);
-  copy_to_user(sysbuff, buffer, size);
-  
-  printk(buffer);
-  
-  return size;
+//   fat_read(file, sysbuff, offset, size);
+//   copy_to_user(sysbuff, buffer, size);
+//     
+//   return size;
   
   
-//   read = 0;
-//   remain = size;
-//   while (remain) {
-//     if (remain < SYSBUFF_SIZE) {
-//       chuck = remain;
-//     } else {
-//       chuck = SYSBUFF_SIZE;
-//     }    
-//     read += fat_read(file, sysbuff, offset + read, chuck);
-//     copy_to_user(sysbuff, buffer + read, chuck);
-//     remain -= chuck;
-//   }
-// 
-//   return read;
+  read = 0;
+  remain = size;
+  while (remain) {
+    if (remain < SYSBUFF_SIZE) {
+      chuck = remain;
+    } else {
+      chuck = SYSBUFF_SIZE;
+    }    
+    read += fat_read(file, sysbuff, offset + read, chuck);
+    copy_to_user(sysbuff, buffer + read, chuck);
+    remain -= chuck;
+  }
+
+  return read;
 }
