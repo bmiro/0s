@@ -127,13 +127,11 @@ int sys_read(int fd, char *buffer, int size) {
   struct channel *ch;
   
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
-  if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
+  if (!access_ok(WRITE, (void *) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
    
   ch = &current()->channels[fd];
-  
-  printk("i will read\n");
-  
+    
   return ch->fops->f_read(ch->file, buffer, ch->offset, size);
 }
 

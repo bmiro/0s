@@ -28,6 +28,7 @@ char block_buffer [BLOCK_SIZE];
 struct fat_dir_entry {
   char name[FILE_NAME_SIZE];
   int size;
+  int block_count;
   int mode;
   int first_block;
   int last_block;
@@ -58,22 +59,21 @@ struct fat fs;
 
 int initZeOSFAT();
 
+/* Checks if path is in corrent format */
 int check_path(const char *path);
 
-/* Returns first data block for the given path */
+/* Returns file identifier for the given path */
 int find_path(const char *path);
-
-int add_block_to_file(int file);
 
 /* Deletes a file from FAT metadata */
 int delete_file(int file);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
-int fat_create(const char *path, int permissions, struct file_operations *fops);
-
+int fat_create(const char *path, int permissions,
+	       struct file_operations *fops);
 int fat_open(int file);
-int fat_read(int f, void *buffer, int offset, int size);
-int fat_write(int f, void *buffer, int offset, int size);
+int fat_read(int f, char *buffer, int offset, int size);
+int fat_write(int f, char *buffer, int offset, int size);
 
 
 #endif

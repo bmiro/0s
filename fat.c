@@ -10,6 +10,7 @@ int initZeOSFAT() {
     fs.root[i].first_block = EOC;
     fs.root[i].last_block = EOC;
     fs.root[i].opens = 0;
+    fs.root[i].block_count = 0;
   }
   
   fs.total_block_count = MAX_BLOCKS;
@@ -47,7 +48,7 @@ int fat_translate_block(int file, int logic_block) {
 }
 
 /* Adds a block to a file and returns a pointer to the ph_block */
-int add_block_to_file(int file) {
+int fat_add_block(int file) {
   int new_block;
   
   if (fs.free_block_count == 0) return -1;
@@ -69,7 +70,28 @@ int add_block_to_file(int file) {
   fs.used_block_count++;
   fs.free_block_count--;
   
+  fs.root[file].block_count++;
+
   return new_block;
+}
+
+int fat_get_size(int file) {
+  if (0 > file || file > MAX_FILES) return -1;
+  
+  return fs.root[file].size;
+}
+
+int fat_set_size(int file, int size) {
+  if (0 > file || file > MAX_FILES) return -1;
+  
+  fs.root[file].size = size;
+  return size;
+}
+
+int fat_get_block_count(int file) {
+  if (0 > file || file > MAX_FILES) return -1;
+  
+  return fs.root[file].block_count;
 }
 
 int fat_read_block(struct data_block *block, int ph_block) {
@@ -109,7 +131,7 @@ int find_path(const char *path) {
 
 /* Deletes a file from FAT metadata */
 int delete_file(int file) {  
-  
+  if (file > MAX_FILES) return -1;
   if (fs.root[file].opens != 0) return -1;
   
   /* Frees all assigned blocks putting them at the end
@@ -138,8 +160,9 @@ int fat_close(int file) {
   return 0;
 }
 
-/* Creates a file in FAT metadata pre-allocating size bytes */
-int fat_create(const char *path, int permissions, struct file_operations *fops) {
+/* Creates a file in FAT metadata */
+int fat_create(const char *path, int permissions,
+	       struct file_operations *fops) {
   int i;
   for (i = 0; i < MAX_FILES; i++) {
     if (fs.root[i].mode == FREE_TYPE) {
@@ -147,15 +170,16 @@ int fat_create(const char *path, int permissions, struct file_operations *fops) 
       fs.root[i].mode = (permissions & O_RDWR);
       fs.root[i].size = 0;
       fs.root[i].fops = fops;
-      fs.root[i].first_block = EOC; /* Pointer to first data block */
+      fs.root[i].first_block = EOC;
       fs.root[i].last_block = EOC;
+      fs.root[i].block_count = 0;
       return i;
     }
   }
-  return -1;
+  return -ENOSPC;
 }
 
-int fat_read(int file, void *buffer, int offset, int size) {
+int old_fat_read(int file, char *buffer, int offset, int size) {
   int read, remain, block_remain;
   int error;
     
@@ -165,22 +189,42 @@ int fat_read(int file, void *buffer, int offset, int size) {
   int block_offset;
   /* Ordinal number of firts block needed to read */
   int first_block;
+  int last_block;
   /* Number of blocks that will be affected by the read */
   int block_count;
-    
-  //if (offset > f.size) return 0;
+   
+  char msg[10];
+  printk("\nFAT READ\n");
+  printk("file: ");
+  itoa(file, msg,10);
+  printk(msg);
+  printk("\n");
+  printk("offset:");
+  itoa(offset, msg,10);
+  printk(msg);
+  printk("\n");
+  printk("size: ");
+  itoa(size, msg,10);
+  printk(msg);
+  printk("\n");
+  
+  if (offset > fat_get_size(file)) return 0;
     
   first_block = offset / BLOCK_SIZE;
-  block_offset = offset - (first_block * BLOCK_SIZE);
-  block_count = ((offset + size) / BLOCK_SIZE) - first_block + 1;
+  last_block = (offset + size) / BLOCK_SIZE;
+  block_count = last_block - first_block;
+  if (((offset + size) % BLOCK_SIZE) != 0) block_count++;
     
   read = 0;
-  remain = size;
+  /* We can't read more than file size */
+  if ((offset + size) > fat_get_size(file)) {
+    remain = fat_get_size(file) - offset;
+  } else {
+    remain = size;
+  }
   logic_block = first_block;
   ph_block = fat_translate_block(file, logic_block);
-  while (block_count) {
-    if (ph_block == EOC) return read;
-    
+  while (block_count) {   
     if (remain > BLOCK_SIZE) {
       block_remain = BLOCK_SIZE - block_offset;
     } else {
@@ -190,9 +234,10 @@ int fat_read(int file, void *buffer, int offset, int size) {
     error = fat_read_block(&block_buffer, ph_block);
     if (error < 0) return error;
     
-    copy_data(&block_buffer + block_offset, buffer, block_remain);
+    copy_data(block_buffer + block_offset, buffer + read, block_remain);
     
-    if (block_offset != 0) block_offset = 0; /* Only needed the first time */
+    /* Only needed the first time */
+    if (block_offset != 0) block_offset = 0; 
     
     read += block_remain;
     remain -= block_remain;
@@ -203,10 +248,92 @@ int fat_read(int file, void *buffer, int offset, int size) {
       ph_block = fat_translate_block(file, logic_block);
     }
   }
+  
+  printk("bytes read: ");
+  itoa(read, msg, 10);
+  printk(msg);
+  printk("\n");
+  
   return read;
 }
 
-int fat_write(int file, void *buffer, int offset, int size) {
+int fat_write(int file, char *buffer, int offset, int size) {
+  int ph_block;
+  if (fat_get_size(file) < size) {
+    ph_block = fat_add_block(file);
+  } else {
+    ph_block = fat_translate_block(file, 0);
+  }
+  
+  fat_set_size(file, size+offset);
+  
+  fat_read_block(block_buffer, ph_block);
+  copy_data(buffer, block_buffer + offset, size);
+  fat_write_block(block_buffer, ph_block);
+  
+  return size;
+
+}
+
+
+int one_fat_read(int file, char *buffer, int offset, int size) {
+  int ph_block;
+  if (fat_get_size(file) < size) {
+    return 0;
+  }
+    
+  fat_read_block(block_buffer, ph_block);
+  copy_data(block_buffer + offset, buffer, size);
+  
+  return size;
+
+}
+
+int fat_read(int file, char *buffer, int offset, int size) {
+  int remain, read;
+  int logic_block, ph_block;
+  int block_offset, block_remain;  
+ 
+  if (offset >= fat_get_size(file)) return 0;
+ 
+  if ((offset + size) > fat_get_size(file)) {
+    remain = fat_get_size(file) - offset;
+  } else {
+    remain = size;
+  }
+  
+  read = 0;
+  logic_block = offset / BLOCK_SIZE;  
+  block_offset = offset % BLOCK_SIZE;
+  while (remain) {    
+    ph_block = fat_translate_block(file, logic_block);
+    if (ph_block == EOC) return read; /* There are problems in FS */
+      
+    if ((block_offset + remain) > BLOCK_SIZE) {
+      block_remain = BLOCK_SIZE - block_offset;
+    } else {
+      block_remain = remain;
+    }
+    
+    fat_read_block(block_buffer, ph_block);
+    copy_data(block_buffer + block_offset, buffer, block_remain);
+    
+    /* Only needed the first time */
+    if (block_offset != 0) block_offset = 0;
+    
+    read += block_remain;
+    remain -= block_remain;
+    
+    logic_block++;    
+  }
+  
+  return read;
+ 
+}
+
+
+
+int old_fat_write(int file, char *buffer, int offset, int size) {
   int written, remain, block_remain;
   int error;
       
@@ -215,59 +342,89 @@ int fat_write(int file, void *buffer, int offset, int size) {
   int block_offset;
   /* Ordinal number of firts block needed to write */
   int first_block;
+  int last_block;
   /* Number of blocks that will be affected by the write */
   int block_count;
   int ph_block;
-      
+
+  
+  if (size == 1) return 1;
+  
+  char msg[10];
+  printk("\nFAT WRITE\n");
+  printk(buffer);
+  printk("\n");
+  printk("file: ");
+  itoa(file, msg,10);
+  printk(msg);
+  printk("\n");
+  printk("offset:");
+  itoa(offset, msg,10);
+  printk(msg);
+  printk("\n");
+  printk("size: ");
+  itoa(size, msg,10);
+  printk(msg);
+  printk("\n");
   
   /* We don't support sparse files */
-  //if (offset > f->size) return 0; TODO
+  //if (offset > f.size) return 0; //TODO
     
   first_block = offset / BLOCK_SIZE;
-  block_offset = offset - (first_block * BLOCK_SIZE);
-  
-  block_count = ((offset + size) / BLOCK_SIZE) - first_block;
+  last_block = (offset + size) / BLOCK_SIZE;
+  block_count = last_block - first_block;
   if (((offset + size) % BLOCK_SIZE) != 0) block_count++;
-    
+
+  block_offset = offset - (first_block * BLOCK_SIZE);
+
+  while (fat_get_block_count(file) - first_block) {
+    /* Allocs blocks accorting to the inital offset */
+    error = fat_add_block(file);
+    if (error < 0) return -ENOSPC;
+  }
+  
   written = 0;
   remain = size;
   block_num = first_block;
   ph_block = fat_translate_block(file, block_num);
   
-  char msg[80];
-  printk("ph_block ");
-  itoa(ph_block, msg, 10);
-  printk(msg);
-  
-  
-  while (block_count) {
-    if (ph_block == EOC) { /* we need to grow! */      
-      ph_block = add_block_to_file(file);      
-      if (ph_block < 0) return -ENOSPC;
-    }
-        
-    if (remain >= BLOCK_SIZE) {
+  while (block_count) {    
+    if ((block_offset + remain) > BLOCK_SIZE) {
       block_remain = BLOCK_SIZE - block_offset;
     } else {
       block_remain = remain;
     }
-                
+    
+    fat_read_block(block_buffer, ph_block);
     copy_data(buffer + written, block_buffer + block_offset, block_remain);
-        
+    if (block_offset != 0) block_offset = 0; /* Only needed the first time */
+
     error = fat_write_block(&block_buffer, ph_block);
     if (error < 0) return error;
-    if (block_offset != 0) block_offset = 0; /* Only needed the first time */
-      
-    fs.root[file].size += block_remain;
+           
     written += block_remain;
+    if ((offset + written) > fat_get_size(file)) {
+      fat_set_size(file, offset + written);
+    }
+    
     remain -= block_remain;
     block_count--;
     block_num++;
     
     if (block_count > 0) {
       ph_block = fat_translate_block(file, block_num);
+      if (ph_block == EOC) { /* we need to grow! */      
+	ph_block = fat_add_block(file);      
+	if (ph_block < 0) return -ENOSPC;
+      }
     }
   }
+  
+  printk("bytes writed: ");
+  itoa(written, msg, 10);
+  printk(msg);
+  printk("\n");
+
   
   return written;
 }
