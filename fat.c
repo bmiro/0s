@@ -32,11 +32,11 @@ int initZeOSFAT() {
 /* Remember that spare files are not allowed, it will return EOC
  * if the block you requested is exactly one more that the 
  * file has. In other case it will return an error */
-int fat_translate_block(struct fat_dir_entry *file, int logic_block) {
+int fat_translate_block(int file, int logic_block) {
   int ph_block;
   int lb;
   
-  ph_block = file->first_block;
+  ph_block = fs.root[file].first_block;
   for (lb = 0; lb < logic_block; lb++) {
     if (ph_block == EOC) return -1;
     ph_block = fs.block_lists[ph_block];
@@ -47,7 +47,7 @@ int fat_translate_block(struct fat_dir_entry *file, int logic_block) {
 }
 
 /* Adds a block to a file and returns a pointer to the ph_block */
-int add_block_to_file(struct fat_dir_entry *file) {
+int add_block_to_file(int file) {
   int new_block;
   
   if (fs.free_block_count == 0) return -1;
@@ -57,15 +57,15 @@ int add_block_to_file(struct fat_dir_entry *file) {
   /* Updatig list head of free blocks */
   fs.first_free_block = fs.block_lists[new_block];
   /* Assing free block to the file */
-  if (file->first_block == EOC) {
+  if (fs.root[file].first_block == EOC) {
     /* Is the first block assigned to this file */
-    file->first_block = new_block;
+    fs.root[file].first_block = new_block;
   } else {
-    fs.block_lists[file->last_block] = new_block;
+    fs.block_lists[fs.root[file].last_block] = new_block;
   }
   /* Mark the end of file*/
-  file->last_block = new_block;
-  fs.block_lists[file->last_block] = EOC;
+  fs.root[file].last_block = new_block;
+  fs.block_lists[fs.root[file].last_block] = EOC;
   fs.used_block_count++;
   fs.free_block_count--;
   
@@ -107,39 +107,15 @@ int find_path(const char *path) {
   return -1;
 }
 
-int fat_find_entry(struct fat_dir_entry *file, int f) {  
-  strcat(file->name, fs.root[f].name, "");
-  file->size = fs.root[f].size;
-  file->mode = fs.root[f].mode;
-  file->first_block = fs.root[f].first_block;
-  file->last_block = fs.root[f].last_block;
-  file->opens = fs.root[f].opens;
-  file->fops = fs.root[f].fops;
-  
-  return 0;
-}
-
-void fat_update_entry(struct fat_dir_entry *file, int f) {
-  strcat(fs.root[f].name, file->name, "");
-  fs.root[f].size = file->size;
-  fs.root[f].mode = file->mode;
-  fs.root[f].first_block = file->first_block;
-  fs.root[f].last_block = file->last_block;
-  fs.root[f].opens = file->opens;
-}
-
 /* Deletes a file from FAT metadata */
-int delete_file(int file) {
-  struct fat_dir_entry f;
+int delete_file(int file) {  
   
-  fat_find_entry(&f, file);
-  
-  if (f.opens != 0) return -1;
+  if (fs.root[file].opens != 0) return -1;
   
   /* Frees all assigned blocks putting them at the end
    * of free list */
-  fs.block_lists[fs.last_free_block] = f.first_block;
-  fs.free_block_count += (f.size % BLOCK_SIZE) + 1; 
+  fs.block_lists[fs.last_free_block] = fs.root[file].first_block;
+  fs.free_block_count += (fs.root[file].size % BLOCK_SIZE) + 1; 
   
   /* Frees dir entry */
   fs.root[file].mode = FREE_TYPE;
@@ -182,9 +158,7 @@ int fat_create(const char *path, int permissions, struct file_operations *fops) 
 int fat_read(int file, void *buffer, int offset, int size) {
   int read, remain, block_remain;
   int error;
-  
-  struct fat_dir_entry f;
-  
+    
   int ph_block;
   int logic_block;
   /* Offset to read the first block */
@@ -193,20 +167,17 @@ int fat_read(int file, void *buffer, int offset, int size) {
   int first_block;
   /* Number of blocks that will be affected by the read */
   int block_count;
-  
-  error = fat_find_entry(&f, file);
-  if (error < 0) return error;
     
-  if (offset > f.size) return 0;
+  //if (offset > f.size) return 0;
     
   first_block = offset / BLOCK_SIZE;
   block_offset = offset - (first_block * BLOCK_SIZE);
   block_count = ((offset + size) / BLOCK_SIZE) - first_block + 1;
-  
+    
   read = 0;
   remain = size;
   logic_block = first_block;
-  ph_block = fat_translate_block(&f, logic_block);
+  ph_block = fat_translate_block(file, logic_block);
   while (block_count) {
     if (ph_block == EOC) return read;
     
@@ -229,7 +200,7 @@ int fat_read(int file, void *buffer, int offset, int size) {
     logic_block++;
     
     if (block_count > 0) {
-      ph_block = fat_translate_block(&f, logic_block);
+      ph_block = fat_translate_block(file, logic_block);
     }
   }
   return read;
@@ -238,7 +209,7 @@ int fat_read(int file, void *buffer, int offset, int size) {
 int fat_write(int file, void *buffer, int offset, int size) {
   int written, remain, block_remain;
   int error;
-    
+      
   int block_num;
   /* Offset to write the first block */
   int block_offset;
@@ -247,30 +218,13 @@ int fat_write(int file, void *buffer, int offset, int size) {
   /* Number of blocks that will be affected by the write */
   int block_count;
   int ph_block;
+      
   
-  struct fat_dir_entry f;
-    
   /* We don't support sparse files */
   //if (offset > f->size) return 0; TODO
-
-  error = fat_find_entry(&f, file);
-  if (error < 0) return error;
     
   first_block = offset / BLOCK_SIZE;
   block_offset = offset - (first_block * BLOCK_SIZE);
-  
-  char msg[10];
-
-  printk("\n");
-  printk("offset: ");
-  itoa(offset, msg, 10);
-  printk(msg);
-  printk("\n");
-  printk("size: ");
-  itoa(size, msg, 10);
-  printk(msg);
-  printk("\n");
-  
   
   block_count = ((offset + size) / BLOCK_SIZE) - first_block;
   if (((offset + size) % BLOCK_SIZE) != 0) block_count++;
@@ -278,14 +232,20 @@ int fat_write(int file, void *buffer, int offset, int size) {
   written = 0;
   remain = size;
   block_num = first_block;
-  ph_block = fat_translate_block(&f, block_num);
-    
+  ph_block = fat_translate_block(file, block_num);
+  
+  char msg[80];
+  printk("ph_block ");
+  itoa(ph_block, msg, 10);
+  printk(msg);
+  
+  
   while (block_count) {
-    if (ph_block == EOC) { /* we need to grow! */
-      ph_block = add_block_to_file(&f);
+    if (ph_block == EOC) { /* we need to grow! */      
+      ph_block = add_block_to_file(file);      
       if (ph_block < 0) return -ENOSPC;
     }
-    
+        
     if (remain >= BLOCK_SIZE) {
       block_remain = BLOCK_SIZE - block_offset;
     } else {
@@ -296,9 +256,8 @@ int fat_write(int file, void *buffer, int offset, int size) {
         
     error = fat_write_block(&block_buffer, ph_block);
     if (error < 0) return error;
-    
     if (block_offset != 0) block_offset = 0; /* Only needed the first time */
-    
+      
     fs.root[file].size += block_remain;
     written += block_remain;
     remain -= block_remain;
@@ -306,12 +265,9 @@ int fat_write(int file, void *buffer, int offset, int size) {
     block_num++;
     
     if (block_count > 0) {
-      ph_block = fat_translate_block(&f, block_num);
+      ph_block = fat_translate_block(file, block_num);
     }
-    printk("A");
-    //fat_update_entry(&f, file);
-    printk("B");
   }
-  printk("OUT");
+  
   return written;
 }

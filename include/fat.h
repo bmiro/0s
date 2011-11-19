@@ -29,7 +29,7 @@ struct fat_dir_entry {
   char name[FILE_NAME_SIZE];
   int size;
   int mode;
-  int first_block; /* Pointer to first data block */
+  int first_block;
   int last_block;
   int opens; /* Counts number of procs that opened the file */
   struct file_operations *fops;
@@ -63,10 +63,10 @@ int check_path(const char *path);
 /* Returns first data block for the given path */
 int find_path(const char *path);
 
-int add_block_to_file(struct fat_dir_entry *file);
+int add_block_to_file(int file);
 
 /* Deletes a file from FAT metadata */
-int delete_file(int f);
+int delete_file(int file);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
 int fat_create(const char *path, int permissions, struct file_operations *fops);

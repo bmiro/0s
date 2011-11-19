@@ -1,7 +1,7 @@
 #ifndef __CIRCBUFF_H__
 #define __CIRCBUFF_H__
 
-#define CIRC_BUFF_SIZE 10
+#define CIRC_BUFF_SIZE 80
 
 struct circ_buff {
   char mem[CIRC_BUFF_SIZE];

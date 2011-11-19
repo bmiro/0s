@@ -131,7 +131,9 @@ int sys_read(int fd, char *buffer, int size) {
   if (size < 0) return -EINVAL;
    
   ch = &current()->channels[fd];
-   
+  
+  printk("i will read\n");
+  
   return ch->fops->f_read(ch->file, buffer, ch->offset, size);
 }
 
@@ -143,7 +145,7 @@ int sys_write(int fd, char *buffer, int size) {
   if (size < 0) return -EINVAL;
       
   ch = &(current()->channels[fd]);
-    
+     
   return ch->fops->f_write(ch->file, buffer, ch->offset, size);  
 }
 
@@ -152,7 +154,6 @@ int sys_open(const char *path, int flags) {
   int f;
   int fd;
   struct channel *channels;
-  struct fat_dir_entry file;
   
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
@@ -182,18 +183,16 @@ int sys_open(const char *path, int flags) {
     if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -EEXIST;
   }
       
-  fat_find_entry(&file, f);
-  
   /* Flag check */
-  if ((file.mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
+  if ((fs.root[f].mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
   
-  channels[fd].fops = file.fops;
+  channels[fd].fops = fs.root[f].fops;
     
   if (channels[fd].fops->f_open != NULL) {
     error = channels[fd].fops->f_open(f);
     if (error < 0) return error;
   }
-      
+
   channels[fd].file = f;
   channels[fd].mode = flags & O_RDWR; //TODO: Check if corret
   channels[fd].offset = 0;
