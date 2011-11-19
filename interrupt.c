@@ -10,7 +10,7 @@
 #include <mm.h>
 #include <utils.h>
 
-#include "kernutil.h"
+#include <kernutil.h>
 
 #define TICS_PER_SEC 18
 

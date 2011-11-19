@@ -117,15 +117,11 @@ int sys_write_file(int file, char *buffer, int offset, int size) {
       chuck = SYSBUFF_SIZE;
     }
    
-    copy_from_user(buffer + written, sysbuff, chuck);
-    
-    printk("Calling fat write\n");
-    
+    copy_from_user(buffer + written, sysbuff, chuck);  
     written += fat_write(file, sysbuff, offset + written, chuck);
-    
     remain -= chuck;
   }
-
+  
   return written;
 }
 
@@ -144,6 +140,7 @@ int sys_read_file(int file, char *buffer, int offset, int size) {
     }    
     read += fat_read(file, sysbuff, offset + read, chuck);
     copy_to_user(sysbuff, buffer + read, chuck);
+    remain -= chuck;
   }
 
   return read;

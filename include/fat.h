@@ -27,7 +27,6 @@ char block_buffer [BLOCK_SIZE];
 
 struct fat_dir_entry {
   char name[FILE_NAME_SIZE];
-  int file;
   int size;
   int mode;
   int first_block; /* Pointer to first data block */
@@ -64,8 +63,7 @@ int check_path(const char *path);
 /* Returns first data block for the given path */
 int find_path(const char *path);
 
-/* Adds capatity to a file the number of size bytes */
-int append_file_blocks(int f, int size);
+int add_block_to_file(struct fat_dir_entry *file);
 
 /* Deletes a file from FAT metadata */
 int delete_file(int f);
