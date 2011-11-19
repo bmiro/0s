@@ -81,6 +81,8 @@ void init_task_structs(void) {
 }
    
 void init_task0(void) {
+  int i;
+  
   struct task_struct *ts;
   ts = &task[0].t.task;
 
@@ -95,6 +97,11 @@ void init_task0(void) {
   ts->st.remaining_quantum = ts->quantum;
   list_add(&ts->queue, &runqueue);
   
+  for (i = 0; i < NUM_CHANNELS; i++) {
+    ts->channels[i].dyn_chars = FREE_CHANNEL;
+    ts->dyn_channels[i].mode = FREE_CHANNEL;
+  } 
+
   /* Sets defaults std in out err to keyboard console console */
   set_default_std_in_out_err();
   
