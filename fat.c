@@ -273,7 +273,7 @@ int fat_write(int file, void *buffer, int offset, int size) {
   
   
   block_count = ((offset + size) / BLOCK_SIZE) - first_block;
-  //if (((offset + size) % BLOCK_SIZE) != 0) block_count++;
+  if (((offset + size) % BLOCK_SIZE) != 0) block_count++;
     
   written = 0;
   remain = size;
@@ -283,7 +283,7 @@ int fat_write(int file, void *buffer, int offset, int size) {
   while (block_count) {
     if (ph_block == EOC) { /* we need to grow! */
       ph_block = add_block_to_file(&f);
-      if (ph_block < 0) return -1;
+      if (ph_block < 0) return -ENOSPC;
     }
     
     if (remain >= BLOCK_SIZE) {
