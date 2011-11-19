@@ -76,8 +76,7 @@ void init_task_structs(void) {
     for (j = 0; j < NUM_CHANNELS; j++) {
       task[i].t.task.channels[j].dyn_chars = FREE_CHANNEL;
       task[i].t.task.dyn_channels[j].mode = FREE_CHANNEL;
-  }
-    
+    } 
   }
 }
    

@@ -23,25 +23,22 @@ int getNewPid() {
   return pid_counter;
 }
 
-int fd_ok(int fd) {
-  int dchrs;
+int bad_fd(int fd) {  
+  if (fd < 0 || fd > NUM_CHANNELS) return 1;
   
-  if (fd < 0 || fd > NUM_CHANNELS) return 0;
-  
-  dchrs = current()->channels[fd].dyn_chars;
-  return (current()->dyn_channels[dchrs].mode != FREE_CHANNEL);
+  return current()->channels[fd].dyn_chars == FREE_CHANNEL;
 }
 
 int fd_access_ok(int fd, int mode) {
   int dchrs;
   
-  if (!fd_ok(fd)) return 0;
+  if (bad_fd(fd)) return 0;
   
   dchrs = current()->channels[fd].dyn_chars;
   return (current()->dyn_channels[dchrs].mode & mode) == mode;
 }
 
-// /************************ Service interrupt routines ************************/
+/************************ Service interrupt routines ************************/
 void sys_exit(void) {
   struct task_struct *tsk;
   int lpag;
@@ -135,39 +132,41 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int size) {
-  struct channel *ch;
-  struct dyn_channel *dch;
-  
+  int file;
+  int dchars;
+  int offset;
   int read;
   
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
   if (!access_ok(WRITE, (void *) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
-   
-  ch = &current()->channels[fd];
-  dch = &current()->dyn_channels[ch->dyn_chars];
-  
-  read = ch->fops->f_read(ch->file, buffer, dch->offset, size);
-  dch->offset += read;
+     
+  file = current()->channels[fd].file;
+  dchars = current()->channels[fd].dyn_chars;
+  offset = current()->dyn_channels[dchars].offset;
+
+  read = current()->channels[fd].fops->f_read(file, buffer, offset, size);
+  current()->dyn_channels[dchars].offset += read;
   
   return read;
 }
 
 int sys_write(int fd, char *buffer, int size) {  
-  struct channel *ch;
-  struct dyn_channel *dch;
-
+  int file;
+  int dchars;
+  int offset;
   int written;
 
   if (!fd_access_ok(fd, O_WRONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
-  ch = &(current()->channels[fd]);
-  dch = &(current()->dyn_channels[ch->dyn_chars]);
-
-  written = ch->fops->f_write(ch->file, buffer, dch->offset, size);
-  dch->offset += written;
+  file = current()->channels[fd].file;
+  dchars = current()->channels[fd].dyn_chars;
+  offset = current()->dyn_channels[dchars].offset;
+  
+  written = current()->channels[fd].fops->f_write(file, buffer, offset, size);
+  current()->dyn_channels[dchars].offset += written;
   
   return written;
 }
@@ -176,26 +175,21 @@ int sys_open(const char *path, int flags) {
   int error;
   int f;
   int fd, dfd;
-  struct channel *ch;
-  struct dyn_channel *dch;
 
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
   if (error = check_path(path)) return error;
     
-  ch = current()->channels;
-  dch = current()->dyn_channels;
-
   f = find_path(path);
   
-  fd = find_free_channel(ch);
-  dfd = find_free_dyn_channel(dch);
+  fd = find_free_channel(current()->channels);
+  dfd = find_free_dyn_channel(current()->dyn_channels);
 
   if (fd < 0 || dfd < 0) return -EMFILE;
       
   if (f < 0) {
     if ((flags & O_CREAT) == O_CREAT) {      
-      f = fat_create(path, flags & O_RDWR, &dev_file);      
+      f = fat_create(path, flags & O_RDWR, &dev_file);     
       if (f < 0) return -1;
     } else {
       /* File does not exist */
@@ -208,17 +202,17 @@ int sys_open(const char *path, int flags) {
   /* Flag check */
   if ((fs.root[f].mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
   
-  ch[fd].fops = fs.root[f].fops;
+  current()->channels[fd].fops = fs.root[f].fops;
     
-  if (ch[fd].fops->f_open != NULL) {
-    error = ch[fd].fops->f_open(f);
+  if (current()->channels[fd].fops->f_open != NULL) {
+    error = current()->channels[fd].fops->f_open(f);
     if (error < 0) return error;
   }
 
-  ch[fd].file = f;
-  ch[fd].dyn_chars = dfd;
-  dch[dfd].mode = flags & O_RDWR;
-  dch[dfd].offset = 0;
+  current()->channels[fd].file = f;
+  current()->channels[fd].dyn_chars = dfd;
+  current()->dyn_channels[dfd].mode = flags & O_RDWR;
+  current()->dyn_channels[dfd].offset = 0;
     
   return fd;
 }
@@ -227,32 +221,26 @@ int sys_close(int fd) {
   int error;
   int duped;
   int i;
-  
-  struct channel *chs;
-  struct dyn_channel *dchs;
 
-  if (!fd_ok(fd)) return -EBADF;
-  
-  chs = current()->channels;
-  dchs = current()->dyn_channels;
+  if (bad_fd(fd)) return -EBADF;
   
   duped = 0;
   for (i = 0; i < NUM_CHANNELS; i++) {
-    if ((chs[i].dyn_chars == chs[fd].dyn_chars) && (i != fd)) {
+    if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
       duped = 1;
       break;
     }
   }
   
-  if (chs[fd].fops->f_close != NULL) {
-    error = chs[fd].fops->f_close(chs[fd].file); //TODO canviar el parametre
+  if (current()->channels[fd].fops->f_close != NULL) {
+    error = current()->channels[fd].fops->f_close(current()->channels[fd].file); //TODO canviar el parametre
     if (error < 0) return error;
   }
   
   if (!duped) {
-    dchs[chs[fd].dyn_chars].mode = FREE_CHANNEL;
+    current()->dyn_channels[current()->channels[fd].dyn_chars].mode = FREE_CHANNEL;
   }
-  chs[fd].dyn_chars = FREE_CHANNEL;  
+  current()->channels[fd].dyn_chars = FREE_CHANNEL;  
   return 0;
 }
 
@@ -358,18 +346,15 @@ int sys_get_stats(int pid, struct stats *st) {
 
 int sys_dup(int fd) {
   int new_fd;
-  struct channel *chs;
 
-  if (!fd_ok(fd)) return -EBADF;
+  if (bad_fd(fd)) return -EBADF;
   
-  chs = current()->channels;
-
-  new_fd = find_free_channel(chs);
+  new_fd = find_free_channel(current()->channels);
   if (new_fd < 0) return -EMFILE;
   
-  chs[new_fd].file = chs[fd].file;
-  chs[new_fd].fops = chs[fd].fops;
-  chs[new_fd].dyn_chars = chs[fd].dyn_chars;
+  current()->channels[new_fd].file = current()->channels[fd].file;
+  current()->channels[new_fd].fops = current()->channels[fd].fops;
+  current()->channels[new_fd].dyn_chars = current()->channels[fd].dyn_chars;
   
   return new_fd;
 }

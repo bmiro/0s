@@ -9,12 +9,12 @@
 struct channel {
   struct file_operations *fops;
   int file; // File identifier
-  int dyn_chars; /* NULL if unopened */
+  int dyn_chars; /* FREE_CHANNEL if unopened */
 };
 
 struct dyn_channel {
-  int mode; /** O_RDONLY, O_WRONLY, NULL if unopened */
-  int offset; // Read offset
+  int mode; /* O_RDONLY, O_WRONLY, FREE_CHANNEL if unopened */
+  int offset;
 };
 
 int find_free_channel(struct channel *chs);
