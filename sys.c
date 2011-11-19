@@ -174,7 +174,7 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_open(const char *path, int flags) {
   int error;
   int f;
-  int fd, dfd;
+  int fd, dchars;
 
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
@@ -183,9 +183,9 @@ int sys_open(const char *path, int flags) {
   f = find_path(path);
   
   fd = find_free_channel(current()->channels);
-  dfd = find_free_dyn_channel(current()->dyn_channels);
+  dchars = find_free_dyn_channel(current()->dyn_channels);
 
-  if (fd < 0 || dfd < 0) return -EMFILE;
+  if (fd < 0 || dchars < 0) return -EMFILE;
       
   if (f < 0) {
     if ((flags & O_CREAT) == O_CREAT) {      
@@ -210,9 +210,9 @@ int sys_open(const char *path, int flags) {
   }
 
   current()->channels[fd].file = f;
-  current()->channels[fd].dyn_chars = dfd;
-  current()->dyn_channels[dfd].mode = flags & O_RDWR;
-  current()->dyn_channels[dfd].offset = 0;
+  current()->channels[fd].dyn_chars = dchars;
+  current()->dyn_channels[dchars].mode = flags & O_RDWR;
+  current()->dyn_channels[dchars].offset = 0;
     
   return fd;
 }
