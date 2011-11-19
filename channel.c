@@ -1,21 +1,21 @@
 #include <channel.h>
 
-int find_free_channel(struct channel *channels) {
+int find_free_channel(struct channel *chs) {
   int i;
   
   for (i = 0; i < NUM_CHANNELS; i++) {
-    if (channels[i].mode == FREE_CHANNEL) return i;
+    if (chs[i].dyn_chars == FREE_CHANNEL) return i;
   }
   
   return -1;
 }
 
-int is_already_open(struct channel *channels, int file) {
+int find_free_dyn_channel(struct dyn_channel *dchs) {
   int i;
   
   for (i = 0; i < NUM_CHANNELS; i++) {
-    if (channels[i].file == file) return i;
+    if (dchs[i].mode == FREE_CHANNEL) return i;
   }
   
-  return 0;
+  return -1;
 }

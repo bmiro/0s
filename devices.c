@@ -33,16 +33,19 @@ void init_devices() {
 void set_default_std_in_out_err(struct task_struct *tsk) {
 
   tsk->channels[STDIN].fops = &dev_keyboard;
-  tsk->channels[STDIN].mode = O_RDONLY;
-  tsk->channels[STDIN].offset = 0;
+  tsk->channels[STDIN].dyn_chars = STDIN;
+  tsk->dyn_channels[STDIN].mode = O_RDONLY;
+  tsk->dyn_channels[STDIN].offset = 0;
   
   tsk->channels[STDOUT].fops = &dev_console;
-  tsk->channels[STDOUT].mode = O_WRONLY;
-  tsk->channels[STDOUT].offset = 0;
+  tsk->channels[STDOUT].dyn_chars = STDOUT;
+  tsk->dyn_channels[STDOUT].mode = O_WRONLY;
+  tsk->dyn_channels[STDOUT].offset = 0;
   
-  tsk->channels[STDERR].fops = &dev_console;
-  tsk->channels[STDERR].mode = O_WRONLY;
-  tsk->channels[STDERR].offset = 0;
+  tsk->channels[STDERR].fops = &dev_console;  
+  tsk->channels[STDERR].dyn_chars = STDERR;
+  tsk->dyn_channels[STDERR].mode = O_WRONLY;
+  tsk->dyn_channels[STDERR].offset = 0;
   
 }
 
@@ -67,11 +70,8 @@ int sys_write_console(int file, const void *buffer, int offset, int size) {
       remain--;
     }
   }
-
   return written;
 }
-
-
 
 int sys_read_keyboard(int file, void *buffer, int offset, int size) {
   int read;
@@ -91,9 +91,7 @@ int sys_read_keyboard(int file, void *buffer, int offset, int size) {
     sched_block(current(), &keyboardqueue);   
     sched_continue(sched_select_next());
   }
-  
   return -1; /* We don't arrive here */
-  
 }
 
 /* File */

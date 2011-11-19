@@ -70,9 +70,14 @@ void init_queues(void) {
 }
 
 void init_task_structs(void) {
-  int i;
+  int i, j;
   for (i = 1; i < NR_TASKS; i++) { /* Skips 0 used for system */
     list_add(&task[i].t.task.queue, &freequeue);
+    for (j = 0; j < NUM_CHANNELS; j++) {
+      task[i].t.task.channels[j].dyn_chars = FREE_CHANNEL;
+      task[i].t.task.dyn_channels[j].mode = FREE_CHANNEL;
+  }
+    
   }
 }
    
