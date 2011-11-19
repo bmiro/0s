@@ -7,7 +7,7 @@
 #include <file.h>
 #include <error.h>
 
-#define MAX_BLOCKS 100
+#define MAX_BLOCKS 10
 #define BLOCK_SIZE 256
 
 #define MAX_FILES 10
@@ -69,11 +69,10 @@ int find_path(const char *path);
 int delete_file(int file);
 
 /* Creates a file in FAT metadata pre-allocating size bytes */
-int fat_create(const char *path, int permissions,
-	       struct file_operations *fops);
+int fat_create(const char *path, int flags, struct file_operations *fops);
 int fat_open(int file);
-int fat_read(int f, char *buffer, int offset, int size);
-int fat_write(int f, char *buffer, int offset, int size);
+int fat_read(int f, char *buffer, int offset, int count);
+int fat_write(int f, const char *buffer, int offset, int count);
 
 
 #endif

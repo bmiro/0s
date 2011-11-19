@@ -160,12 +160,12 @@ int fat_close(int file) {
 }
 
 /* Creates a file in FAT metadata */
-int fat_create(const char *path, int permissions, struct file_operations *fops) {
+int fat_create(const char *path, int flags, struct file_operations *fops) {
   int i;
   for (i = 0; i < MAX_FILES; i++) {
     if (fs.root[i].mode == FREE_TYPE) {
       strcat(fs.root[i].name, (char *)path, "");
-      fs.root[i].mode = (permissions & O_RDWR);
+      fs.root[i].mode = (flags & O_RDWR);
       fs.root[i].size = 0;
       fs.root[i].fops = fops;
       fs.root[i].first_block = EOC;
@@ -177,17 +177,17 @@ int fat_create(const char *path, int permissions, struct file_operations *fops) 
   return -ENOSPC;
 }
 
-int fat_read(int file, char *buffer, int offset, int size) {
+int fat_read(int file, char *buffer, int offset, int count) {
   int remain, read;
   int logic_block, ph_block;
   int block_offset, block_remain;  
  
   if (offset >= fat_get_size(file)) return 0;
  
-  if ((offset + size) > fat_get_size(file)) {
+  if ((offset + count) > fat_get_size(file)) {
     remain = fat_get_size(file) - offset;
   } else {
-    remain = size;
+    remain = count;
   }
   
   read = 0;
@@ -218,13 +218,13 @@ int fat_read(int file, char *buffer, int offset, int size) {
 }
 
 
-int fat_write(int file, char *buffer, int offset, int size) {
+int fat_write(int file, const char *buffer, int offset, int count) {
   int written, remain;
   int logic_block, ph_block;
   int block_offset, block_remain;
   
   written = 0;
-  remain = size;
+  remain = count;
   logic_block = offset / BLOCK_SIZE;
   block_offset = offset % BLOCK_SIZE;
   while (remain) {

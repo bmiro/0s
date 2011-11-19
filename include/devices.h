@@ -29,15 +29,15 @@ struct file_operations {
 void init_devices();
 
 /* Console */
-int sys_write_console(int file, char *buffer, int offset, int size);
+int sys_write_console(int file, const void *buffer, int offset, int count);
 
 /* Keyboard */
-int sys_read_keyboard(int file, char *buffer, int offset, int size);
+int sys_read_keyboard(int file, void *buffer, int offset, int count);
 
 /* File */
 int sys_open_file(int file);
-int sys_write_file(int file, char *buffer, int offset, int size);
-int sys_read_file(int file, char *buffer, int offset, int size);
+int sys_write_file(int file, const void *buffer, int offset, int count);
+int sys_read_file(int file, void *buffer, int offset, int count);
 
 
 struct file_operations dev_file, dev_console, dev_keyboard;

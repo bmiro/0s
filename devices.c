@@ -31,9 +31,7 @@ void init_devices() {
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
-//   sys_open(KEYBOARD_PATH, O_RDONLY);
-//   sys_open(CONSOLE_PATH, O_WRONLY);
-//   sys_open(CONSOLE_PATH, O_WRONLY);
+
   tsk->channels[STDIN].fops = &dev_keyboard;
   tsk->channels[STDIN].mode = O_RDONLY;
   tsk->channels[STDIN].offset = 0;
@@ -48,7 +46,7 @@ void set_default_std_in_out_err(struct task_struct *tsk) {
   
 }
 
-int sys_write_console(int file, char *buffer, int offset, int size) {
+int sys_write_console(int file, const void *buffer, int offset, int size) {
   int chuck, remain;
   int written;
   int i;
@@ -75,7 +73,7 @@ int sys_write_console(int file, char *buffer, int offset, int size) {
 
 
 
-int sys_read_keyboard(int file, char *buffer, int offset, int size) {
+int sys_read_keyboard(int file, void *buffer, int offset, int size) {
   int read;
   
   if (current()->pid == 0) return -EPERM;
@@ -103,56 +101,40 @@ int sys_open_file(int file) {
   return fat_open(file);
 }
 
-int sys_write_file(int file, char *buffer, int offset, int size) {
+int sys_write_file(int file, const void *buffer, int offset, int count) {
   int chuck, remain;
-  int written;
-  int i;
-
-  
-//   copy_from_user(buffer, sysbuff, size);
-//   fat_write(file, sysbuff, offset, size);
-//   return size;
+  int written, wrote;
   
   written = 0;
-  remain = size;
+  remain = count;
   while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }
-   
-    copy_from_user(buffer + written, sysbuff, chuck);  
-    written += fat_write(file, sysbuff, offset + written, chuck);
-    remain -= chuck;
-  }
+    chuck = (remain > SYSBUFF_SIZE) ? SYSBUFF_SIZE : remain;
   
+    copy_from_user(buffer + written, sysbuff, chuck);
+    wrote = fat_write(file, sysbuff, offset + written, chuck);
+      
+    written += wrote;
+    if (wrote != chuck) return written; /* Something happened */
+    remain -= wrote;
+  }
   return written;
 }
 
-int sys_read_file(int file, char *buffer, int offset, int size) {
+int sys_read_file(int file, void *buffer, int offset, int count) {
   int chuck, remain;
-  int read;
-  int i;
-
-//   fat_read(file, sysbuff, offset, size);
-//   copy_to_user(sysbuff, buffer, size);
-//     
-//   return size;
-  
-  
+  int read, fs_read;
+ 
   read = 0;
-  remain = size;
+  remain = count;
   while (remain) {
-    if (remain < SYSBUFF_SIZE) {
-      chuck = remain;
-    } else {
-      chuck = SYSBUFF_SIZE;
-    }    
-    read += fat_read(file, sysbuff, offset + read, chuck);
-    copy_to_user(sysbuff, buffer + read, chuck);
-    remain -= chuck;
-  }
+    chuck = (remain > SYSBUFF_SIZE) ? SYSBUFF_SIZE : remain;
+    
+    fs_read = fat_read(file, sysbuff, offset + read, chuck);
+    copy_to_user(sysbuff, buffer + read, fs_read);
 
+    read += fs_read;
+    if (fs_read != chuck) return read;
+    remain -= fs_read;
+  }
   return read;
 }

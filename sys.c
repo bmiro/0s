@@ -125,6 +125,7 @@ int sys_fork(void) {
 
 int sys_read(int fd, char *buffer, int size) {
   struct channel *ch;
+  int read;
   
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
   if (!access_ok(WRITE, (void *) buffer, size)) return -EFAULT;
@@ -132,19 +133,26 @@ int sys_read(int fd, char *buffer, int size) {
    
   ch = &current()->channels[fd];
     
-  return ch->fops->f_read(ch->file, buffer, ch->offset, size);
+  read = ch->fops->f_read(ch->file, buffer, ch->offset, size);
+  ch->offset += read;
+  
+  return read;
 }
 
 int sys_write(int fd, char *buffer, int size) {  
   struct channel *ch;
+  int written;
 
   if (!fd_access_ok(fd, O_WRONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
       
   ch = &(current()->channels[fd]);
-     
-  return ch->fops->f_write(ch->file, buffer, ch->offset, size);  
+  
+  written = ch->fops->f_write(ch->file, buffer, ch->offset, size);
+  ch->offset += written;
+  
+  return written;
 }
 
 int sys_open(const char *path, int flags) {
@@ -161,6 +169,11 @@ int sys_open(const char *path, int flags) {
   
   f = find_path(path);
 
+  char msg[20];
+  printk("flags ");
+  itoa(flags,msg,10);
+  printk(msg);
+  
 //   if (is_already_open(channels, f)) {
 //     printk("ALREADDDYYYYYY OOOPPPPEEENNNEEDDD!!\n\n");
 //     return -1;
