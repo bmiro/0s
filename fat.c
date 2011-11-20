@@ -249,9 +249,7 @@ int fat_write(int file, const char *buffer, int offset, int count) {
 int fat_unlink(int file) {
   if (file > MAX_FILES) return -1;
   if (fs.root[file].opens != 0) return -1;
-   
-  printk("UNLINKING"); 
-  
+    
   /* Frees all assigned blocks putting them at the end
    * of free list */
   if (fs.last_free_block != EOC) {

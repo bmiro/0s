@@ -137,6 +137,8 @@ int sys_read(int fd, char *buffer, int size) {
   int offset;
   int read;
   
+  printk("\nREADING\n");
+  
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
   if (!access_ok(WRITE, (void *) buffer, size)) return -EFAULT;
   if (size < 0) return -EINVAL;
@@ -174,10 +176,7 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_open(const char *path, int flags) {
   int error;
   int f;
-  int fd, dchars;
-
-  printk("OPEN");
-  
+  int fd, dchars;  
   
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
@@ -252,7 +251,7 @@ int sys_unlink(const char *path) {
   int f;
   int error;
   struct file_operations *fops;
-  
+     
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
       
   f = fat_find_path(path);
@@ -263,6 +262,7 @@ int sys_unlink(const char *path) {
         
  fat_get_fops(f, &fops);
   if (fops->f_unlink != NULL) {
+    printk("\nUNLINKING\n");
     error = fops->f_unlink(f);
     if (error < 0) return error;
   }
@@ -368,6 +368,8 @@ int sys_get_stats(int pid, struct stats *st) {
 int sys_dup(int fd) {
   int new_fd;
 
+  printk("DUP");
+  
   if (bad_fd(fd)) return -EBADF;
   
   new_fd = find_free_channel(current()->channels);
