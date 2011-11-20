@@ -51,29 +51,6 @@ int fat_translate_block(int file, int logic_block) {
 
 /* Adds a block to a file and returns a pointer to the ph_block */
 int fat_add_block(int file) {
-//   int new_block;
-//   
-//   if (fs.free_block_count == 0) return -1;
-//   
-//   /* Getting a free block */
-//   new_block = fs.first_free_block;
-//   /* Updatig list head of free blocks */
-//   fs.first_free_block = fs.block_lists[new_block];
-//   /* Assing free block to the file */
-//   if (fs.root[file].first_block == EOC) {
-//     /* Is the first block assigned to this file */
-//     fs.root[file].first_block = new_block;
-//   } else {
-//     fs.block_lists[fs.root[file].last_block] = new_block;
-//   }
-//   /* Mark the end of file*/
-//   fs.root[file].last_block = new_block;
-//   fs.block_lists[fs.root[file].last_block] = EOC;
-//   fs.used_block_count++;
-//   fs.free_block_count--;
-//   
-//   return new_block;
-  
   if (fs.first_free_block == EOC) return -ENOSPC;
   
   /* Assign block to file */
