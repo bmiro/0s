@@ -51,28 +51,52 @@ int fat_translate_block(int file, int logic_block) {
 
 /* Adds a block to a file and returns a pointer to the ph_block */
 int fat_add_block(int file) {
-  int new_block;
+//   int new_block;
+//   
+//   if (fs.free_block_count == 0) return -1;
+//   
+//   /* Getting a free block */
+//   new_block = fs.first_free_block;
+//   /* Updatig list head of free blocks */
+//   fs.first_free_block = fs.block_lists[new_block];
+//   /* Assing free block to the file */
+//   if (fs.root[file].first_block == EOC) {
+//     /* Is the first block assigned to this file */
+//     fs.root[file].first_block = new_block;
+//   } else {
+//     fs.block_lists[fs.root[file].last_block] = new_block;
+//   }
+//   /* Mark the end of file*/
+//   fs.root[file].last_block = new_block;
+//   fs.block_lists[fs.root[file].last_block] = EOC;
+//   fs.used_block_count++;
+//   fs.free_block_count--;
+//   
+//   return new_block;
   
-  if (fs.free_block_count == 0) return -1;
+  if (fs.first_free_block == EOC) return -ENOSPC;
   
-  /* Getting a free block */
-  new_block = fs.first_free_block;
-  /* Updatig list head of free blocks */
-  fs.first_free_block = fs.block_lists[new_block];
-  /* Assing free block to the file */
+  /* Assign block to file */
   if (fs.root[file].first_block == EOC) {
-    /* Is the first block assigned to this file */
-    fs.root[file].first_block = new_block;
+    fs.root[file].first_block = fs.first_free_block;
   } else {
-    fs.block_lists[fs.root[file].last_block] = new_block;
+    fs.block_lists[fs.root[file].last_block] = fs.first_free_block;
   }
-  /* Mark the end of file*/
-  fs.root[file].last_block = new_block;
+  fs.root[file].last_block = fs.first_free_block;
+
+  /* Deletes block from free list */
+  fs.first_free_block = fs.block_lists[fs.first_free_block];
+  if (fs.first_free_block == EOC) {
+    fs.last_free_block = EOC;
+  }
+  
+  /* Marks end of the file */
   fs.block_lists[fs.root[file].last_block] = EOC;
+  
   fs.used_block_count++;
   fs.free_block_count--;
   
-  return new_block;
+  return fs.root[file].last_block;
 }
 
 int fat_read_block(struct data_block *block, int ph_block) {
@@ -260,15 +284,31 @@ int fat_unlink(int file) {
     fs.first_free_block = fs.root[file].first_block;
     fs.last_free_block = fs.root[file].last_block;
   }
-  fs.free_block_count += (fs.root[file].size % BLOCK_SIZE) + 1;
-  fs.used_block_count -= (fs.root[file].size % BLOCK_SIZE) + 1;
-  
+  fs.free_block_count += (fs.root[file].size / BLOCK_SIZE);
+  fs.used_block_count -= (fs.root[file].size / BLOCK_SIZE);
+  if ((fs.root[file].size % BLOCK_SIZE) != 0) {
+    fs.free_block_count++;
+    fs.used_block_count--;
+  }
+
   /* Frees dir entry */
   strcat(fs.root[file].name, "", "");
   fs.root[file].mode = FREE_TYPE;
   fs.root[file].size = 0;
   fs.root[file].first_block = EOC;
   fs.root[file].last_block = EOC;
+    
+  int i, b;
+  b = fs.first_free_block;
+  for(i=0;b != EOC;i++) {
+    b = fs.block_lists[b];
+  }
+  
+  printk("free blocks count ");
+  char msg[20];
+  itoa(i,msg,10);
+  printk(msg);
+  
   
   return 0;
 }
