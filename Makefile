@@ -90,7 +90,7 @@ user: user.o user.lds $(USROBJ)
 	$(LD) $(LINKFLAGS) $(USRLDFLAGS) -o $@ $< $(USROBJ)
 
 clean:
-	rm -f *.o *.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build
+	rm -f *.o *.s bochsout.txt parport.out system.out system bootsect zeos.bin user user.out *~ build include/*~
 
 disk: zeos.bin
 	dd if=zeos.bin of=/dev/fd0
