@@ -13,6 +13,9 @@
 #define MAX_FILES 10
 #define FILE_NAME_SIZE 10
 
+/* This define must be positive, else will be detected as an error */
+#define FILE_NOT_FOUND (2^31)-1
+
 /* End of Chain */
 #define EOC -1
 
@@ -59,11 +62,8 @@ struct fat fs;
 
 int initZeOSFAT();
 
-/* Checks if path is in corrent format */
-int check_path(const char *path);
-
 /* Returns file identifier for the given path */
-int find_path(const char *path);
+int fat_find_path(const char *path);
 
 int fat_create(const char *path, int flags, struct file_operations *fops);
 int fat_open(int file);
@@ -73,7 +73,7 @@ int fat_write(int f, const char *buffer, int offset, int count);
 int fat_unlink(int file);
 
 int fat_get_size(int file);
-int fat_get_fops(int file, struct file_operations *fops);
+int fat_get_fops(int file, struct file_operations **fops);
 int fat_get_opens(int file);
 
 #endif

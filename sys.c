@@ -181,17 +181,17 @@ int sys_open(const char *path, int flags) {
   
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
-  error = check_path(path);
-  if (error) return error;
     
-  f = find_path(path);
+  f = fat_find_path(path);
+  
+  if (f < 0) return f;
   
   fd = find_free_channel(current()->channels);
   dchars = find_free_dyn_channel(current()->dyn_channels);
 
   if (fd < 0 || dchars < 0) return -EMFILE;
       
-  if (f < 0) {
+  if (f == FILE_NOT_FOUND) {
     if ((flags & O_CREAT) == O_CREAT) {      
       f = fat_create(path, flags & O_RDWR, &dev_file);     
       if (f < 0) return -1;
@@ -224,17 +224,17 @@ int sys_open(const char *path, int flags) {
 int sys_close(int fd) {
   int error;
   int duped;
-  //int i;
+  int i;
 
   if (bad_fd(fd)) return -EBADF;
   
   duped = 0;
-//   for (i = 0; i < NUM_CHANNELS; i++) {
-//     if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
-//       duped = 1;
-//       break;
-//     }
-//   }
+  for (i = 0; i < NUM_CHANNELS; i++) {
+    if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
+      duped = 1;
+      break;
+    }
+  }
   
   if (current()->channels[fd].fops->f_close != NULL) {
     error = current()->channels[fd].fops->f_close(current()->channels[fd].file);
@@ -251,18 +251,18 @@ int sys_close(int fd) {
 int sys_unlink(const char *path) {
   int f;
   int error;
-  struct file_operations *fops = NULL;
+  struct file_operations *fops;
   
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
-  error = check_path(path);
-  if (error) return error;
       
-  f = find_path(path);
-  if (f < 0) return -ENOENT;
-  if (fat_get_opens(f) != 0) return -EBUSY;
+  f = fat_find_path(path);
+  if (f < 0) return f;
+  if (f == FILE_NOT_FOUND) return -ENOENT;
   
-  fat_get_fops(f, fops);
-  if (fops != NULL) {
+  if (fat_get_opens(f) > 0) return -EBUSY;
+        
+ fat_get_fops(f, &fops);
+  if (fops->f_unlink != NULL) {
     error = fops->f_unlink(f);
     if (error < 0) return error;
   }

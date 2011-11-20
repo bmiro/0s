@@ -89,25 +89,20 @@ int fat_write_block(struct data_block *block, int ph_block) {
  ************** high level external public FAT functions ***************
  ***********************************************************************/
 
-int check_path(const char *path) {
+/* Returns file identifier for the given path */
+int fat_find_path(const char *path) {
   int i;
   
   for (i = 0; i < FILE_NAME_SIZE; i++) {
-    if (path[i] == '\0') return 0;
+    if (path[i] == '\0') break;
   } 
-  return -ENAMETOOLONG;  
-}
-
-
-/* Returns file identifier for the given path */
-int find_path(const char *path) {
-  int i;
+  if (i == FILE_NAME_SIZE) return -ENAMETOOLONG;
   
   for (i = 0; i < MAX_FILES; i++) {
     if (!strcmp(fs.root[i].name, path) && fs.root[i].mode != FREE_TYPE) return i;
   }
   
-  return -1;
+  return FILE_NOT_FOUND;
 }
 
 int fat_get_size(int file) {
@@ -121,20 +116,22 @@ int fat_set_size(int file, int size) {
   return size;
 }
 
-int fat_get_fops(int file, struct file_operations *fops) {
+int fat_get_fops(int file, struct file_operations **fops) {
   if (0 > file || file > MAX_FILES) return -1;
   
-  fops = fs.root[file].fops;
+  *fops = fs.root[file].fops;
   return 0;
 } 
 
 int fat_get_opens(int file) {
   if (0 > file || file > MAX_FILES) return -1;
+  
   return fs.root[file].opens;
 }
 
 int fat_open(int file) {  
   if (0 > file || file > MAX_FILES) return -1;
+  
   fs.root[file].opens++;
     
   return 0;
@@ -253,6 +250,7 @@ int fat_unlink(int file) {
   if (file > MAX_FILES) return -1;
   if (fs.root[file].opens != 0) return -1;
    
+  printk("UNLINKING"); 
   
   /* Frees all assigned blocks putting them at the end
    * of free list */
