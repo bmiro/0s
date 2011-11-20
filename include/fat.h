@@ -73,7 +73,7 @@ int fat_write(int f, const char *buffer, int offset, int count);
 int fat_unlink(int file);
 
 int fat_get_size(int file);
-struct file_operations* fat_get_fops(int file);
+int fat_get_fops(int file, struct file_operations *fops);
 int fat_get_opens(int file);
 
 #endif

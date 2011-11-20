@@ -24,6 +24,8 @@ int initZeOSFAT() {
     fs.block_lists[i] = i + 1;
   }
   fs.block_lists[i] = EOC;
+  
+  return 0;
 }
 
 /***********************************************************************
@@ -119,9 +121,11 @@ int fat_set_size(int file, int size) {
   return size;
 }
 
-struct file_operations* fat_get_fops(int file) {
+int fat_get_fops(int file, struct file_operations *fops) {
   if (0 > file || file > MAX_FILES) return -1;
-  return fs.root[file].fops;
+  
+  fops = fs.root[file].fops;
+  return 0;
 } 
 
 int fat_get_opens(int file) {
@@ -130,14 +134,14 @@ int fat_get_opens(int file) {
 }
 
 int fat_open(int file) {  
-  if (file > MAX_FILES) return -1;
+  if (0 > file || file > MAX_FILES) return -1;
   fs.root[file].opens++;
     
   return 0;
 }
 
 int fat_close(int file) {
-  if (file > MAX_FILES) return -1;
+  if (0 > file || file > MAX_FILES) return -1;
   if (fs.root[file].opens == 0) return -1;
 
   fs.root[file].opens--;
@@ -168,9 +172,7 @@ int fat_read(int file, char *buffer, int offset, int count) {
   int block_offset, block_remain;  
  
   if (offset >= fat_get_size(file)) return 0;
- 
-  char msg[20];  
- 
+  
   if ((offset + count) > fat_get_size(file)) {
     remain = fat_get_size(file) - offset;
   } else {
@@ -190,7 +192,7 @@ int fat_read(int file, char *buffer, int offset, int count) {
       block_remain = remain;
     }
     
-    fat_read_block(block_buffer, ph_block);
+    fat_read_block((struct data_block *)block_buffer, ph_block);
     copy_data(block_buffer + block_offset, buffer + read, block_remain);
     
     /* Only needed the first time */
@@ -228,21 +230,22 @@ int fat_write(int file, const char *buffer, int offset, int count) {
       block_remain = remain;
     }
 
-    fat_read_block(block_buffer, ph_block);
-    copy_data(buffer + written, block_buffer + block_offset, block_remain);
-    fat_write_block(block_buffer, ph_block);
+    fat_read_block((struct data_block *)block_buffer, ph_block);
+    copy_data((void *)(buffer + written), block_buffer + block_offset, block_remain);
+    fat_write_block((struct data_block *)block_buffer, ph_block);
     
     if (block_offset != 0) block_offset = 0;
     
     written += block_remain;
     remain -= block_remain;
     
+    if ((offset + written) > fat_get_size(file)) {
+      fat_set_size(file, offset + written);
+    }
+    
     logic_block++;
   }
-  if ((offset + written) > fat_get_size(file)) {
-    fat_set_size(file, offset + written);
-  }
-  
+
   return written;
 }
 

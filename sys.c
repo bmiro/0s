@@ -181,7 +181,8 @@ int sys_open(const char *path, int flags) {
   
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
-  if (error = check_path(path)) return error;
+  error = check_path(path);
+  if (error) return error;
     
   f = find_path(path);
   
@@ -223,17 +224,17 @@ int sys_open(const char *path, int flags) {
 int sys_close(int fd) {
   int error;
   int duped;
-  int i;
+  //int i;
 
   if (bad_fd(fd)) return -EBADF;
   
   duped = 0;
-  for (i = 0; i < NUM_CHANNELS; i++) {
-    if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
-      duped = 1;
-      break;
-    }
-  }
+//   for (i = 0; i < NUM_CHANNELS; i++) {
+//     if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
+//       duped = 1;
+//       break;
+//     }
+//   }
   
   if (current()->channels[fd].fops->f_close != NULL) {
     error = current()->channels[fd].fops->f_close(current()->channels[fd].file);
@@ -250,16 +251,17 @@ int sys_close(int fd) {
 int sys_unlink(const char *path) {
   int f;
   int error;
-  struct file_operations *fops;
+  struct file_operations *fops = NULL;
   
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
-  if (error = check_path(path)) return error;
+  error = check_path(path);
+  if (error) return error;
       
   f = find_path(path);
   if (f < 0) return -ENOENT;
   if (fat_get_opens(f) != 0) return -EBUSY;
   
-  fops = fat_get_fops(f);
+  fat_get_fops(f, fops);
   if (fops != NULL) {
     error = fops->f_unlink(f);
     if (error < 0) return error;
