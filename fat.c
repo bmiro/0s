@@ -215,6 +215,7 @@ int fat_write(int file, const char *buffer, int offset, int count) {
   written = 0;
   remain = count;
   logic_block = offset / BLOCK_SIZE;
+
   block_offset = offset % BLOCK_SIZE;
   while (remain) {
     ph_block = fat_translate_block(file, logic_block);

@@ -126,43 +126,55 @@ int sys_fork(void) {
   return child->task.pid;
 }
 
-int sys_read(int fd, char *buffer, int size) {
+int sys_read(int fd, char *buffer, int count) {
   int file;
   int dynamic;
   int offset;
   int read;
-  
-  printk("\nREADING\n");
+    
+  char msg[20];
+  printk("Read ");
+  itoa(count, msg, 10);
+  printk(msg);
   
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
-  if (!access_ok(WRITE, (void *) buffer, size)) return -EFAULT;
-  if (size < 0) return -EINVAL;
+  if (!access_ok(WRITE, (void *) buffer, count)) return -EFAULT;
+  if (count < 0) return -EINVAL;
      
   file = current()->channels[fd].file;
   dynamic = current()->channels[fd].dynamic;
   offset = dyn_channels[dynamic].offset;
 
-  read = current()->channels[fd].fops->f_read(file, buffer, offset, size);
+  read = current()->channels[fd].fops->f_read(file, buffer, offset, count);
   dyn_channels[dynamic].offset += read;
   
   return read;
 }
 
-int sys_write(int fd, char *buffer, int size) {  
+int sys_write(int fd, char *buffer, int count) {  
   int file;
   int dynamic;
   int offset;
   int written;
 
+  if (fd > 1 && count > 1) {
+    char msg[20];
+    printk("Write ");
+    itoa(count, msg, 10);
+    printk(msg);
+    printk("\n");
+  }
+  
+  
   if (!fd_access_ok(fd, O_WRONLY)) return -EBADF;
-  if (!access_ok(WRITE, (void*) buffer, size)) return -EFAULT;
-  if (size < 0) return -EINVAL;
+  if (!access_ok(WRITE, (void*) buffer, count)) return -EFAULT;
+  if (count < 0) return -EINVAL;
       
   file = current()->channels[fd].file;
   dynamic = current()->channels[fd].dynamic;
   offset =dyn_channels[dynamic].offset;
   
-  written = current()->channels[fd].fops->f_write(file, buffer, offset, size);
+  written = current()->channels[fd].fops->f_write(file, buffer, offset, count);
   dyn_channels[dynamic].offset += written;
   
   return written;

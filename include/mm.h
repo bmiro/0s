@@ -17,7 +17,7 @@
 
 /* It will be great if is bigger than BLOCK_SIZE in fat.h
  * and SYSBUFF_SIZE % BLOCK_SIZE == 0 */
-#define SYSBUFF_SIZE 1024
+#define SYSBUFF_SIZE 102400
 char sysbuff[SYSBUFF_SIZE];
 
 /* Bytemap to mark the free physical pages */

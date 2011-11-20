@@ -84,6 +84,9 @@ int perror() {
     case (EPERM) :
       write(STDERR, WELL_FORMED_STR("[perror] Operation not permitted.\n"));
       break;
+    case (ENOENT) :
+      write(STDERR, WELL_FORMED_STR("[perror] No such file or directory.\n"));
+      break;
     case (ESRCH) :
       write(STDERR, WELL_FORMED_STR("[perror] No such process.\n"));
       break; 
@@ -105,8 +108,20 @@ int perror() {
     case (EBUSY) :
       write(STDERR, WELL_FORMED_STR("[perror] Device or resource busy.\n"));
       break;
+    case (EEXIST) :
+      write(STDERR, WELL_FORMED_STR("[perror] File exists.\n"));
+      break;   
     case (EINVAL) :
       write(STDERR, WELL_FORMED_STR("[perror] Invalid argument.\n"));
+      break;
+    case (EMFILE) :
+      write(STDERR, WELL_FORMED_STR("[perror] Too many open files.\n"));
+      break;
+    case (ENOSPC) :
+      write(STDERR, WELL_FORMED_STR("[perror] No space left on device.\n"));
+      break;
+    case (ENAMETOOLONG) :
+      write(STDERR, WELL_FORMED_STR("[perror] File name too long.\n"));
       break;
     case (ENOSYS) :
       write(STDERR, WELL_FORMED_STR("[perror] Function not implemented.\n"));
