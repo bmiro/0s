@@ -34,21 +34,25 @@ void init_devices() {
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
-
+  int dynamic;
+  
   tsk->channels[STDIN].fops = &dev_keyboard;
-  tsk->channels[STDIN].dyn_chars = STDIN;
-  tsk->dyn_channels[STDIN].mode = O_RDONLY;
-  tsk->dyn_channels[STDIN].offset = 0;
+  dynamic = find_free_dyn_channel();
+  tsk->channels[STDIN].dynamic = dynamic;
+  dyn_channels[dynamic].mode = O_RDONLY;
+  dyn_channels[dynamic].offset = 0;
   
   tsk->channels[STDOUT].fops = &dev_console;
-  tsk->channels[STDOUT].dyn_chars = STDOUT;
-  tsk->dyn_channels[STDOUT].mode = O_WRONLY;
-  tsk->dyn_channels[STDOUT].offset = 0;
+  dynamic = find_free_dyn_channel();
+  tsk->channels[STDOUT].dynamic = dynamic;
+  dyn_channels[dynamic].mode = O_WRONLY;
+  dyn_channels[dynamic].offset = 0;
   
-  tsk->channels[STDERR].fops = &dev_console;  
-  tsk->channels[STDERR].dyn_chars = STDERR;
-  tsk->dyn_channels[STDERR].mode = O_WRONLY;
-  tsk->dyn_channels[STDERR].offset = 0;
+  tsk->channels[STDERR].fops = &dev_console; 
+  dynamic = find_free_dyn_channel();
+  tsk->channels[STDERR].dynamic = dynamic;
+  dyn_channels[dynamic].mode = O_WRONLY;
+  dyn_channels[dynamic].offset = 0;
   
 }
 

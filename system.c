@@ -6,6 +6,7 @@
 #include <types.h>
 #include <interrupt.h>
 #include <hardware.h>
+#include <channel.h>
 #include <system.h>
 #include <sched.h>
 #include <mm.h>
@@ -91,6 +92,10 @@ int __attribute__((__section__(".text.main")))
   /* Initialize task structs */
   init_task_structs();
   printk("Init task structs... done!\n");
+  
+  /* Initialize dynamic channel characteristics */
+  init_dynamic_channels();
+  printk("Init dynamic channels... done!\n");
   
   /* Initialize Memory */
   init_mm();

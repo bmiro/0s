@@ -26,16 +26,16 @@ int getNewPid() {
 int bad_fd(int fd) {  
   if (fd < 0 || fd > NUM_CHANNELS) return 1;
   
-  return current()->channels[fd].dyn_chars == FREE_CHANNEL;
+  return current()->channels[fd].dynamic == FREE_CHANNEL;
 }
 
 int fd_access_ok(int fd, int mode) {
-  int dchrs;
+  int dynamic;
   
   if (bad_fd(fd)) return 0;
   
-  dchrs = current()->channels[fd].dyn_chars;
-  return (current()->dyn_channels[dchrs].mode & mode) == mode;
+  dynamic = current()->channels[fd].dynamic;
+  return (dyn_channels[dynamic].mode & mode) == mode;
 }
 
 /************************ Service interrupt routines ************************/
@@ -115,12 +115,7 @@ int sys_fork(void) {
   for (i = 0; i < NUM_CHANNELS; i++) {
     child->task.channels[i].file = current()->channels[i].file;
     child->task.channels[i].fops = current()->channels[i].fops;
-    child->task.channels[i].dyn_chars = current()->channels[i].dyn_chars;
-  }
-  
-  for (i = 0; i < NUM_CHANNELS; i++) {
-    child->task.dyn_channels[i].mode = current()->dyn_channels[i].mode;
-    child->task.dyn_channels[i].offset = current()->dyn_channels[i].offset;
+    child->task.channels[i].dynamic = current()->channels[i].dynamic;
   }
   
   /* Modifies child eax value (fork returns 0 to the child)*/
@@ -133,7 +128,7 @@ int sys_fork(void) {
 
 int sys_read(int fd, char *buffer, int size) {
   int file;
-  int dchars;
+  int dynamic;
   int offset;
   int read;
   
@@ -144,18 +139,18 @@ int sys_read(int fd, char *buffer, int size) {
   if (size < 0) return -EINVAL;
      
   file = current()->channels[fd].file;
-  dchars = current()->channels[fd].dyn_chars;
-  offset = current()->dyn_channels[dchars].offset;
+  dynamic = current()->channels[fd].dynamic;
+  offset = dyn_channels[dynamic].offset;
 
   read = current()->channels[fd].fops->f_read(file, buffer, offset, size);
-  current()->dyn_channels[dchars].offset += read;
+  dyn_channels[dynamic].offset += read;
   
   return read;
 }
 
 int sys_write(int fd, char *buffer, int size) {  
   int file;
-  int dchars;
+  int dynamic;
   int offset;
   int written;
 
@@ -164,11 +159,11 @@ int sys_write(int fd, char *buffer, int size) {
   if (size < 0) return -EINVAL;
       
   file = current()->channels[fd].file;
-  dchars = current()->channels[fd].dyn_chars;
-  offset = current()->dyn_channels[dchars].offset;
+  dynamic = current()->channels[fd].dynamic;
+  offset =dyn_channels[dynamic].offset;
   
   written = current()->channels[fd].fops->f_write(file, buffer, offset, size);
-  current()->dyn_channels[dchars].offset += written;
+  dyn_channels[dynamic].offset += written;
   
   return written;
 }
@@ -176,7 +171,7 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_open(const char *path, int flags) {
   int error;
   int f;
-  int fd, dchars;  
+  int fd, dynamic;  
   
   /* Param check */
   if (flags > 0x15 || flags < 0) return -EINVAL;
@@ -185,8 +180,8 @@ int sys_open(const char *path, int flags) {
     
   /* Avaliable channels check */
   fd = find_free_channel(current()->channels);
-  dchars = find_free_dyn_channel(current()->dyn_channels);
-  if (fd < 0 || dchars < 0) return -EMFILE;
+  dynamic = find_free_dyn_channel();
+  if (fd < 0 || dynamic < 0) return -EMFILE;
       
   f = fat_find_path(path);
   if (f < 0) {
@@ -214,9 +209,9 @@ int sys_open(const char *path, int flags) {
 
   //TODO use short variable
   current()->channels[fd].file = f;
-  current()->channels[fd].dyn_chars = dchars;
-  current()->dyn_channels[dchars].mode = flags & O_RDWR;
-  current()->dyn_channels[dchars].offset = 0;
+  current()->channels[fd].dynamic = dynamic;
+  dyn_channels[dynamic].mode = flags & O_RDWR;
+  dyn_channels[dynamic].offset = 0;
     
   return fd;
 }
@@ -229,13 +224,13 @@ int sys_close(int fd) {
   if (bad_fd(fd)) return -EBADF;
   
   duped = 0;
-//   for (i = 0; i < NUM_CHANNELS; i++) {
-//     if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
-//       duped = 1;
-//       break;
-//     }
-//   }
-//   
+  for (i = 0; i < NUM_CHANNELS; i++) {
+    if ((current()->channels[i].dynamic == current()->channels[fd].dynamic) && (i != fd)) {
+      duped = 1;
+      break;
+    }
+  }
+  
   if (current()->channels[fd].fops->f_close != NULL) {
     error = current()->channels[fd].fops->f_close(current()->channels[fd].file);
     if (error < 0) return error;
@@ -243,9 +238,9 @@ int sys_close(int fd) {
   
   if (!duped) {
     //TODO use short variable
-    current()->dyn_channels[current()->channels[fd].dyn_chars].mode = FREE_CHANNEL;
+    dyn_channels[current()->channels[fd].dynamic].mode = FREE_CHANNEL;
   }
-  current()->channels[fd].dyn_chars = FREE_CHANNEL;  
+  current()->channels[fd].dynamic = FREE_CHANNEL;  
   return 0;
 }
 
@@ -368,8 +363,6 @@ int sys_get_stats(int pid, struct stats *st) {
 
 int sys_dup(int fd) {
   int new_fd;
-
-  printk("DUP");
   
   if (bad_fd(fd)) return -EBADF;
   
@@ -378,7 +371,7 @@ int sys_dup(int fd) {
   
   current()->channels[new_fd].file = current()->channels[fd].file;
   current()->channels[new_fd].fops = current()->channels[fd].fops;
-  current()->channels[new_fd].dyn_chars = current()->channels[fd].dyn_chars;
+  current()->channels[new_fd].dynamic = current()->channels[fd].dynamic;
   
   return new_fd;
 }

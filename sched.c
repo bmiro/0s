@@ -74,8 +74,7 @@ void init_task_structs(void) {
   for (i = 1; i < NR_TASKS; i++) { /* Skips 0 used for system */
     list_add(&task[i].t.task.queue, &freequeue);
     for (j = 0; j < NUM_CHANNELS; j++) {
-      task[i].t.task.channels[j].dyn_chars = FREE_CHANNEL;
-      task[i].t.task.dyn_channels[j].mode = FREE_CHANNEL;
+      task[i].t.task.channels[j].dynamic = FREE_CHANNEL;
     } 
   }
 }
@@ -98,8 +97,7 @@ void init_task0(void) {
   list_add(&ts->queue, &runqueue);
   
   for (i = 0; i < NUM_CHANNELS; i++) {
-    ts->channels[i].dyn_chars = FREE_CHANNEL;
-    ts->dyn_channels[i].mode = FREE_CHANNEL;
+    ts->channels[i].dynamic = FREE_CHANNEL;
   } 
 
   /* Sets defaults std in out err to keyboard console console */

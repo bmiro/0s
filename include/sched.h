@@ -45,8 +45,6 @@ struct task_struct {
   int remain; /* Amount of bytes to complete the copy */
   int offset; /* Amount of already copied bytes */
   struct channel channels[NUM_CHANNELS];
-  struct dyn_channel dyn_channels[NUM_CHANNELS];
-
 };
 
 union task_union {

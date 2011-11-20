@@ -71,6 +71,8 @@ sem.o: sem.c $(INCLUDEDIR)/sem.h
 
 sys.o: sys.c $(INCLUDEDIR)/devices.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/file.h
 
+devices.o: devices.c $(INCLUDEDIR)/devices.h
+
 channel.o: channel.c $(INCLUDEDIR)/channel.h
 
 circbuff.o: circbuff.c $(INCLUDEDIR)/circbuff.h
