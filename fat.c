@@ -282,11 +282,5 @@ int fat_unlink(int file) {
     b = fs.block_lists[b];
   }
   
-  printk("free blocks count ");
-  char msg[20];
-  itoa(i,msg,10);
-  printk(msg);
-  
-  
   return 0;
 }

@@ -114,17 +114,6 @@ int sys_write_file(int file, const void *buffer, int offset, int count) {
   int chuck, remain;
   int written, wrote;
   
-  if (count > 1) {
-    char msg[20];
-    printk("Write_file ");
-    itoa(offset,msg,10);
-    printk(msg);
-    printk(" ");
-    itoa(count,msg,10);
-    printk(msg);
-    printk("\n");
-  }
-  
   written = 0;
   remain = count;
   while (remain) {

@@ -338,26 +338,3 @@ void keyboard_routine() {
     }
   }
 }
-
-
-// void keyboard_routine() {
-//   char k, c;
-//   char event;
-//     
-//   k = inb(KEYBOARD_PORT);
-//     
-//   /* Make/Break */
-//   event = (0x80 & k) == 0x80;
-//   /* Warning in break state first bit must be removed */
-//   
-//   if (event == KEY_MAKE) {
-//     c = translate_key(k);
-//     if (c != -1) {
-//       /* Removes Control string from screen if is there */
-//        printk_xyr(79, 24, "       ");
-//        printc_xy(79, 24, c);
-//     } else {
-//       printk_xyr(79, 24, "Control");
-//     }
-//   }
-// }

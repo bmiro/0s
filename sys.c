@@ -131,11 +131,6 @@ int sys_read(int fd, char *buffer, int count) {
   int dynamic;
   int offset;
   int read;
-    
-  char msg[20];
-  printk("Read ");
-  itoa(count, msg, 10);
-  printk(msg);
   
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
   if (!access_ok(WRITE, (void *) buffer, count)) return -EFAULT;
@@ -157,15 +152,6 @@ int sys_write(int fd, char *buffer, int count) {
   int offset;
   int written;
 
-  if (fd > 1 && count > 1) {
-    char msg[20];
-    printk("Write ");
-    itoa(count, msg, 10);
-    printk(msg);
-    printk("\n");
-  }
-  
-  
   if (!fd_access_ok(fd, O_WRONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, count)) return -EFAULT;
   if (count < 0) return -EINVAL;
