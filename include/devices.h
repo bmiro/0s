@@ -23,6 +23,7 @@ struct file_operations {
   int (*f_write)(int, void*, int, int);  
   int (*f_open)(int);
   int (*f_close)(int);
+  int (*f_unlink)(int);
   int (*f_dup)(int);
 };
 
@@ -36,9 +37,10 @@ int sys_read_keyboard(int file, void *buffer, int offset, int count);
 
 /* File */
 int sys_open_file(int file);
+int sys_close_file(int file);
 int sys_write_file(int file, const void *buffer, int offset, int count);
 int sys_read_file(int file, void *buffer, int offset, int count);
-
+int sys_unlink_file(int file);
 
 struct file_operations dev_file, dev_console, dev_keyboard;
 

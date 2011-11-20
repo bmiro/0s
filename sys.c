@@ -176,6 +176,9 @@ int sys_open(const char *path, int flags) {
   int f;
   int fd, dchars;
 
+  printk("OPEN");
+  
+  
   if (flags > 0x15 || flags < 0) return -EINVAL;
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
   if (error = check_path(path)) return error;
@@ -233,7 +236,7 @@ int sys_close(int fd) {
   }
   
   if (current()->channels[fd].fops->f_close != NULL) {
-    error = current()->channels[fd].fops->f_close(current()->channels[fd].file); //TODO canviar el parametre
+    error = current()->channels[fd].fops->f_close(current()->channels[fd].file);
     if (error < 0) return error;
   }
   
@@ -245,6 +248,22 @@ int sys_close(int fd) {
 }
 
 int sys_unlink(const char *path) {
+  int f;
+  int error;
+  struct file_operations *fops;
+  
+  if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
+  if (error = check_path(path)) return error;
+      
+  f = find_path(path);
+  if (f < 0) return -ENOENT;
+  if (fat_get_opens(f) != 0) return -EBUSY;
+  
+  fops = fat_get_fops(f);
+  if (fops != NULL) {
+    error = fops->f_unlink(f);
+    if (error < 0) return error;
+  }
   return 0;
 }
 

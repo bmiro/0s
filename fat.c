@@ -70,27 +70,7 @@ int fat_add_block(int file) {
   fs.used_block_count++;
   fs.free_block_count--;
   
-  char msg [20];
-  printk("There are ");
-  itoa(fs.free_block_count, msg, 10);
-  printk(msg);
-  printk(" free blocks\n");
-  
-  
   return new_block;
-}
-
-int fat_get_size(int file) {
-  if (0 > file || file > MAX_FILES) return -1;
-  
-  return fs.root[file].size;
-}
-
-int fat_set_size(int file, int size) {
-  if (0 > file || file > MAX_FILES) return -1;
-  
-  fs.root[file].size = size;
-  return size;
 }
 
 int fat_read_block(struct data_block *block, int ph_block) {
@@ -122,32 +102,37 @@ int find_path(const char *path) {
   int i;
   
   for (i = 0; i < MAX_FILES; i++) {
-    if (!strcmp(fs.root[i].name, path)) return i;
+    if (!strcmp(fs.root[i].name, path) && fs.root[i].mode != FREE_TYPE) return i;
   }
   
   return -1;
 }
 
-/* Deletes a file from FAT metadata */
-int delete_file(int file) {  
-  if (file > MAX_FILES) return -1;
-  if (fs.root[file].opens != 0) return -1;
-  
-  /* Frees all assigned blocks putting them at the end
-   * of free list */
-  fs.block_lists[fs.last_free_block] = fs.root[file].first_block;
-  fs.free_block_count += (fs.root[file].size % BLOCK_SIZE) + 1; 
-  
-  /* Frees dir entry */
-  fs.root[file].mode = FREE_TYPE;
-  fs.root[file].size = 0;
-  fs.root[file].first_block = EOC;
-  fs.root[file].last_block = EOC;
+int fat_get_size(int file) {
+  if (0 > file || file > MAX_FILES) return -1;
+  return fs.root[file].size;
+}
+
+int fat_set_size(int file, int size) {
+  if (0 > file || file > MAX_FILES) return -1;
+  fs.root[file].size = size;
+  return size;
+}
+
+struct file_operations* fat_get_fops(int file) {
+  if (0 > file || file > MAX_FILES) return -1;
+  return fs.root[file].fops;
+} 
+
+int fat_get_opens(int file) {
+  if (0 > file || file > MAX_FILES) return -1;
+  return fs.root[file].opens;
 }
 
 int fat_open(int file) {  
   if (file > MAX_FILES) return -1;
   fs.root[file].opens++;
+    
   return 0;
 }
 
@@ -183,6 +168,8 @@ int fat_read(int file, char *buffer, int offset, int count) {
   int block_offset, block_remain;  
  
   if (offset >= fat_get_size(file)) return 0;
+ 
+  char msg[20];  
  
   if ((offset + count) > fat_get_size(file)) {
     remain = fat_get_size(file) - offset;
@@ -250,11 +237,37 @@ int fat_write(int file, const char *buffer, int offset, int count) {
     written += block_remain;
     remain -= block_remain;
     
-    if ((offset + written) > fat_get_size(file)) {
-      fat_set_size(file, offset + written);
-    }
-    
     logic_block++;
   }
+  if ((offset + written) > fat_get_size(file)) {
+    fat_set_size(file, offset + written);
+  }
+  
   return written;
+}
+
+int fat_unlink(int file) {
+  if (file > MAX_FILES) return -1;
+  if (fs.root[file].opens != 0) return -1;
+   
+  
+  /* Frees all assigned blocks putting them at the end
+   * of free list */
+  if (fs.last_free_block != EOC) {
+    fs.block_lists[fs.last_free_block] = fs.root[file].first_block;
+  } else {
+    fs.first_free_block = fs.root[file].first_block;
+    fs.last_free_block = fs.root[file].last_block;
+  }
+  fs.free_block_count += (fs.root[file].size % BLOCK_SIZE) + 1;
+  fs.used_block_count -= (fs.root[file].size % BLOCK_SIZE) + 1;
+  
+  /* Frees dir entry */
+  strcat(fs.root[file].name, "", "");
+  fs.root[file].mode = FREE_TYPE;
+  fs.root[file].size = 0;
+  fs.root[file].first_block = EOC;
+  fs.root[file].last_block = EOC;
+  
+  return 0;
 }

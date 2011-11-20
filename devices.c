@@ -11,18 +11,21 @@ void init_devices() {
   dev_console.f_write = &sys_write_console;
   dev_console.f_open = NULL;
   dev_console.f_close = NULL;
+  dev_console.f_unlink = NULL;
   dev_console.f_dup = NULL;
   
   dev_keyboard.f_read = &sys_read_keyboard;
   dev_keyboard.f_write = NULL;
   dev_keyboard.f_open = NULL;
   dev_keyboard.f_close = NULL;
+  dev_keyboard.f_unlink = NULL;
   dev_keyboard.f_dup = NULL;
   
   dev_file.f_read = &sys_read_file;
   dev_file.f_write = &sys_write_file;
   dev_file.f_open = &sys_open_file;
-  dev_file.f_close = NULL;
+  dev_file.f_close = &sys_close_file;
+  dev_file.f_unlink = &sys_unlink_file;
   dev_file.f_dup = NULL;
   
   fat_create(KEYBOARD_PATH, O_RDONLY, &dev_keyboard);
@@ -99,6 +102,10 @@ int sys_open_file(int file) {
   return fat_open(file);
 }
 
+int sys_close_file(int file) {
+  return fat_close(file);
+}
+
 int sys_write_file(int file, const void *buffer, int offset, int count) {
   int chuck, remain;
   int written, wrote;
@@ -136,3 +143,8 @@ int sys_read_file(int file, void *buffer, int offset, int count) {
   }
   return read;
 }
+
+int sys_unlink_file(int file) {
+  return fat_unlink(file);
+}
+

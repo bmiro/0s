@@ -65,14 +65,15 @@ int check_path(const char *path);
 /* Returns file identifier for the given path */
 int find_path(const char *path);
 
-/* Deletes a file from FAT metadata */
-int delete_file(int file);
-
-/* Creates a file in FAT metadata pre-allocating size bytes */
 int fat_create(const char *path, int flags, struct file_operations *fops);
 int fat_open(int file);
+int fat_close(int file);
 int fat_read(int f, char *buffer, int offset, int count);
 int fat_write(int f, const char *buffer, int offset, int count);
+int fat_unlink(int file);
 
+int fat_get_size(int file);
+struct file_operations* fat_get_fops(int file);
+int fat_get_opens(int file);
 
 #endif
