@@ -195,17 +195,16 @@ int sys_open(const char *path, int flags) {
     if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -EEXIST;
   }
       
-  /* Perms check TODO change to fat_check_access */
-  if ((fs.root[f].mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
+  if (!fat_access_ok(f, flags & O_RDWR)) return -EACCES;
   
-  current()->channels[fd].fops = fs.root[f].fops; //TODO change to get fops
+  
+  fat_get_fops(f, &(current()->channels[fd].fops));
     
   if (current()->channels[fd].fops->f_open != NULL) {
     error = current()->channels[fd].fops->f_open(f);
     if (error < 0) return error;
   }
 
-  //TODO use short variable
   current()->channels[fd].file = f;
   current()->channels[fd].dynamic = dynamic;
   dyn_channels[dynamic].mode = flags & O_RDWR;
@@ -235,7 +234,6 @@ int sys_close(int fd) {
   }
   
   if (!duped) {
-    //TODO use short variable
     dyn_channels[current()->channels[fd].dynamic].mode = FREE_CHANNEL;
   }
   current()->channels[fd].dynamic = FREE_CHANNEL;  
@@ -252,8 +250,7 @@ int sys_unlink(const char *path) {
   f = fat_find_path(path);
   if (f < 0) return -ENOENT;
   
-  //TODO change to fat_is_in_use
-  if (fat_get_opens(f) != 0) return -EBUSY;
+  if (fat_is_in_use(f)) return -EBUSY;
         
   fat_get_fops(f, &fops);
   if (fops->f_unlink != NULL) {

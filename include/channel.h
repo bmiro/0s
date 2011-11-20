@@ -18,7 +18,7 @@ struct dyn_channel {
   int offset;
 };
 
-struct dyn_channel dyn_channels[NUM_DYNAMIC_CHANNELS]; //TODO posar macro
+struct dyn_channel dyn_channels[NUM_DYNAMIC_CHANNELS];
 
 int init_dynamic_channels();
 int find_free_channel(struct channel *chs);

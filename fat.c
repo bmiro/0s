@@ -132,6 +132,14 @@ int fat_get_opens(int file) {
   return fs.root[file].opens;
 }
 
+int fat_access_ok(int file, int flags) {
+  return (fs.root[file].mode & O_RDWR) == (flags & O_RDWR);
+}
+
+int fat_is_in_use(int file) {
+  return fs.root[file].opens != 0;
+}
+
 int fat_open(int file) {  
   if (0 > file || file > MAX_FILES) return -1;
   

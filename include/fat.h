@@ -66,6 +66,8 @@ int initZeOSFAT();
 int fat_check_path(const char *path);
 int fat_find_path(const char *path);
 
+int fat_access_ok(int file, int flags);
+int fat_is_in_use(int file);
 int fat_create(const char *path, int flags, struct file_operations *fops);
 int fat_open(int file);
 int fat_close(int file);

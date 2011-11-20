@@ -5,10 +5,6 @@
 #ifndef __IO_H__
 #define __IO_H__
 
-//TODO check if these two values are needed
-#define WRITE_MODE 1
-#define READ_MODE 0
-
 #define KEYBOARD_PORT 0x60
 #define KEY_MAKE      0
 #define KEY_BREAK     1
