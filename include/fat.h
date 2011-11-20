@@ -7,7 +7,7 @@
 #include <file.h>
 #include <error.h>
 
-#define MAX_BLOCKS 10
+#define MAX_BLOCKS 30
 #define BLOCK_SIZE 256
 
 #define MAX_FILES 10
