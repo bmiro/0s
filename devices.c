@@ -25,7 +25,7 @@ void init_devices() {
   dev_file.f_write = &sys_write_file;
   dev_file.f_open = &sys_open_file;
   dev_file.f_close = &sys_close_file;
-  dev_file.f_unlink = NULL;
+  dev_file.f_unlink = &sys_unlink_file;
   dev_file.f_dup = NULL;
   
   fat_create(KEYBOARD_PATH, O_RDONLY, &dev_keyboard);
