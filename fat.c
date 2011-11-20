@@ -88,21 +88,23 @@ int fat_write_block(struct data_block *block, int ph_block) {
 /***********************************************************************
  ************** high level external public FAT functions ***************
  ***********************************************************************/
+int fat_check_path(const char *path) {
+  int i;
+  for (i = 0; i < FILE_NAME_SIZE; i++) {
+    if (path[i] == '\0') return 0;
+  } 
+  return -ENAMETOOLONG;
+}
 
 /* Returns file identifier for the given path */
 int fat_find_path(const char *path) {
   int i;
-  
-  for (i = 0; i < FILE_NAME_SIZE; i++) {
-    if (path[i] == '\0') break;
-  } 
-  if (i == FILE_NAME_SIZE) return -ENAMETOOLONG;
-  
+ 
   for (i = 0; i < MAX_FILES; i++) {
     if (!strcmp(fs.root[i].name, path) && fs.root[i].mode != FREE_TYPE) return i;
   }
   
-  return FILE_NOT_FOUND;
+  return -ENOENT;
 }
 
 int fat_get_size(int file) {

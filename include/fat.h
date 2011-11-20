@@ -63,6 +63,7 @@ struct fat fs;
 int initZeOSFAT();
 
 /* Returns file identifier for the given path */
+int fat_check_path(const char *path);
 int fat_find_path(const char *path);
 
 int fat_create(const char *path, int flags, struct file_operations *fops);

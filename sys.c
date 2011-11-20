@@ -178,40 +178,41 @@ int sys_open(const char *path, int flags) {
   int f;
   int fd, dchars;  
   
+  /* Param check */
   if (flags > 0x15 || flags < 0) return -EINVAL;
-  if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
+  if (!access_ok(READ, (void*) path, 1)) return -EFAULT;  
+  if (fat_check_path(path) < 0) return -ENAMETOOLONG;
     
-  f = fat_find_path(path);
-  
-  if (f < 0) return f;
-  
+  /* Avaliable channels check */
   fd = find_free_channel(current()->channels);
   dchars = find_free_dyn_channel(current()->dyn_channels);
-
   if (fd < 0 || dchars < 0) return -EMFILE;
       
-  if (f == FILE_NOT_FOUND) {
+  f = fat_find_path(path);
+  if (f < 0) {
     if ((flags & O_CREAT) == O_CREAT) {      
       f = fat_create(path, flags & O_RDWR, &dev_file);     
-      if (f < 0) return -1;
+      if (f < 0) return -ENOSPC;
     } else {
-      /* File does not exist */
+      /* File does not exist and no creation flag given */
       return -ENOENT;
     }
-  } else { 
+  } else {
+    /* Exclisive flags check */
     if ((flags & (O_EXCL|O_CREAT)) == (O_EXCL|O_CREAT)) return -EEXIST;
   }
       
-  /* Flag check */
+  /* Perms check TODO change to fat_check_access */
   if ((fs.root[f].mode & O_RDWR) != (flags & O_RDWR)) return -EACCES;
   
-  current()->channels[fd].fops = fs.root[f].fops;
+  current()->channels[fd].fops = fs.root[f].fops; //TODO change to get fops
     
   if (current()->channels[fd].fops->f_open != NULL) {
     error = current()->channels[fd].fops->f_open(f);
     if (error < 0) return error;
   }
 
+  //TODO use short variable
   current()->channels[fd].file = f;
   current()->channels[fd].dyn_chars = dchars;
   current()->dyn_channels[dchars].mode = flags & O_RDWR;
@@ -228,19 +229,20 @@ int sys_close(int fd) {
   if (bad_fd(fd)) return -EBADF;
   
   duped = 0;
-  for (i = 0; i < NUM_CHANNELS; i++) {
-    if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
-      duped = 1;
-      break;
-    }
-  }
-  
+//   for (i = 0; i < NUM_CHANNELS; i++) {
+//     if ((current()->channels[i].dyn_chars == current()->channels[fd].dyn_chars) && (i != fd)) {
+//       duped = 1;
+//       break;
+//     }
+//   }
+//   
   if (current()->channels[fd].fops->f_close != NULL) {
     error = current()->channels[fd].fops->f_close(current()->channels[fd].file);
     if (error < 0) return error;
   }
   
   if (!duped) {
+    //TODO use short variable
     current()->dyn_channels[current()->channels[fd].dyn_chars].mode = FREE_CHANNEL;
   }
   current()->channels[fd].dyn_chars = FREE_CHANNEL;  
@@ -249,23 +251,22 @@ int sys_close(int fd) {
 
 int sys_unlink(const char *path) {
   int f;
-  int error;
   struct file_operations *fops;
      
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
-      
-  f = fat_find_path(path);
-  if (f < 0) return f;
-  if (f == FILE_NOT_FOUND) return -ENOENT;
+  if (fat_check_path(path) < 0) return -ENAMETOOLONG;
   
-  if (fat_get_opens(f) > 0) return -EBUSY;
+  f = fat_find_path(path);
+  if (f < 0) return -ENOENT;
+  
+  //TODO change to fat_is_in_use
+  if (fat_get_opens(f) != 0) return -EBUSY;
         
- fat_get_fops(f, &fops);
+  fat_get_fops(f, &fops);
   if (fops->f_unlink != NULL) {
-    printk("\nUNLINKING\n");
-    error = fops->f_unlink(f);
-    if (error < 0) return error;
+    return fops->f_unlink(f);
   }
+  
   return 0;
 }
 
