@@ -16,15 +16,14 @@ struct dyn_channel {
   int file; /* File identifier */
   int mode; /* O_RDONLY, O_WRONLY, FREE_CHANNEL if unopened */
   int offset;
+  int opens;
 };
-
-int open_files[NUM_DYNAMIC_CHANNELS];
 
 struct dyn_channel dyn_channels[NUM_DYNAMIC_CHANNELS];
 
 int init_dynamic_channels();
 int find_free_channel(struct channel *chs);
 int find_free_dyn_channel();
-
+int file_is_in_use(int file);
 
 #endif

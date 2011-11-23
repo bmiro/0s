@@ -120,8 +120,6 @@ int sys_fork(void) {
   
   /* File descriptors hierachy */
   for (i = 0; i < NUM_CHANNELS; i++) {
-    child->task.channels[i].file = current()->channels[i].file;
-    child->task.channels[i].fops = current()->channels[i].fops;
     child->task.channels[i].dynamic = current()->channels[i].dynamic;
   }
   
@@ -134,40 +132,32 @@ int sys_fork(void) {
 }
 
 int sys_read(int fd, char *buffer, int count) {
-  int file;
   int dynamic;
-  int offset;
   int read;
   
   if (!fd_access_ok(fd, O_RDONLY)) return -EBADF;
   if (!access_ok(WRITE, (void *) buffer, count)) return -EFAULT;
   if (count < 0) return -EINVAL;
      
-  file = current()->channels[fd].file;
   dynamic = current()->channels[fd].dynamic;
-  offset = dyn_channels[dynamic].offset;
 
-  read = current()->channels[fd].fops->f_read(file, buffer, offset, count);
+  read = dyn_channels[dynamic].fops->f_read(dyn_channels[dynamic].file, buffer, dyn_channels[dynamic].offset, count);
   dyn_channels[dynamic].offset += read;
   
   return read;
 }
 
 int sys_write(int fd, char *buffer, int count) {  
-  int file;
   int dynamic;
-  int offset;
   int written;
 
   if (!fd_access_ok(fd, O_WRONLY)) return -EBADF;
   if (!access_ok(WRITE, (void*) buffer, count)) return -EFAULT;
   if (count < 0) return -EINVAL;
       
-  file = current()->channels[fd].file;
   dynamic = current()->channels[fd].dynamic;
-  offset =dyn_channels[dynamic].offset;
   
-  written = current()->channels[fd].fops->f_write(file, buffer, offset, count);
+  written = dyn_channels[dynamic].fops->f_write(dyn_channels[dynamic].file, buffer, dyn_channels[dynamic].offset, count);
   dyn_channels[dynamic].offset += written;
   
   return written;
@@ -177,6 +167,7 @@ int sys_open(const char *path, int flags) {
   int error;
   int f;
   int fd, dynamic;  
+  int created;
   
   /* Param check */
   if (flags > 0x15 || flags < 0) return -EINVAL;
@@ -188,10 +179,12 @@ int sys_open(const char *path, int flags) {
   dynamic = find_free_dyn_channel();
   if (fd < 0 || dynamic < 0) return -EMFILE;
       
+  created = 0;
   f = fat_find_path(path);
   if (f < 0) {
     if ((flags & O_CREAT) == O_CREAT) {      
-      f = fat_create(path, flags & O_RDWR, &dev_file);     
+      f = fat_create(path, flags & O_RDWR); 
+      created = 1;
       if (f < 0) return -ENOSPC;
     } else {
       /* File does not exist and no creation flag given */
@@ -204,19 +197,20 @@ int sys_open(const char *path, int flags) {
       
   if (!fat_access_ok(f, flags & O_RDWR)) return -EACCES;
   
-  
-  fat_get_fops(f, &(current()->channels[fd].fops));
-    
-  if (current()->channels[fd].fops->f_open != NULL) {
-    error = current()->channels[fd].fops->f_open(f);
+  if (created) {
+    dyn_channels[dynamic].fops = &dev_file;
+  } /* Else it is a device (can't be closed) and should already be in dyn_channels */
+     
+  if (dyn_channels[dynamic].fops->f_open != NULL) {
+    error = dyn_channels[dynamic].fops->f_open(f);
     if (error < 0) return error;
   }
 
-  current()->channels[fd].file = f;
   current()->channels[fd].dynamic = dynamic;
+  dyn_channels[dynamic].file = f;
   dyn_channels[dynamic].mode = flags & O_RDWR;
   dyn_channels[dynamic].offset = 0;
-  open_files[dynamic]++;
+  dyn_channels[dynamic].opens++;
     
   return fd;
 }
@@ -225,19 +219,22 @@ int sys_close(int fd) {
   int error;
   int duped;
   int i;
+  int dyn_ch;
 
   if (bad_fd(fd)) return -EBADF;
   
+  
+  dyn_ch = current()->channels[fd].dynamic;
   duped = 0;
   for (i = 0; i < NUM_CHANNELS; i++) {
-    if ((current()->channels[i].dynamic == current()->channels[fd].dynamic) && (i != fd)) {
+    if ((current()->channels[i].dynamic == dyn_ch) && (i != fd)) {
       duped = 1;
       break;
     }
   }
   
-  if (current()->channels[fd].fops->f_close != NULL) {
-    error = current()->channels[fd].fops->f_close(current()->channels[fd].file);
+  if (dyn_channels[dyn_ch].fops->f_close != NULL) {
+    error = dyn_channels[dyn_ch].fops->f_close(dyn_channels[dyn_ch].file);
     if (error < 0) return error;
   }
   
@@ -245,7 +242,7 @@ int sys_close(int fd) {
     dyn_channels[current()->channels[fd].dynamic].mode = FREE_CHANNEL;
   }
   
-  open_files[current()->channels[fd].dynamic]--;
+  dyn_channels[dyn_ch].opens--;
   current()->channels[fd].dynamic = FREE_CHANNEL;  
   
   return 0;
@@ -253,7 +250,7 @@ int sys_close(int fd) {
 
 int sys_unlink(const char *path) {
   int f;
-  struct file_operations *fops;
+  int dyn_ch;
      
   if (!access_ok(READ, (void*) path, 1)) return -EFAULT;
   if (fat_check_path(path) < 0) return -ENAMETOOLONG;
@@ -262,11 +259,11 @@ int sys_unlink(const char *path) {
   
   if (f < 0) return -ENOENT;
   
-  if (file_is_in_use(f)) return -EBUSY;
+  dyn_ch = file_is_in_use(f);
+  if (dyn_ch < 0) return -EBUSY;
         
-  fat_get_fops(f, &fops);
-  if (fops->f_unlink != NULL) {
-    return fops->f_unlink(f);
+  if (dyn_channels[dyn_ch].fops->f_unlink != NULL) {
+    return dyn_channels[dyn_ch].fops->f_unlink(f);
   }
   
   return 0;
@@ -376,8 +373,6 @@ int sys_dup(int fd) {
   new_fd = find_free_channel(current()->channels);
   if (new_fd < 0) return -EMFILE;
   
-  current()->channels[new_fd].file = current()->channels[fd].file;
-  current()->channels[new_fd].fops = current()->channels[fd].fops;
   current()->channels[new_fd].dynamic = current()->channels[fd].dynamic;
   
   return new_fd;

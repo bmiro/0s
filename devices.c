@@ -28,29 +28,30 @@ void init_devices() {
   dev_file.f_unlink = &sys_unlink_file;
   dev_file.f_dup = NULL;
   
-  fat_create(KEYBOARD_PATH, O_RDONLY, &dev_keyboard);
-  fat_create(CONSOLE_PATH, O_WRONLY, &dev_console);
+  //TODO POSAR EL &dev_dispostiu a colque bandaaaa per poder fer els open
+  fat_create(KEYBOARD_PATH, O_RDONLY);
+  fat_create(CONSOLE_PATH, O_WRONLY);
   
 }
 
 void set_default_std_in_out_err(struct task_struct *tsk) {
   int dynamic;
   
-  tsk->channels[STDIN].fops = &dev_keyboard;
   dynamic = find_free_dyn_channel();
   tsk->channels[STDIN].dynamic = dynamic;
+  dyn_channels[dynamic].fops = &dev_keyboard;
   dyn_channels[dynamic].mode = O_RDONLY;
   dyn_channels[dynamic].offset = 0;
   
-  tsk->channels[STDOUT].fops = &dev_console;
   dynamic = find_free_dyn_channel();
   tsk->channels[STDOUT].dynamic = dynamic;
+  dyn_channels[dynamic].fops = &dev_console;
   dyn_channels[dynamic].mode = O_WRONLY;
   dyn_channels[dynamic].offset = 0;
   
-  tsk->channels[STDERR].fops = &dev_console; 
   dynamic = find_free_dyn_channel();
   tsk->channels[STDERR].dynamic = dynamic;
+  dyn_channels[dynamic].fops = &dev_console; 
   dyn_channels[dynamic].mode = O_WRONLY;
   dyn_channels[dynamic].offset = 0;
   

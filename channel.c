@@ -5,6 +5,7 @@ int init_dynamic_channels() {
   
   for (i = 0; i < NUM_DYNAMIC_CHANNELS; i++) {
     dyn_channels[i].mode = FREE_CHANNEL;
+    dyn_channels[i].opens = 0;
   }
 }
 
@@ -33,8 +34,8 @@ int file_is_in_use(int file) {
   
   for (i = 0; i < NUM_DYNAMIC_CHANNELS; i++) {
     if (dyn_channels[i].file == file) {
-      if (open_files[i] > 0) return 1;
+      if (dyn_channels[i].opens > 0) return i;
     }
   }
-  return 0;
+  return -1;
 }

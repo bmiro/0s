@@ -118,32 +118,13 @@ int fat_set_size(int file, int size) {
   return size;
 }
 
-int fat_get_fops(int file, struct file_operations **fops) {
-  if (0 > file || file > MAX_FILES) return -1;
-  
-  *fops = fs.root[file].fops;
-  return 0;
-} 
-
-int fat_get_opens(int file) {
-  if (0 > file || file > MAX_FILES) return -1;
-  
-  return fs.root[file].opens;
-}
-
 int fat_access_ok(int file, int flags) {
   return (fs.root[file].mode & O_RDWR) == (flags & O_RDWR);
-}
-
-int fat_is_in_use(int file) {
-  return fs.root[file].opens != 0;
 }
 
 int fat_open(int file) {  
   if (0 > file || file > MAX_FILES) return -1;
   
-  fs.root[file].opens++;
-    
   return 0;
 }
 
@@ -151,19 +132,17 @@ int fat_close(int file) {
   if (0 > file || file > MAX_FILES) return -1;
   if (fs.root[file].opens == 0) return -1;
 
-  fs.root[file].opens--;
   return 0;
 }
 
 /* Creates a file in FAT metadata */
-int fat_create(const char *path, int flags, struct file_operations *fops) {
+int fat_create(const char *path, int flags) {
   int i;
   for (i = 0; i < MAX_FILES; i++) {
     if (fs.root[i].mode == FREE_TYPE) {
       strcat(fs.root[i].name, (char *)path, "");
       fs.root[i].mode = (flags & O_RDWR);
       fs.root[i].size = 0;
-      fs.root[i].fops = fops;
       fs.root[i].first_block = EOC;
       fs.root[i].last_block = EOC;
       fs.root[i].block_count = 0;
