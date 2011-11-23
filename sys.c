@@ -60,6 +60,13 @@ void sys_exit(void) {
         sys_sem_destroy(i);
       }
     }
+    
+    /* File descriptors hierachy */
+    for (i = 0; i < NUM_CHANNELS; i++) {
+      if (current()->channels[i].dynamic != FREE_CHANNEL) {
+	sys_close(i);
+      }
+    }
   
     list_del(&tsk->queue);
     free_task_struct(tsk);
