@@ -27,3 +27,14 @@ int find_free_dyn_channel() {
   
   return -1;
 }
+
+int file_is_in_use(int file) {
+  int i;
+  
+  for (i = 0; i < NUM_DYNAMIC_CHANNELS; i++) {
+    if (dyn_channels[i].file == file) {
+      if (open_files[i] > 0) return 1;
+    }
+  }
+  return 0;
+}

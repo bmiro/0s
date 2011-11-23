@@ -216,6 +216,7 @@ int sys_open(const char *path, int flags) {
   current()->channels[fd].dynamic = dynamic;
   dyn_channels[dynamic].mode = flags & O_RDWR;
   dyn_channels[dynamic].offset = 0;
+  open_files[dynamic]++;
     
   return fd;
 }
@@ -243,7 +244,10 @@ int sys_close(int fd) {
   if (!duped) {
     dyn_channels[current()->channels[fd].dynamic].mode = FREE_CHANNEL;
   }
+  
+  open_files[current()->channels[fd].dynamic]--;
   current()->channels[fd].dynamic = FREE_CHANNEL;  
+  
   return 0;
 }
 
@@ -255,9 +259,10 @@ int sys_unlink(const char *path) {
   if (fat_check_path(path) < 0) return -ENAMETOOLONG;
   
   f = fat_find_path(path);
+  
   if (f < 0) return -ENOENT;
   
-  if (fat_is_in_use(f)) return -EBUSY;
+  if (file_is_in_use(f)) return -EBUSY;
         
   fat_get_fops(f, &fops);
   if (fops->f_unlink != NULL) {

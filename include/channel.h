@@ -8,15 +8,17 @@
 #define FREE_CHANNEL -1
 
 struct channel {
-  struct file_operations *fops;
-  int file; // File identifier
   int dynamic; /* FREE_CHANNEL if unopened */
 };
 
 struct dyn_channel {
+  struct file_operations *fops;
+  int file; /* File identifier */
   int mode; /* O_RDONLY, O_WRONLY, FREE_CHANNEL if unopened */
   int offset;
 };
+
+int open_files[NUM_DYNAMIC_CHANNELS];
 
 struct dyn_channel dyn_channels[NUM_DYNAMIC_CHANNELS];
 

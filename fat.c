@@ -9,7 +9,6 @@ int initZeOSFAT() {
     fs.root[i].size = 0;
     fs.root[i].first_block = EOC;
     fs.root[i].last_block = EOC;
-    fs.root[i].opens = 0;
     fs.root[i].block_count = 0;
   }
   
